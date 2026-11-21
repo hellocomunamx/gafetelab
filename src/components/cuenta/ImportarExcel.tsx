@@ -1,0 +1,188 @@
+"use client";
+
+import Link from "next/link";
+import { type ChangeEvent, useState } from "react";
+import { importarEmpleados } from "@/app/cuenta/acciones";
+import { COLUMNA_FOTO, type CampoExcel, columnasDe, type Lectura, leerFilas } from "@/lib/cuenta/excel";
+import { esColumnaSistema } from "@/lib/cuenta/tipos";
+import { claseBoton, claseBotonSecundario } from "./Formulario";
+
+const MAXIMO = 2000;
+const numero = (n: number) => n.toLocaleString("es-MX");
+
+/** Descarga la plantilla, lee el Excel lleno, lo revisa y lo importa. */
+export function ImportarExcel({ campos, empresa }: { campos: CampoExcel[]; empresa: string }) {
+  const columnas = columnasDe(campos);
+  const [lectura, setLectura] = useState<Lectura>();
+  const [archivo, setArchivo] = useState("");
+  const [error, setError] = useState("");
+  const [ocupado, setOcupado] = useState(false);
+  const [hecho, setHecho] = useState<{ nuevas: number; actualizadas: number }>();
+
+  async function descargar() {
+    const { default: escribir } = await import("write-excel-file/browser");
+    const titulos = [...columnas.map((c) => c.etiqueta), COLUMNA_FOTO];
+    const negrita = (value: string) => ({ value, fontWeight: "bold" as const });
+    await escribir(
+      [
+        {
+          sheet: "Equipo",
+          data: [titulos.map(negrita)],
+          columns: titulos.map((t) => ({ width: Math.max(18, t.length + 4) })),
+          stickyRowsCount: 1,
+        },
+        {
+          sheet: "Instrucciones",
+          data: [
+            [negrita("Cómo llenar esta plantilla")],
+            ["1. Una persona por renglón, en la hoja Equipo. No cambies los títulos de las columnas."],
+            ["2. El nombre es obligatorio. Lo demás puede ir vacío."],
+            ["3. Con número de empleado, si la persona ya existe se actualiza en lugar de duplicarse."],
+            [`4. En "${COLUMNA_FOTO}" puedes escribir el nombre del archivo de su foto (por ejemplo 0042.jpg) para asignarla sola al subir las fotos.`],
+            ["5. Las fechas van como AAAA-MM-DD o con formato de fecha de Excel."],
+            ["6. Guarda el archivo y súbelo en tu plataforma: Equipo, Importar Excel."],
+          ],
+          columns: [{ width: 110 }],
+        },
+      ],
+    ).toFile(`plantilla-${empresa}.xlsx`);
+  }
+
+  async function leer(evento: ChangeEvent<HTMLInputElement>) {
+    const elegido = evento.target.files?.[0];
+    evento.target.value = "";
+    if (!elegido) return;
+    setError("");
+    setHecho(undefined);
+    setLectura(undefined);
+    setArchivo(elegido.name);
+    try {
+      const { readSheet } = await import("read-excel-file/browser");
+      const resultado = leerFilas(await readSheet(elegido), campos);
+      if (resultado.faltaNombre) setError('No encontramos la columna "Nombre". Usa la plantilla para que los títulos coincidan.');
+      else if (!resultado.filas.length) setError("El archivo no trae personas. Llena al menos un renglón con nombre.");
+      else if (resultado.filas.length > MAXIMO) setError(`El archivo trae ${numero(resultado.filas.length)} personas. Sube como máximo ${numero(MAXIMO)} por archivo.`);
+      else setLectura(resultado);
+    } catch {
+      setError("No pudimos leer el archivo. Tiene que ser un Excel (.xlsx).");
+    }
+  }
+
+  async function importar() {
+    if (!lectura) return;
+    setOcupado(true);
+    setError("");
+    const resultado = await importarEmpleados(lectura.filas).catch(() => ({ error: "No pudimos importar. Intenta de nuevo." }) as const);
+    setOcupado(false);
+    if (resultado.error) return setError(resultado.error);
+    setHecho({ nuevas: "nuevas" in resultado ? (resultado.nuevas ?? 0) : 0, actualizadas: "actualizadas" in resultado ? (resultado.actualizadas ?? 0) : 0 });
+    setLectura(undefined);
+  }
+
+  const valor = (fila: Lectura["filas"][number], clave: string) =>
+    esColumnaSistema(clave) ? fila[clave] : fila.datos?.[clave];
+
+  return (
+    <div className="space-y-5">
+      <ol className="grid gap-4 md:grid-cols-2">
+        <li className="rounded-tarjeta border border-linea bg-white p-5">
+          <p className="font-titulos text-lg font-extrabold">1. Descarga tu plantilla</p>
+          <p className="mt-1 text-sm text-gris">
+            Trae una columna por cada campo de tu empresa: {columnas.map((c) => c.etiqueta).join(", ")} y{" "}
+            {COLUMNA_FOTO}.
+          </p>
+          <button type="button" onClick={descargar} className={`${claseBotonSecundario} mt-4`}>
+            Descargar plantilla de Excel
+          </button>
+          <p className="mt-3 text-xs text-gris">
+            ¿Te falta un dato? <Link href="/cuenta/campos" className="underline">Agrega el campo</Link> y vuelve a descargarla.
+          </p>
+        </li>
+        <li className="rounded-tarjeta border border-linea bg-white p-5">
+          <p className="font-titulos text-lg font-extrabold">2. Súbela llena</p>
+          <p className="mt-1 text-sm text-gris">
+            Primero te mostramos lo que leímos. Nada se guarda hasta que confirmes.
+          </p>
+          <label className={`${claseBoton} mt-4 cursor-pointer`}>
+            <input type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onChange={leer} className="sr-only" />
+            Elegir archivo de Excel
+          </label>
+          {archivo ? <p className="mt-3 text-xs text-gris">Archivo: {archivo}</p> : null}
+        </li>
+      </ol>
+
+      {error ? <p role="alert" className="rounded-tarjeta-chica bg-rojo/10 p-4 font-medium text-rojo-oscuro">{error}</p> : null}
+
+      {hecho ? (
+        <div role="status" className="rounded-tarjeta border border-[#0a7d4f] bg-[#dff3ea] p-5">
+          <p className="font-titulos text-lg font-extrabold">Listo: tu equipo ya está arriba.</p>
+          <p className="mt-1 text-sm">
+            {numero(hecho.nuevas)} {hecho.nuevas === 1 ? "persona nueva" : "personas nuevas"} y{" "}
+            {numero(hecho.actualizadas)} {hecho.actualizadas === 1 ? "actualizada" : "actualizadas"}.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link href="/cuenta/equipo/fotos" className={claseBoton}>Subir las fotos</Link>
+            <Link href="/cuenta/equipo" className={claseBotonSecundario}>Ver mi equipo</Link>
+          </div>
+        </div>
+      ) : null}
+
+      {lectura ? (
+        <div className="rounded-tarjeta border border-linea bg-white p-5">
+          <p className="font-titulos text-lg font-extrabold">
+            3. Revisa: {numero(lectura.filas.length)} {lectura.filas.length === 1 ? "persona" : "personas"} por importar
+          </p>
+          <ul className="mt-2 space-y-1 text-sm">
+            {lectura.sinNombre.length ? (
+              <li className="text-rojo-oscuro">
+                {lectura.sinNombre.length === 1 ? "Se salta 1 renglón" : `Se saltan ${lectura.sinNombre.length} renglones`} sin
+                nombre (renglón {lectura.sinNombre.slice(0, 8).join(", ")}
+                {lectura.sinNombre.length > 8 ? "…" : ""}).
+              </li>
+            ) : null}
+            {lectura.repetidos.length ? (
+              <li className="text-rojo-oscuro">
+                Número de empleado repetido en el archivo: {[...new Set(lectura.repetidos)].slice(0, 8).join(", ")}. Se
+                queda el último renglón de cada uno.
+              </li>
+            ) : null}
+            {lectura.ignoradas.length ? (
+              <li className="text-gris">
+                Columnas que no se importan: {lectura.ignoradas.join(", ")}. Para guardarlas,{" "}
+                <Link href="/cuenta/campos" className="underline">agrégalas como campo</Link> con ese mismo nombre.
+              </li>
+            ) : null}
+          </ul>
+          <div className="mt-4 overflow-x-auto rounded-tarjeta-chica border border-linea">
+            <table className="w-full min-w-[40rem] text-left text-sm">
+              <thead className="bg-papel">
+                <tr>
+                  {columnas.map((c) => (
+                    <th key={c.clave} scope="col" className="px-3 py-2 font-semibold">{c.etiqueta}</th>
+                  ))}
+                  <th scope="col" className="px-3 py-2 font-semibold">{COLUMNA_FOTO}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-linea">
+                {lectura.filas.slice(0, 8).map((f, i) => (
+                  <tr key={i}>
+                    {columnas.map((c) => (
+                      <td key={c.clave} className="px-3 py-2">{valor(f, c.clave)}</td>
+                    ))}
+                    <td className="px-3 py-2">{f.foto_archivo}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {lectura.filas.length > 8 ? (
+            <p className="mt-2 text-xs text-gris">y {numero(lectura.filas.length - 8)} más.</p>
+          ) : null}
+          <button type="button" onClick={importar} disabled={ocupado} className={`${claseBoton} mt-5`}>
+            {ocupado ? "Importando…" : `Importar ${numero(lectura.filas.length)} ${lectura.filas.length === 1 ? "persona" : "personas"}`}
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}

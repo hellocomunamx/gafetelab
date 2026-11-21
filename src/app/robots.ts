@@ -21,14 +21,17 @@ const rastreadoresIA = [
   "CCBot",
 ];
 
+/** Rutas que no deben rastrearse: la API y todo lo que requiere sesión. */
+const privadas = ["/api/", "/auth/", "/cuenta", "/entrar", "/salir"];
+
 export default function robots(): MetadataRoute.Robots {
   if (!site.indexable) {
     return { rules: { userAgent: "*", disallow: "/" } };
   }
   return {
     rules: [
-      { userAgent: "*", allow: "/", disallow: ["/api/"] },
-      { userAgent: rastreadoresIA, allow: "/", disallow: ["/api/"] },
+      { userAgent: "*", allow: "/", disallow: privadas },
+      { userAgent: rastreadoresIA, allow: "/", disallow: privadas },
     ],
     sitemap: urlAbsoluta("/sitemap.xml"),
   };

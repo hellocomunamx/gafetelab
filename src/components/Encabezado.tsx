@@ -35,6 +35,9 @@ export function Encabezado() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
+          <Link href="/cuenta" className="hidden px-2 font-medium hover:text-rojo sm:block">
+            Mi cuenta
+          </Link>
           <Boton href="/cotizar" className="px-5 py-2 text-sm">
             Cotizar
           </Boton>
@@ -56,6 +59,9 @@ export function Encabezado() {
                   {n.texto}
                 </Link>
               ))}
+              <Link href="/cuenta" className="rounded-tarjeta-chica px-3 py-2 font-medium hover:bg-papel sm:hidden">
+                Mi cuenta
+              </Link>
             </nav>
           </details>
         </div>

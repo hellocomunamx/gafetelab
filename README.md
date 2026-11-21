@@ -26,6 +26,55 @@ Sin `RESEND_API_KEY`, el cotizador sigue funcionando y descargando el PDF; solo 
 
 Para servir en `lagafeteria.com`, quita el comentario de `routes` en `wrangler.jsonc` y corre `npm run deploy`.
 
+## Plataforma (cuenta, empresa y equipo)
+
+Vive en `/cuenta` y pide sesión. Lo que hay hoy: entrar con liga o código por correo (y Google o Microsoft si se activan), crear la empresa, datos de envío y de facturación guardados, equipo con filtros, altas, bajas e historial de gafetes, campos a la medida, plantilla de Excel para subir al equipo y carga masiva de fotos.
+
+| Qué | Dónde |
+| --- | --- |
+| Tablas, permisos, reglas de acceso y almacenamiento de fotos | `supabase/migrations/` |
+| Correo de acceso (liga y código) | `supabase/templates/acceso.html` |
+| Sesión: renovarla y proteger `/cuenta` | `src/middleware.ts`, `src/lib/cuenta/sesion.ts` |
+| Entrar, confirmar la liga y salir | `src/app/entrar/`, `src/app/auth/confirmar/route.ts`, `src/app/salir/route.ts` |
+| Páginas de la cuenta | `src/app/cuenta/` |
+| Todo lo que guarda o borra (acciones del servidor) | `src/app/cuenta/acciones.ts` |
+| Lectura del Excel y sus columnas | `src/lib/cuenta/excel.ts`, `src/components/cuenta/ImportarExcel.tsx` |
+| A quién corresponde cada foto | `src/lib/cuenta/emparejar.ts`, `src/components/cuenta/SubirFotos.tsx` |
+| Tipos de la base de datos | `src/lib/supabase/tipos.ts` (generados) |
+
+Reglas que conviene saber:
+
+- Cada persona solo ve las empresas donde es miembro. Lo garantiza la base de datos (RLS), no solo la página.
+- Las fotos van a un almacenamiento privado, en `<empresa>/<empleado>.jpg`, ya recortadas a 600 × 800 en el navegador. Se muestran con ligas temporales.
+- Al importar, quien ya existe se actualiza: se reconoce por número de empleado o, si no tiene, por nombre.
+- Una foto se asigna por el archivo indicado en el Excel, luego por número de empleado y luego por nombre completo. Si hay duda, se queda sin asignar para acomodarla a mano.
+- `src/middleware.ts` no se renombra a `proxy.ts` aunque Next lo sugiera: con OpenNext en Cloudflare el proxy de Node responde 500 a cualquier visita que traiga cookies.
+
+### Configurar Supabase (una vez)
+
+Las tablas ya están aplicadas en el proyecto `lagafeteria`. Falta esto en el panel de Supabase:
+
+1. **Authentication, URL Configuration.** Site URL: la del sitio. Redirect URLs: `https://TU-DOMINIO/auth/confirmar` y `http://localhost:3000/**`.
+2. **Authentication, Emails.** En las plantillas "Magic Link" y "Confirm signup", pega el contenido de `supabase/templates/acceso.html` y pon de asunto "Tu acceso a LaGafetería". Sin esto la liga funciona, pero el correo no trae el código.
+3. **Authentication, Emails, SMTP.** Conecta Resend. El correo integrado de Supabase solo manda unos cuantos mensajes por hora.
+4. **Authentication, Sign In / Providers (opcional).** Activa Google o Azure (Microsoft) y agrégalo en `NEXT_PUBLIC_AUTH_PROVEEDORES`.
+5. En `.env.local` y en la compilación para Cloudflare: `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (Project Settings, API Keys).
+
+### Base de datos local
+
+Con Docker abierto:
+
+```bash
+npx supabase start           # levanta Supabase local y aplica las migraciones
+npx supabase status          # muestra la URL y la llave para .env.local
+npx supabase migration new nombre_del_cambio
+npx supabase migration up    # aplica migraciones nuevas
+npx supabase gen types typescript --local > src/lib/supabase/tipos.ts
+npx supabase db push         # aplica las migraciones al proyecto real (pide `supabase link`)
+```
+
+Los correos de acceso locales llegan a http://127.0.0.1:54324.
+
 ## Dónde vive cada cosa
 
 | Qué | Dónde |
@@ -77,7 +126,8 @@ Al cambiar contenido, actualiza `actualizado` en `src/lib/site.ts` (alimenta `la
 - Correo de cotizaciones: verificar el dominio en Resend y cargar `RESEND_API_KEY` (y `RESEND_FROM` si aplica).
 - Proteger `/api/cotizacion` contra abuso antes de lanzar (regla de rate limiting en Cloudflare o Turnstile). Hoy valida origen, formato y un campo trampa.
 - Revisión del aviso de privacidad por una persona abogada. Está adaptado del aviso de Figalo y nombra proveedores (pagos, facturación, talleres, paquetería) que aún no están contratados.
-- La plataforma de cuenta y los gafetes digitales se describen en el sitio, pero todavía no están construidos. Esto incluye predeterminados, pedido abierto con aviso, diseños por reglas y campos a la medida con plantilla de Excel.
+- Terminar de configurar Supabase para la plataforma (ver "Configurar Supabase").
+- De la plataforma falta: invitar a más personas a la empresa, liga por empleado para que suba sus datos, editor de diseño y diseños por reglas, pedidos con pago (Stripe) y factura, pedido abierto con aviso, paquetes con saldo y gafetes digitales.
 - Entrega exprés: aparece como "Próximamente" en el cotizador y en las preguntas frecuentes.
 - En Cloudflare, revisar que el bloqueo de bots de IA y el `robots.txt` administrado estén apagados para el dominio; si no, anulan lo que define el sitio.
 - Dar de alta el sitio en Google Search Console y Bing Webmaster Tools y enviar el sitemap.
