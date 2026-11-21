@@ -40,7 +40,8 @@ export function TablaPaquetes() {
       </div>
       <p className="mt-3 text-sm text-gris">
         Precios {notaIva}, para gafetes impresos a una cara en PVC estándar. Los gafetes del paquete
-        se pueden usar durante {paqueteVigenciaMeses} meses.
+        se pueden usar durante {paqueteVigenciaMeses} meses. Los paquetes no son reembolsables y se
+        pueden transferir a la cuenta de otra empresa.
       </p>
     </div>
   );

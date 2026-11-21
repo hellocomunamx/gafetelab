@@ -28,6 +28,8 @@ export const site = {
   entrega: "2 semanas",
   /** Días que se respeta el precio de una cotización descargada o enviada. */
   vigenciaCotizacionDias: 15,
+  /** Días después del pedido en los que todavía se puede pedir la factura. */
+  plazoFacturaDias: 60,
   /** Fecha de la última revisión de contenido (se muestra y va al sitemap). */
   actualizado: "2026-11-21",
   /** Pon NEXT_PUBLIC_NOINDEX=true para que ningún buscador indexe (por ejemplo, en pruebas). */

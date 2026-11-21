@@ -49,6 +49,10 @@ export const faqsGenerales: Faq[] = [
     respuesta: `Sí se puede, y para que el envío no pese más que el gafete existen los paquetes prepagados. Compras, por ejemplo, ${paquetes[0].piezas} gafetes por ${pesos(paquetes[0].piezas * paquetes[0].porPieza)} con ${paquetes[0].envios} envíos incluidos, usas los que necesitas hoy y el resto queda a tu favor durante ${paqueteVigenciaMeses} meses. También puedes dejar un pedido abierto en tu plataforma e ir sumando altas y reposiciones hasta completar un envío.`,
   },
   {
+    pregunta: "¿Los paquetes prepagados se pueden reembolsar o transferir?",
+    respuesta: `Los paquetes no son reembolsables, ni completos ni por la parte que no se haya usado. Sí se pueden transferir: si ya no vas a usar tus gafetes, puedes pasarlos sin costo a la cuenta de otra empresa. Tienen una vigencia de ${paqueteVigenciaMeses} meses.`,
+  },
+  {
     pregunta: "¿Cuánto tarda en llegar mi pedido?",
     respuesta: `${entregaTexto.charAt(0).toUpperCase() + entregaTexto.slice(1)}, contadas desde que confirmas el pago y apruebas la vista previa de tus gafetes. Los gafetes digitales no llevan envío: se activan en tu plataforma.`,
   },
@@ -111,8 +115,7 @@ export const faqsGenerales: Faq[] = [
   },
   {
     pregunta: "¿Dan factura?",
-    respuesta:
-      "Sí. Al hacer tu pedido capturas tus datos fiscales y recibes tu factura (CFDI) por correo.",
+    respuesta: `Sí. Al hacer tu pedido capturas tus datos fiscales y recibes tu factura (CFDI) por correo. Puedes pedirla dentro de los ${site.plazoFacturaDias} días posteriores a tu pedido. Revisa bien tus datos antes de confirmar, porque una factura emitida no se puede editar.`,
   },
   {
     pregunta: "¿Cuál es la diferencia entre gafete, credencial y portagafete?",
