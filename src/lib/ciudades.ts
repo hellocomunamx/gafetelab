@@ -107,7 +107,7 @@ export const ciudades: Ciudad[] = [
     estado: "Sonora",
     enTexto: "en Ciudad Obregón",
     contexto:
-      "Ciudad Obregón es nuestra casa. Aquí atendemos a comercios, agroindustria, clínicas, escuelas y restaurantes del Valle del Yaqui, con la ventaja de estar en la misma ciudad.",
+      "Ciudad Obregón y el Valle del Yaqui reúnen agroindustria, comercio, clínicas, escuelas y restaurantes. Son equipos que cambian con la temporada y necesitan identificar pronto a quien entra.",
     giros: ["tiendas-y-retail", "restaurantes", "clinicas-y-consultorios", "escuelas"],
   },
   {

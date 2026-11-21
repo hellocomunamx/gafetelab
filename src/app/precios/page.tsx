@@ -1,11 +1,15 @@
-import { Calculadora } from "@/components/Calculadora";
 import { Faq } from "@/components/Faq";
 import { JsonLd } from "@/components/JsonLd";
 import { TablaPrecios } from "@/components/TablaPrecios";
-import { Cierre, Portada, Seccion } from "@/components/ui";
+import { Boton, Cierre, CTA_TEXTO, Portada, Seccion } from "@/components/ui";
 import type { Faq as FaqItem } from "@/lib/faqs";
+import { modalidadesDetalle } from "@/lib/plataforma";
 import {
   cotizar,
+  digitalMaximo,
+  digitalMinimo,
+  envio,
+  extraDigital,
   extraDosCaras,
   notaIva,
   pesos,
@@ -13,56 +17,66 @@ import {
   precioMinimo,
   tramos,
 } from "@/lib/precios";
-import { migas, paginaFaq, producto } from "@/lib/schema";
+import { migas, paginaFaq, producto, productoDigital } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
 import { entregaTexto } from "@/lib/site";
 
 const ruta = "/precios";
-const ruta_migas = [{ nombre: "Precios", ruta }];
+const rutaMigas = [{ nombre: "Precios", ruta }];
 
 export const metadata = metadatos({
   titulo: "Precios de gafetes y credenciales para empleados",
-  descripcion: `Gafetes y credenciales de PVC desde ${pesos(precioMinimo)} por pieza (${notaIva}). Tabla de precios por cantidad, costo de frente y vuelta y calculadora. Sin pedido mínimo y con envío a todo México.`,
+  descripcion: `Gafetes y credenciales impresos en PVC desde ${pesos(precioMinimo)} por pieza y digitales desde ${pesos(digitalMinimo)} (${notaIva}). Sin suscripción ni pedido mínimo. Envío a todo México por ${pesos(envio.tarifa)}, gratis desde ${pesos(envio.gratisDesde)}.`,
   ruta,
 });
 
-const ejemplo50 = cotizar(50, false);
-const ejemplo150 = cotizar(150, true);
+const ejemplo50 = cotizar(50);
+const ejemplo150 = cotizar(150, { dosCaras: true });
+const ejemploAmbos = cotizar(50, { modalidad: "ambos" });
 
 const faqsPrecios: FaqItem[] = [
   {
     pregunta: "¿Cuánto cuestan 50 gafetes para empleados?",
-    respuesta: `${ejemplo50.piezas} gafetes a una cara cuestan ${pesos(ejemplo50.subtotal)} pesos ${notaIva}: ${pesos(ejemplo50.porPieza)} por pieza. El envío se cotiza aparte según tu código postal.`,
+    respuesta: `${ejemplo50.piezas} gafetes impresos a una cara cuestan ${pesos(ejemplo50.subtotal)} pesos ${notaIva}: ${pesos(ejemplo50.porPieza)} por pieza. ${ejemplo50.envioGratis ? "Ese pedido ya tiene envío gratis" : `El envío cuesta ${pesos(ejemplo50.envio)}`}, así que el total con IVA es de ${pesos(ejemplo50.total)}.`,
   },
   {
     pregunta: "¿Cuánto cuesta imprimir por frente y vuelta?",
     respuesta: `${pesos(extraDosCaras)} pesos adicionales por pieza. Por ejemplo, ${ejemplo150.piezas} gafetes por frente y vuelta cuestan ${pesos(ejemplo150.porPieza)} cada uno, ${pesos(ejemplo150.subtotal)} en total ${notaIva}.`,
   },
   {
-    pregunta: "¿El diseño o el uso de la plataforma tienen costo?",
+    pregunta: "¿Cuánto cuesta el gafete digital?",
+    respuesta: `Solo digital cuesta entre ${pesos(digitalMinimo)} y ${pesos(digitalMaximo)} por pieza, según la cantidad. Si lo pides junto con el gafete impreso, suma ${pesos(extraDigital)} por pieza: ${ejemploAmbos.piezas} gafetes impresos con su versión digital cuestan ${pesos(ejemploAmbos.porPieza)} cada uno.`,
+  },
+  {
+    pregunta: "¿Hay suscripción, mensualidad o costo por usar la plataforma?",
     respuesta:
-      "No. Diseñar tu gafete, usar plantillas, cargar tu Excel y revisar la vista previa es gratis. Solo pagas las piezas impresas y el envío.",
+      "No. Pagas una sola vez por cada gafete. Diseñar, usar plantillas, cargar tu Excel, revisar la vista previa y administrar altas, bajas, reposiciones, desactivaciones y reactivaciones en tu plataforma no tiene costo.",
+  },
+  {
+    pregunta: "¿Cuánto cuesta el envío?",
+    respuesta: `${pesos(envio.tarifa)} a cualquier parte de México, ${notaIva}. Es gratis en pedidos desde ${pesos(envio.gratisDesde)} antes de IVA. Los gafetes digitales no llevan envío.`,
   },
   {
     pregunta: "¿Por qué baja el precio con la cantidad?",
-    respuesta: `Porque preparar e imprimir un pedido tiene un costo fijo que se reparte entre más piezas. Por eso un gafete suelto cuesta ${pesos(precioMaximo)} y, a partir de ${tramos[tramos.length - 1].desde} piezas, cada uno cuesta ${pesos(precioMinimo)}.`,
+    respuesta: `Porque preparar e imprimir un pedido tiene un costo fijo que se reparte entre más piezas. Por eso un gafete impreso suelto cuesta ${pesos(precioMaximo)} y, a partir de ${tramos[tramos.length - 1].desde} piezas, cada uno cuesta ${pesos(precioMinimo)}.`,
   },
   {
     pregunta: "¿Qué incluye el precio por pieza?",
-    respuesta: `La tarjeta de PVC tamaño CR80 impresa a color y personalizada con los datos de cada empleado. La entrega es de ${entregaTexto}.`,
+    respuesta: `En el impreso, la tarjeta de PVC tamaño CR80 a color, personalizada con los datos de cada empleado y entregada en ${entregaTexto}. En el digital, el gafete en el celular con su código QR verificable. En ambos casos, el acceso a tu plataforma.`,
   },
 ];
 
 export default function Precios() {
   return (
     <>
-      <Portada migas={ruta_migas} titulo="Precios de gafetes y credenciales para empleados">
+      <Portada migas={rutaMigas} titulo="Precios de gafetes y credenciales para empleados">
         <p>
-          Un gafete o credencial de PVC cuesta entre{" "}
+          Un gafete o credencial impreso en PVC cuesta entre{" "}
           <strong className="text-tinta">
             {pesos(precioMinimo)} y {pesos(precioMaximo)} pesos por pieza
           </strong>{" "}
-          a una cara, {notaIva}, según la cantidad. No hay pedido mínimo y el software es gratis.
+          a una cara y uno digital entre {pesos(digitalMinimo)} y {pesos(digitalMaximo)}, {notaIva},
+          según la cantidad. Se paga una sola vez: no hay suscripción ni pedido mínimo.
         </p>
       </Portada>
 
@@ -71,14 +85,26 @@ export default function Precios() {
         <ul className="mt-5 list-disc space-y-1 pl-5 text-gris">
           <li>Precios en pesos mexicanos, {notaIva}.</li>
           <li>Frente y vuelta: {pesos(extraDosCaras)} más por pieza.</li>
-          <li>El envío se calcula según tu código postal y se muestra antes de pagar.</li>
+          <li>
+            Envío a todo México: {pesos(envio.tarifa)}; gratis en pedidos desde{" "}
+            {pesos(envio.gratisDesde)} antes de IVA.
+          </li>
+          <li>Entrega estándar: {entregaTexto}. Entrega exprés: próximamente.</li>
         </ul>
+        <div className="mt-8">
+          <Boton href="/cotizar">{CTA_TEXTO}</Boton>
+        </div>
       </Seccion>
 
-      <Seccion titulo="Calcula tu pedido" fondo id="calculadora">
-        <div className="max-w-3xl">
-          <Calculadora />
-        </div>
+      <Seccion titulo="¿Qué modalidad me conviene?" fondo>
+        <ul className="grid gap-5 md:grid-cols-3">
+          {modalidadesDetalle.map((m) => (
+            <li key={m.titulo} className="rounded-tarjeta bg-white p-6">
+              <h3 className="text-xl font-bold">{m.titulo}</h3>
+              <p className="mt-2 text-gris">{m.texto}</p>
+            </li>
+          ))}
+        </ul>
       </Seccion>
 
       <Seccion titulo="Preguntas sobre precios">
@@ -87,10 +113,10 @@ export default function Precios() {
 
       <Cierre
         titulo="El precio completo, desde el principio"
-        texto="Dinos cuántos gafetes necesitas y a dónde van, y te decimos el total con envío."
+        texto="Envío, IVA, total y tiempo de entrega a la vista, sin dejar tus datos."
       />
 
-      <JsonLd data={[producto(), paginaFaq(faqsPrecios), migas(ruta_migas)]} />
+      <JsonLd data={[producto(), productoDigital(), paginaFaq(faqsPrecios), migas(rutaMigas)]} />
     </>
   );
 }

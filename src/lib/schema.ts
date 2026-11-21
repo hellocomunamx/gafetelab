@@ -4,8 +4,16 @@
  * asistentes de IA entiendan que todo habla de la misma organización.
  */
 import type { Faq } from "./faqs";
-import { extraDosCaras, precioMaximo, precioMinimo, tramos } from "./precios";
-import { site, urlAbsoluta } from "./site";
+import {
+  digitalMaximo,
+  digitalMinimo,
+  envio,
+  extraDosCaras,
+  precioMaximo,
+  precioMinimo,
+  tramos,
+} from "./precios";
+import { figalo, site, urlAbsoluta } from "./site";
 
 const ORG_ID = `${site.url}/#organizacion`;
 const WEB_ID = `${site.url}/#sitio`;
@@ -25,15 +33,16 @@ export function organizacion() {
     email: site.correo,
     address: {
       "@type": "PostalAddress",
-      addressLocality: site.ciudadBase,
       addressRegion: site.estadoBase,
       addressCountry: site.pais,
     },
     areaServed: { "@type": "Country", name: "México" },
+    parentOrganization: { "@type": "Organization", name: figalo.nombre, url: figalo.url },
     knowsAbout: [
       "gafetes para empleados",
       "credenciales para empleados",
       "credenciales de PVC",
+      "gafetes digitales con código QR",
       "identificación de personal",
     ],
     contactPoint: {
@@ -79,6 +88,36 @@ export function producto() {
       lowPrice: precioMinimo,
       highPrice: precioMaximo + extraDosCaras,
       offerCount: tramos.length * 2,
+      availability: "https://schema.org/InStock",
+      seller: { "@id": ORG_ID },
+      areaServed: { "@type": "Country", name: "México" },
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        shippingRate: { "@type": "MonetaryAmount", value: envio.tarifa, currency: site.moneda },
+        shippingDestination: { "@type": "DefinedRegion", addressCountry: site.pais },
+      },
+    },
+  };
+}
+
+export function productoDigital() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "@id": `${site.url}/#producto-digital`,
+    name: "Gafetes y credenciales digitales para empleados",
+    description:
+      "Gafete o credencial digital para el celular de cada empleado, con código QR que permite verificar que la persona sigue vigente. La empresa decide qué información muestra y puede desactivarlo o reactivarlo.",
+    category: "Gafetes y credenciales de identificación",
+    image: urlAbsoluta("/marca/og-image.png"),
+    brand: { "@type": "Brand", name: site.nombre },
+    url: urlAbsoluta("/precios"),
+    offers: {
+      "@type": "AggregateOffer",
+      priceCurrency: site.moneda,
+      lowPrice: digitalMinimo,
+      highPrice: digitalMaximo,
+      offerCount: tramos.length,
       availability: "https://schema.org/InStock",
       seller: { "@id": ORG_ID },
       areaServed: { "@type": "Country", name: "México" },

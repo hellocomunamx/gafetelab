@@ -7,7 +7,8 @@ import { Boton, Cierre, Contenedor, CTA_TEXTO, Seccion } from "@/components/ui";
 import { faqsGenerales } from "@/lib/faqs";
 import { giros } from "@/lib/giros";
 import { formasDeEmpezar, pasos } from "@/lib/pasos";
-import { notaIva, pesos, precioMinimo } from "@/lib/precios";
+import { accionesPlataforma, modalidadesDetalle } from "@/lib/plataforma";
+import { envio, notaIva, pesos, precioMinimo } from "@/lib/precios";
 import { paginaFaq, producto } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
 import { entregaTexto, site } from "@/lib/site";
@@ -35,7 +36,7 @@ export default function Inicio() {
             </h1>
             <p className="mt-5 max-w-xl text-lg text-gris">
               Sube tu Excel, revisa cada gafete y conoce el precio con envío desde el primer paso.
-              Imprimimos en PVC y enviamos a todo México en {entregaTexto}.
+              Impresos en PVC, digitales o los dos, con envíos a todo México.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Boton href="/cotizar">{CTA_TEXTO}</Boton>
@@ -60,10 +61,10 @@ export default function Inicio() {
         <Contenedor>
           <dl className="grid grid-cols-2 gap-x-6 gap-y-8 py-10 lg:grid-cols-4">
             {[
-              { dato: `Desde ${pesos(precioMinimo)}`, detalle: `por pieza, ${notaIva}` },
-              { dato: "Desde 1 pieza", detalle: "sin pedido mínimo" },
-              { dato: entregaTexto.replace(" días hábiles", " días"), detalle: "hábiles de entrega" },
-              { dato: "Todo México", detalle: "envío por paquetería" },
+              { dato: `Desde ${pesos(precioMinimo)}`, detalle: `por pieza impresa, ${notaIva}` },
+              { dato: "Desde 1 pieza", detalle: "sin pedido mínimo ni suscripción" },
+              { dato: "Todo México", detalle: `envío gratis desde ${pesos(envio.gratisDesde)}` },
+              { dato: entregaTexto, detalle: "de entrega" },
             ].map((d) => (
               <div key={d.detalle}>
                 <dt className="font-titulos text-2xl font-extrabold sm:text-3xl">{d.dato}</dt>
@@ -101,17 +102,48 @@ export default function Inicio() {
         </ul>
       </Seccion>
 
-      <Seccion titulo="¿Cuánto cuestan los gafetes y credenciales?">
+      <Seccion titulo="Impreso, digital o los dos">
+        <ul className="grid gap-5 md:grid-cols-3">
+          {modalidadesDetalle.map((m) => (
+            <li key={m.titulo} className="rounded-tarjeta border border-linea p-6">
+              <h3 className="text-xl font-bold">{m.titulo}</h3>
+              <p className="mt-2 text-gris">{m.texto}</p>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-6 max-w-2xl text-gris">
+          Tú decides qué información lleva cada gafete: nombre, puesto, fotografía, número de
+          empleado, área, vigencia o código QR. Se paga una sola vez por gafete, sin suscripción.
+        </p>
+      </Seccion>
+
+      <Seccion titulo="¿Cuánto cuestan los gafetes y credenciales?" fondo>
         <p className="-mt-2 mb-6 max-w-2xl text-lg text-gris">
-          El precio depende solo de cuántas piezas pides. El software para diseñar y cargar tus
-          datos es gratis. Precios en pesos mexicanos, {notaIva}.
+          El precio depende de la modalidad y de cuántas piezas pides. Precios en pesos mexicanos,{" "}
+          {notaIva}. El envío cuesta {pesos(envio.tarifa)} a todo México y es gratis desde{" "}
+          {pesos(envio.gratisDesde)}.
         </p>
         <TablaPrecios />
         <p className="mt-5">
-          <Link href="/precios" className="font-semibold text-rojo underline underline-offset-4">
-            Ver precios y calcular mi pedido
+          <Link href="/cotizar" className="font-semibold text-rojo underline underline-offset-4">
+            Cotizar mi pedido con envío e IVA
           </Link>
         </p>
+      </Seccion>
+
+      <Seccion titulo={`Tu plataforma de ${site.nombre}`}>
+        <p className="-mt-2 mb-8 max-w-2xl text-lg text-gris">
+          Al crear tu cuenta tienes acceso a tu plataforma, donde tu equipo de Recursos Humanos
+          administra los gafetes de todos, sin costo adicional.
+        </p>
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {accionesPlataforma.map((a) => (
+            <li key={a.titulo} className="rounded-tarjeta bg-papel p-5">
+              <h3 className="text-lg font-bold">{a.titulo}</h3>
+              <p className="mt-1 text-sm text-gris">{a.texto}</p>
+            </li>
+          ))}
+        </ul>
       </Seccion>
 
       <Seccion titulo="Gafetes y credenciales para tu giro" fondo>

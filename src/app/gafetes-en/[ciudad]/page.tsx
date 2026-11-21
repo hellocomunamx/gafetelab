@@ -9,7 +9,7 @@ import { ciudadPorSlug, ciudades } from "@/lib/ciudades";
 import type { Faq as FaqItem } from "@/lib/faqs";
 import { giroPorSlug } from "@/lib/giros";
 import { pasos } from "@/lib/pasos";
-import { notaIva, pesos, precioMaximo, precioMinimo } from "@/lib/precios";
+import { envio, notaIva, pesos, precioMaximo, precioMinimo } from "@/lib/precios";
 import { migas, paginaFaq, servicio } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
 import { entregaTexto, site } from "@/lib/site";
@@ -22,7 +22,7 @@ export function generateStaticParams() {
 }
 
 function descripcionDe(nombre: string) {
-  return `Gafetes y credenciales para empleados con envío a ${nombre} en ${entregaTexto}. Desde ${pesos(precioMinimo)} por pieza, sin pedido mínimo: sube tu Excel, revisa cada gafete y recibe en tu empresa.`;
+  return `Gafetes y credenciales para empleados con envío a ${nombre} en ${entregaTexto}. Desde ${pesos(precioMinimo)} por pieza, sin pedido mínimo y con envío gratis desde ${pesos(envio.gratisDesde)}: sube tu Excel, revisa cada gafete y recibe en tu empresa.`;
 }
 
 export async function generateMetadata({
@@ -47,24 +47,21 @@ export default async function PaginaCiudad({ params }: PageProps<"/gafetes-en/[c
     { nombre: "Por ciudad", ruta: "/gafetes-en" },
     { nombre: ciudad.nombre, ruta },
   ];
-  const esBase = ciudad.nombre === site.ciudadBase;
   const girosLocales = ciudad.giros.map(giroPorSlug).filter((g) => g !== undefined);
   const otras = ciudades.filter((c) => c.slug !== ciudad.slug);
 
   const faqs: FaqItem[] = [
     {
       pregunta: `¿Envían gafetes y credenciales a ${ciudad.nombre}?`,
-      respuesta: esBase
-        ? `Sí. ${ciudad.nombre} es nuestra ciudad, así que la entrega es local.`
-        : `Sí. Enviamos por paquetería a ${ciudad.nombre}, ${ciudad.estado}, desde ${site.ciudadBase}, ${site.estadoBase}. El costo del envío aparece en tu cotización desde el primer paso.`,
+      respuesta: `Sí. Enviamos por paquetería a ${ciudad.nombre}, ${ciudad.estado}, desde ${site.estadoBase}. El envío cuesta ${pesos(envio.tarifa)} y es gratis en pedidos desde ${pesos(envio.gratisDesde)} antes de IVA.`,
     },
     {
       pregunta: `¿Cuánto tardan en llegar los gafetes a ${ciudad.nombre}?`,
-      respuesta: `De ${entregaTexto} a partir de que confirmas el pago y apruebas la vista previa de tus gafetes.`,
+      respuesta: `En ${entregaTexto}, contadas desde que confirmas el pago y apruebas la vista previa de tus gafetes. Los gafetes digitales se activan en tu plataforma, sin envío.`,
     },
     {
       pregunta: `¿Cuánto cuestan los gafetes y credenciales ${ciudad.enTexto}?`,
-      respuesta: `Lo mismo que en todo México: entre ${pesos(precioMinimo)} y ${pesos(precioMaximo)} pesos por pieza a una cara (${notaIva}), según la cantidad. Solo cambia el costo del envío.`,
+      respuesta: `Lo mismo que en todo México: entre ${pesos(precioMinimo)} y ${pesos(precioMaximo)} pesos por pieza a una cara (${notaIva}), según la cantidad. El envío tiene la misma tarifa a cualquier ciudad.`,
     },
     {
       pregunta: `¿Necesito ir a una sucursal ${ciudad.enTexto}?`,
@@ -77,11 +74,9 @@ export default async function PaginaCiudad({ params }: PageProps<"/gafetes-en/[c
     <>
       <Portada migas={rutaMigas} titulo={titulo}>
         <p>
-          {esBase
-            ? `Entregamos gafetes y credenciales para empleados aquí mismo, en ${ciudad.nombre}, nuestra ciudad.`
-            : `Enviamos gafetes y credenciales para empleados a ${ciudad.nombre}, ${ciudad.estado}, en ${entregaTexto}.`}{" "}
-          Desde {pesos(precioMinimo)} por pieza, sin pedido mínimo y con el envío a la vista desde el
-          primer paso.
+          Enviamos gafetes y credenciales para empleados a {ciudad.nombre}, {ciudad.estado}, en{" "}
+          {entregaTexto}. Desde {pesos(precioMinimo)} por pieza, sin pedido mínimo y con envío gratis
+          desde {pesos(envio.gratisDesde)}.
         </p>
       </Portada>
 
@@ -116,8 +111,8 @@ export default async function PaginaCiudad({ params }: PageProps<"/gafetes-en/[c
 
       <Seccion titulo={`Precios de gafetes y credenciales ${ciudad.enTexto}`}>
         <p className="-mt-2 mb-6 max-w-2xl text-lg text-gris">
-          Precios por pieza en pesos mexicanos, {notaIva}. El envío a {ciudad.nombre} se cotiza
-          aparte, según tu código postal.
+          Precios por pieza en pesos mexicanos, {notaIva}. El envío a {ciudad.nombre} cuesta{" "}
+          {pesos(envio.tarifa)} y es gratis en pedidos desde {pesos(envio.gratisDesde)}.
         </p>
         <TablaPrecios />
       </Seccion>

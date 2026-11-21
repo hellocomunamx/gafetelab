@@ -1,7 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ciudades } from "@/lib/ciudades";
 import { giros } from "@/lib/giros";
-import { site } from "@/lib/site";
+import { figalo, site } from "@/lib/site";
 import { Logo } from "./Logo";
 import { Contenedor } from "./ui";
 
@@ -14,8 +15,8 @@ export function Pie() {
         <div>
           <Logo inverso />
           <p className="mt-4 text-sm text-white/70">
-            Gafetes y credenciales para empleados, con envío a todo México desde {site.ciudadBase},{" "}
-            {site.estadoBase}.
+            Gafetes y credenciales para empleados, impresos y digitales, con envíos a todo México
+            desde {site.estadoBase}.
           </p>
           <p className="mt-3 text-sm">
             <a href={`mailto:${site.correo}`} className="underline hover:text-rojo-claro">
@@ -68,9 +69,26 @@ export function Pie() {
         </nav>
       </Contenedor>
       <div className="border-t border-white/10">
-        <Contenedor className="py-5 text-xs text-white/60">
-          © {site.actualizado.slice(0, 4)} {site.nombre}. Hecho en {site.ciudadBase}, {site.estadoBase},
-          México.
+        <Contenedor className="flex flex-col gap-3 py-5 text-xs text-white/60 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            © {site.actualizado.slice(0, 4)} {site.nombre}. Hecho en {site.estadoBase}, México.
+          </p>
+          <a
+            href={figalo.url}
+            target="_blank"
+            rel="noopener"
+            className="inline-flex items-center gap-1.5 hover:text-white"
+          >
+            Powered by
+            <Image
+              src="/marca/figalo-isotipo-inverso.svg"
+              alt=""
+              width={18}
+              height={18}
+              unoptimized
+            />
+            <span className="font-semibold text-white">{figalo.nombre}</span>
+          </a>
         </Contenedor>
       </div>
     </footer>

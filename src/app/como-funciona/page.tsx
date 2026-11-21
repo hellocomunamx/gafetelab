@@ -2,9 +2,10 @@ import { Etiqueta } from "@/components/Etiqueta";
 import { JsonLd } from "@/components/JsonLd";
 import { Cierre, Portada, Seccion } from "@/components/ui";
 import { formasDeEmpezar, pasos } from "@/lib/pasos";
+import { accionesPlataforma } from "@/lib/plataforma";
 import { comoHacerlo, migas } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
-import { entregaTexto } from "@/lib/site";
+import { entregaTexto, site } from "@/lib/site";
 
 const ruta = "/como-funciona";
 const rutaMigas = [{ nombre: "Cómo funciona", ruta }];
@@ -93,6 +94,21 @@ export default function ComoFunciona() {
             <Etiqueta nombre="tu nombre" puesto="Tu puesto" giro={2} />
           </div>
         </div>
+      </Seccion>
+
+      <Seccion titulo="¿Qué puedo hacer después, en mi cuenta?" fondo>
+        <p className="-mt-2 mb-8 max-w-2xl text-lg text-gris">
+          Una vez creada tu cuenta tienes acceso a tu plataforma de {site.nombre}. Ahí queda tu
+          equipo guardado y administras sus gafetes sin volver a empezar:
+        </p>
+        <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {accionesPlataforma.map((a) => (
+            <div key={a.titulo} className="rounded-tarjeta bg-white p-5">
+              <dt className="text-lg font-bold">{a.titulo}</dt>
+              <dd className="mt-1 text-sm text-gris">{a.texto}</dd>
+            </div>
+          ))}
+        </dl>
       </Seccion>
 
       <Cierre

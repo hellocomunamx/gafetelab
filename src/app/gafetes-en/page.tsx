@@ -20,9 +20,9 @@ export default function PorCiudad() {
     <>
       <Portada migas={rutaMigas} titulo="Gafetes y credenciales con envío a todo México">
         <p>
-          Sí enviamos a tu ciudad. Mandamos por paquetería a toda la República desde {site.ciudadBase},{" "}
-          {site.estadoBase}, en {entregaTexto}. Estas son algunas de las ciudades que
-          atendemos.
+          Sí enviamos a tu ciudad. Mandamos por paquetería a toda la República desde{" "}
+          {site.estadoBase}, en {entregaTexto}, con la misma tarifa a cualquier destino. Estas son
+          algunas de las ciudades que atendemos.
         </p>
       </Portada>
       <Seccion>
@@ -42,7 +42,7 @@ export default function PorCiudad() {
       </Seccion>
       <Cierre
         titulo="¿Tu ciudad no aparece?"
-        texto="También llegamos. Dinos tu código postal y te decimos el precio con envío."
+        texto="También llegamos. El envío cuesta lo mismo a cualquier parte de México."
       />
       <JsonLd data={migas(rutaMigas)} />
     </>

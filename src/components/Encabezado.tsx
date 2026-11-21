@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { envioGratisTexto } from "@/lib/precios";
+import { entregaTexto } from "@/lib/site";
 import { Logo } from "./Logo";
 import { Boton, Contenedor } from "./ui";
 
@@ -12,6 +14,15 @@ export const navegacion = [
 export function Encabezado() {
   return (
     <header className="sticky top-0 z-20 border-b border-linea bg-white/95 backdrop-blur">
+      <p className="bg-tinta px-4 py-1.5 text-center text-xs font-medium text-white sm:text-sm">
+        Envíos a todo México
+        <span aria-hidden className="mx-2 text-white/40">·</span>
+        <span className="text-resaltador">{envioGratisTexto}</span>
+        <span className="hidden sm:inline">
+          <span aria-hidden className="mx-2 text-white/40">·</span>
+          Entrega en {entregaTexto}
+        </span>
+      </p>
       <Contenedor className="flex h-16 items-center justify-between gap-4">
         <Link href="/" aria-label="LaGafetería, inicio" className="shrink-0">
           <Logo />

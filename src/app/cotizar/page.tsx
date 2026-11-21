@@ -1,8 +1,8 @@
-import { Calculadora } from "@/components/Calculadora";
+import { Cotizador } from "@/components/Cotizador";
 import { JsonLd } from "@/components/JsonLd";
 import { TablaPrecios } from "@/components/TablaPrecios";
 import { Portada, Seccion } from "@/components/ui";
-import { notaIva } from "@/lib/precios";
+import { envio, notaIva, pesos } from "@/lib/precios";
 import { migas } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
 import { entregaTexto } from "@/lib/site";
@@ -12,8 +12,7 @@ const rutaMigas = [{ nombre: "Cotizar", ruta }];
 
 export const metadata = metadatos({
   titulo: "Cotiza gafetes y credenciales con envío incluido",
-  descripcion:
-    "Calcula al momento el precio de tus gafetes y credenciales para empleados según la cantidad y pide tu cotización con envío a cualquier ciudad de México. Sin pedido mínimo.",
+  descripcion: `Cotizador de gafetes y credenciales para empleados: precio por pieza, envío, IVA, total y tiempo de entrega al momento, sin dejar tus datos. Descarga tu cotización en PDF o recíbela por correo.`,
   ruta,
 });
 
@@ -22,20 +21,22 @@ export default function Cotizar() {
     <>
       <Portada migas={rutaMigas} titulo="Cotiza tus gafetes y credenciales">
         <p>
-          Escribe cuántas piezas necesitas y ve el precio al momento. Después te confirmamos el
-          envío a tu código postal. Entrega en {entregaTexto}.
+          Elige la modalidad y la cantidad, y ve al momento el precio por pieza, el envío, el IVA y
+          el total. Sin dejar tus datos y sin esperar un correo. Entrega en {entregaTexto} a todo
+          México.
         </p>
       </Portada>
 
       <Seccion>
-        <div className="grid gap-10 lg:grid-cols-[1.3fr_1fr]">
-          <Calculadora />
-          <div>
-            <h2 className="text-2xl font-extrabold">Precio por pieza</h2>
-            <p className="mt-2 mb-4 text-gris">Pesos mexicanos, {notaIva}.</p>
-            <TablaPrecios />
-          </div>
-        </div>
+        <Cotizador />
+      </Seccion>
+
+      <Seccion titulo="Precio por pieza según la cantidad" fondo>
+        <p className="-mt-2 mb-6 max-w-2xl text-gris">
+          Pesos mexicanos, {notaIva}. Envío de {pesos(envio.tarifa)} a todo México, gratis desde{" "}
+          {pesos(envio.gratisDesde)}.
+        </p>
+        <TablaPrecios />
       </Seccion>
 
       <JsonLd data={migas(rutaMigas)} />
