@@ -65,7 +65,7 @@ export default async function PaginaGiro({ params }: PageProps<"/gafetes-para/[g
                 </li>
               ))}
             </ul>
-            <p className="mt-6 max-w-2xl rounded-gl border-l-4 border-resaltador bg-papel p-5">
+            <p className="mt-6 max-w-2xl rounded-tarjeta border-l-4 border-resaltador bg-papel p-5">
               <strong>Consejo:</strong> {giro.consejo}
             </p>
           </div>
@@ -78,13 +78,13 @@ export default async function PaginaGiro({ params }: PageProps<"/gafetes-para/[g
       <Seccion titulo={`Lo que complica los gafetes en ${giro.nombre}`} fondo>
         <ul className="grid gap-4 md:grid-cols-3">
           {giro.retos.map((r) => (
-            <li key={r} className="rounded-gl bg-white p-5">
+            <li key={r} className="rounded-tarjeta bg-white p-5">
               {r}
             </li>
           ))}
         </ul>
         <p className="mt-6 max-w-2xl text-gris">
-          En GafeteLab cargas tu lista con Excel, revisas la vista previa de cada gafete y pides
+          En LaGafetería cargas tu lista con Excel, revisas la vista previa de cada gafete y pides
           desde una pieza, así que cada ingreso tiene su gafete sin esperar al siguiente pedido
           grande.{" "}
           <Link href="/como-funciona" className="font-semibold text-rojo underline underline-offset-4">

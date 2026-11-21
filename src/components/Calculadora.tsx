@@ -16,7 +16,7 @@ export function Calculadora() {
   );
 
   return (
-    <div className="rounded-gl border border-linea bg-white p-6 shadow-sm sm:p-8">
+    <div className="rounded-tarjeta border border-linea bg-white p-6 shadow-sm sm:p-8">
       <div className="grid gap-6 sm:grid-cols-2">
         <label className="block">
           <span className="text-sm font-semibold">¿Cuántos gafetes necesitas?</span>
@@ -27,7 +27,7 @@ export function Calculadora() {
             max={100000}
             value={cantidad}
             onChange={(e) => setCantidad(Number(e.target.value))}
-            className="mt-2 w-full rounded-gl-chico border border-linea px-4 py-3 text-lg font-semibold"
+            className="mt-2 w-full rounded-tarjeta-chica border border-linea px-4 py-3 text-lg font-semibold"
           />
         </label>
         <fieldset>
@@ -39,7 +39,7 @@ export function Calculadora() {
             ].map((o) => (
               <label
                 key={o.texto}
-                className={`cursor-pointer rounded-gl-chico border px-3 py-3 text-center font-medium ${
+                className={`cursor-pointer rounded-tarjeta-chica border px-3 py-3 text-center font-medium ${
                   dosCaras === o.valor ? "border-tinta bg-tinta text-white" : "border-linea"
                 }`}
               >
@@ -57,7 +57,7 @@ export function Calculadora() {
         </fieldset>
       </div>
 
-      <div aria-live="polite" className="mt-6 rounded-gl bg-papel p-5">
+      <div aria-live="polite" className="mt-6 rounded-tarjeta bg-papel p-5">
         <p className="text-sm text-gris">
           {piezas} {piezas === 1 ? "pieza" : "piezas"} × {pesos(porPieza)} por pieza
         </p>

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { site } from "./site";
 
 type Pagina = {
-  /** Título sin el nombre de la marca; el layout agrega " | GafeteLab". */
+  /** Título sin el nombre de la marca; el layout agrega " | LaGafetería". */
   titulo: string;
   descripcion: string;
   /** Ruta canónica, por ejemplo "/precios". */
@@ -33,7 +33,7 @@ export function metadatos({ titulo, descripcion, ruta, tituloAbsoluto, noindex }
           url: "/marca/og-image.png",
           width: 1200,
           height: 630,
-          alt: "GafeteLab: gafetes y credenciales para empleados",
+          alt: "LaGafetería: gafetes y credenciales para empleados",
         },
       ],
     },

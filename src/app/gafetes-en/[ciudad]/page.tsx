@@ -92,7 +92,7 @@ export default async function PaginaCiudad({ params }: PageProps<"/gafetes-en/[c
             <li key={g.slug}>
               <Link
                 href={`/gafetes-para/${g.slug}`}
-                className="block h-full rounded-gl border border-linea p-5 transition-shadow hover:shadow-md"
+                className="block h-full rounded-tarjeta border border-linea p-5 transition-shadow hover:shadow-md"
               >
                 <h3 className="text-lg font-bold">Gafetes para {g.nombre}</h3>
                 <p className="mt-1 text-sm text-gris">{g.resumen}</p>
@@ -105,7 +105,7 @@ export default async function PaginaCiudad({ params }: PageProps<"/gafetes-en/[c
       <Seccion titulo={`¿Cómo pido mis gafetes desde ${ciudad.nombre}?`} fondo>
         <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {pasos.map((p, i) => (
-            <li key={p.titulo} className="rounded-gl bg-white p-5">
+            <li key={p.titulo} className="rounded-tarjeta bg-white p-5">
               <span className="font-mano text-3xl text-rojo">{i + 1}</span>
               <h3 className="mt-1 font-bold">{p.titulo}</h3>
               <p className="mt-1 text-sm text-gris">{p.texto}</p>

@@ -152,7 +152,7 @@ export function comoHacerlo(pasos: { titulo: string; texto: string }[]) {
   return {
     "@context": "https://schema.org",
     "@type": "HowTo",
-    name: "Cómo pedir gafetes y credenciales para empleados en GafeteLab",
+    name: "Cómo pedir gafetes y credenciales para empleados en LaGafetería",
     inLanguage: site.idioma,
     step: pasos.map((p, i) => ({
       "@type": "HowToStep",

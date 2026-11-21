@@ -6,7 +6,7 @@ import type { Faq as FaqItem } from "@/lib/faqs";
  */
 export function Faq({ faqs, abiertas = false }: { faqs: FaqItem[]; abiertas?: boolean }) {
   return (
-    <div className="divide-y divide-linea rounded-gl border border-linea bg-white">
+    <div className="divide-y divide-linea rounded-tarjeta border border-linea bg-white">
       {faqs.map((f) => (
         <details key={f.pregunta} open={abiertas} className="group px-5 py-4">
           <summary className="flex items-start justify-between gap-4">

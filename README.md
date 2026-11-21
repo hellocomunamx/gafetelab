@@ -1,4 +1,4 @@
-# GafeteLab
+# LaGafetería
 
 Tienda en línea de gafetes y credenciales para empleados. Sitio en Next.js (App Router) desplegado en Cloudflare Workers con OpenNext, con Supabase y Resend.
 
@@ -21,7 +21,7 @@ npx wrangler login
 npx wrangler secret put RESEND_API_KEY
 ```
 
-Para servir en `gafetelab.com`, quita el comentario de `routes` en `wrangler.jsonc` y corre `npm run deploy`.
+Para servir en `lagafeteria.com`, quita el comentario de `routes` en `wrangler.jsonc` y corre `npm run deploy`.
 
 ## Dónde vive cada cosa
 
@@ -34,7 +34,8 @@ Para servir en `gafetelab.com`, quita el comentario de `routes` en `wrangler.jso
 | Páginas por ciudad (`/gafetes-en/...`) | `src/lib/ciudades.ts` |
 | Pasos de "cómo funciona" | `src/lib/pasos.ts` |
 | Colores y tipografías | `src/app/globals.css`, `src/fonts/` |
-| Logos e imagen para redes | `public/marca/` |
+| Logo | `src/components/Logo.tsx` |
+| Íconos e imagen para redes | `src/app/`, `public/marca/` |
 
 Agregar un giro o una ciudad es agregar un objeto a su archivo: la página, el sitemap, el pie y `llms.txt` se actualizan solos.
 
@@ -54,6 +55,8 @@ Al cambiar contenido, actualiza `actualizado` en `src/lib/site.ts` (alimenta `la
 
 ## Pendientes antes de lanzar
 
+- Dominio definitivo: hoy es provisional (`lagafeteria.com`). Se cambia en una línea de `src/lib/site.ts`, más `routes` en `wrangler.jsonc` y `.env.example`.
+- Logo e íconos definitivos: hoy son provisionales (`src/components/Logo.tsx`, `src/app/icon.svg`, `favicon.ico`, `apple-icon.png` y `public/marca/`).
 - Confirmar precios, IVA y extra de frente y vuelta en `src/lib/precios.ts`.
 - Confirmar el correo de contacto en `src/lib/site.ts`.
 - Aviso de privacidad definitivo (`/aviso-de-privacidad` no se indexa mientras tanto).

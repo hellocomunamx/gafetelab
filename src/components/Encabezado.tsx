@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { Logo } from "./Logo";
 import { Boton, Contenedor } from "./ui";
 
 export const navegacion = [
@@ -13,15 +13,8 @@ export function Encabezado() {
   return (
     <header className="sticky top-0 z-20 border-b border-linea bg-white/95 backdrop-blur">
       <Contenedor className="flex h-16 items-center justify-between gap-4">
-        <Link href="/" aria-label="GafeteLab, inicio" className="shrink-0">
-          <Image
-            src="/marca/gafetelab-horizontal-color.svg"
-            alt="GafeteLab"
-            width={156}
-            height={48}
-            priority
-            unoptimized
-          />
+        <Link href="/" aria-label="LaGafetería, inicio" className="shrink-0">
+          <Logo />
         </Link>
         <nav aria-label="Principal" className="hidden items-center gap-7 md:flex">
           {navegacion.map((n) => (
@@ -45,10 +38,10 @@ export function Encabezado() {
             </summary>
             <nav
               aria-label="Principal, móvil"
-              className="absolute right-0 mt-2 flex w-56 flex-col rounded-gl border border-linea bg-white p-2 shadow-lg"
+              className="absolute right-0 mt-2 flex w-56 flex-col rounded-tarjeta border border-linea bg-white p-2 shadow-lg"
             >
               {navegacion.map((n) => (
-                <Link key={n.href} href={n.href} className="rounded-gl-chico px-3 py-2 font-medium hover:bg-papel">
+                <Link key={n.href} href={n.href} className="rounded-tarjeta-chica px-3 py-2 font-medium hover:bg-papel">
                   {n.texto}
                 </Link>
               ))}

@@ -3,7 +3,7 @@ import { extraDosCaras, notaIva, pesos, rangoTexto, tramos } from "@/lib/precios
 /** Tabla HTML real (no imagen): fácil de leer para personas, buscadores y asistentes de IA. */
 export function TablaPrecios() {
   return (
-    <div className="overflow-x-auto rounded-gl border border-linea bg-white">
+    <div className="overflow-x-auto rounded-tarjeta border border-linea bg-white">
       <table className="w-full min-w-[30rem] text-left">
         <caption className="sr-only">
           Precio por pieza de gafetes y credenciales de PVC según la cantidad, en pesos mexicanos,{" "}

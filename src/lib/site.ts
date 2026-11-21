@@ -1,18 +1,24 @@
 /**
+ * Dominio PROVISIONAL: cámbialo aquí cuando esté definido el definitivo.
+ * De este valor salen la URL canónica y el correo de contacto.
+ */
+const dominio = "lagafeteria.com";
+
+/**
  * Datos centrales del sitio. Todo lo que aparece en metadatos, schema.org,
  * llms.txt y textos sale de aquí: cambia un dato una vez y se actualiza en todos lados.
  */
 export const site = {
-  nombre: "GafeteLab",
-  dominio: "gafetelab.com",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://gafetelab.com",
+  nombre: "LaGafetería",
+  dominio,
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? `https://${dominio}`,
   lema: "Hola, soy ___",
   titulo: "Gafetes y credenciales para empleados en todo México",
   descripcion:
     "Gafetes y credenciales de PVC para tu equipo, sin vueltas: elige una plantilla, sube tu Excel, revisa cada gafete y conoce el precio con envío desde el primer paso. Enviamos a todo México.",
   descripcionCorta:
     "Tienda en línea de gafetes y credenciales para empleados, con envío a todo México.",
-  correo: "hola@gafetelab.com",
+  correo: `hola@${dominio}`,
   idioma: "es-MX",
   locale: "es_MX",
   pais: "MX",

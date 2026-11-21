@@ -8,7 +8,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-## GafeteLab
+## LaGafetería
 
 - Textos en español de México, tono cercano. Usar siempre "gafetes y credenciales".
 - El contenido vive en `src/lib/` (ver README). No escribir precios, tiempos de entrega ni datos de contacto directo en las páginas: importarlos de `src/lib/precios.ts` y `src/lib/site.ts`.

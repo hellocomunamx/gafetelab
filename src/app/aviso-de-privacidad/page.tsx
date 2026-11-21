@@ -8,7 +8,7 @@ const ruta = "/aviso-de-privacidad";
 // datos o fotos de empleados. Mientras tanto la página no se indexa.
 export const metadata = metadatos({
   titulo: "Aviso de privacidad",
-  descripcion: "Aviso de privacidad de GafeteLab.",
+  descripcion: "Aviso de privacidad de LaGafetería.",
   ruta,
   noindex: true,
 });

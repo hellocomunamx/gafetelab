@@ -31,7 +31,7 @@ export default function PorCiudad() {
             <li key={c.slug}>
               <Link
                 href={`${ruta}/${c.slug}`}
-                className="block h-full rounded-gl border border-linea p-5 transition-shadow hover:shadow-md"
+                className="block h-full rounded-tarjeta border border-linea p-5 transition-shadow hover:shadow-md"
               >
                 <h2 className="text-lg font-bold">{c.nombre}</h2>
                 <p className="text-sm text-gris">{c.estado}</p>

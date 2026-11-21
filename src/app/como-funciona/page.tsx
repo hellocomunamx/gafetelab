@@ -12,7 +12,7 @@ const rutaMigas = [{ nombre: "Cómo funciona", ruta }];
 export const metadata = metadatos({
   titulo: "Cómo pedir gafetes y credenciales con Excel, paso a paso",
   descripcion:
-    "Así se piden gafetes y credenciales para empleados en GafeteLab: eliges plantilla o subes tu diseño, marcas los campos variables, cargas tu Excel, revisas cada gafete y pagas con el envío a la vista.",
+    "Así se piden gafetes y credenciales para empleados en LaGafetería: eliges plantilla o subes tu diseño, marcas los campos variables, cargas tu Excel, revisas cada gafete y pagas con el envío a la vista.",
   ruta,
 });
 
@@ -27,7 +27,7 @@ const campos = [
 export default function ComoFunciona() {
   return (
     <>
-      <Portada migas={rutaMigas} titulo="¿Cómo se piden gafetes y credenciales en GafeteLab?">
+      <Portada migas={rutaMigas} titulo="¿Cómo se piden gafetes y credenciales en LaGafetería?">
         <p>
           En cinco pasos y todo en línea: eliges cómo empezar, marcas lo que cambia en cada gafete,
           subes tu Excel, revisas la vista previa de cada uno y pagas. Tu pedido llega en{" "}
@@ -64,7 +64,7 @@ export default function ComoFunciona() {
         </p>
         <ul className="grid gap-5 md:grid-cols-3">
           {formasDeEmpezar.map((f) => (
-            <li key={f.titulo} className="rounded-gl bg-white p-6">
+            <li key={f.titulo} className="rounded-tarjeta bg-white p-6">
               <h3 className="text-xl font-bold">{f.titulo}</h3>
               <p className="mt-2 text-gris">{f.texto}</p>
             </li>
@@ -80,7 +80,7 @@ export default function ComoFunciona() {
               fijos; el nombre, el puesto o la foto son variables. Tú marcas cuáles son y el sistema
               los llena con cada renglón de tu Excel.
             </p>
-            <dl className="mt-6 divide-y divide-linea rounded-gl border border-linea">
+            <dl className="mt-6 divide-y divide-linea rounded-tarjeta border border-linea">
               {campos.map((c) => (
                 <div key={c.nombre} className="grid gap-1 px-5 py-3 sm:grid-cols-[12rem_1fr]">
                   <dt className="font-semibold">{c.nombre}</dt>

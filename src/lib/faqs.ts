@@ -11,8 +11,8 @@ const tramoVolumen = tramos.find((t) => t.desde === 30) ?? tramos[2];
  */
 export const faqsGenerales: Faq[] = [
   {
-    pregunta: "¿Qué es GafeteLab?",
-    respuesta: `GafeteLab es una tienda en línea mexicana dedicada solo a gafetes y credenciales para empleados. En lugar de mandar archivos por correo, armas tu pedido paso a paso: eliges una plantilla o subes tu diseño, cargas los datos de tu equipo con Excel, revisas cada gafete en pantalla y ves el precio con envío antes de pagar.`,
+    pregunta: "¿Qué es LaGafetería?",
+    respuesta: `LaGafetería es una tienda en línea mexicana dedicada solo a gafetes y credenciales para empleados. En lugar de mandar archivos por correo, armas tu pedido paso a paso: eliges una plantilla o subes tu diseño, cargas los datos de tu equipo con Excel, revisas cada gafete en pantalla y ves el precio con envío antes de pagar.`,
   },
   {
     pregunta: "¿Cuánto cuesta un gafete o credencial para empleado?",
@@ -68,7 +68,7 @@ export const faqsGenerales: Faq[] = [
   {
     pregunta: "¿Cuál es la diferencia entre gafete, credencial y portagafete?",
     respuesta:
-      "En México, gafete y credencial suelen referirse a lo mismo: la tarjeta que identifica a una persona con su nombre, puesto y foto. El portagafete es la funda o el broche donde se coloca esa tarjeta, y el cordón es la cinta que se cuelga al cuello. GafeteLab imprime la tarjeta: tus gafetes y credenciales.",
+      "En México, gafete y credencial suelen referirse a lo mismo: la tarjeta que identifica a una persona con su nombre, puesto y foto. El portagafete es la funda o el broche donde se coloca esa tarjeta, y el cordón es la cinta que se cuelga al cuello. LaGafetería imprime la tarjeta: tus gafetes y credenciales.",
   },
   {
     pregunta: "¿Qué gafetes o credenciales no imprimen?",

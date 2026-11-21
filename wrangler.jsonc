@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "gafetelab",
+  "name": "lagafeteria",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-11-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
@@ -11,13 +11,13 @@
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "gafetelab"
+      "service": "lagafeteria"
     }
   ],
   "observability": { "enabled": true }
   // Al lanzar, quita el comentario para servir el sitio en el dominio:
   // ,"routes": [
-  //   { "pattern": "gafetelab.com", "custom_domain": true },
-  //   { "pattern": "www.gafetelab.com", "custom_domain": true }
+  //   { "pattern": "lagafeteria.com", "custom_domain": true },
+  //   { "pattern": "www.lagafeteria.com", "custom_domain": true }
   // ]
 }

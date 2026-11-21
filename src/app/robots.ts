@@ -3,7 +3,7 @@ import { site, urlAbsoluta } from "@/lib/site";
 
 /**
  * Rastreadores de buscadores con IA y asistentes. Ya quedan cubiertos por "*",
- * pero se listan para dejar explícito que GafeteLab sí quiere aparecer en sus respuestas.
+ * pero se listan para dejar explícito que LaGafetería sí quiere aparecer en sus respuestas.
  */
 const rastreadoresIA = [
   "GPTBot",

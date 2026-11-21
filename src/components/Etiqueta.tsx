@@ -26,7 +26,7 @@ export function Etiqueta({
       </div>
       <div
         aria-hidden
-        className="mx-3 mb-3 flex min-h-32 flex-col items-center justify-center rounded-gl bg-white px-4 py-5 text-center"
+        className="mx-3 mb-3 flex min-h-32 flex-col items-center justify-center rounded-tarjeta bg-white px-4 py-5 text-center"
       >
         <span className="font-mano text-5xl leading-none text-tinta">{nombre}</span>
         {puesto ? (

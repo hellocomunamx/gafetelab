@@ -74,14 +74,14 @@ export default function Inicio() {
         </Contenedor>
       </section>
 
-      <Seccion titulo="¿Cómo se piden los gafetes y credenciales en GafeteLab?">
+      <Seccion titulo="¿Cómo se piden los gafetes y credenciales en LaGafetería?">
         <p className="-mt-2 mb-8 max-w-2xl text-lg text-gris">
           En cinco pasos, todos en línea. No mandas archivos por correo ni esperas una cotización
           para saber cuánto vas a pagar.
         </p>
         <ol className="grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
           {pasos.map((p, i) => (
-            <li key={p.titulo} className="rounded-gl border border-linea p-5">
+            <li key={p.titulo} className="rounded-tarjeta border border-linea p-5">
               <span className="font-mano text-4xl text-rojo">{i + 1}</span>
               <h3 className="mt-2 text-lg font-bold">{p.titulo}</h3>
               <p className="mt-2 text-sm text-gris">{p.texto}</p>
@@ -93,7 +93,7 @@ export default function Inicio() {
       <Seccion titulo="Tres formas de empezar tu gafete" fondo>
         <ul className="grid gap-5 md:grid-cols-3">
           {formasDeEmpezar.map((f) => (
-            <li key={f.titulo} className="rounded-gl bg-white p-6">
+            <li key={f.titulo} className="rounded-tarjeta bg-white p-6">
               <h3 className="text-xl font-bold">{f.titulo}</h3>
               <p className="mt-2 text-gris">{f.texto}</p>
             </li>
@@ -120,7 +120,7 @@ export default function Inicio() {
             <li key={g.slug}>
               <Link
                 href={`/gafetes-para/${g.slug}`}
-                className="block h-full rounded-gl bg-white p-5 transition-shadow hover:shadow-md"
+                className="block h-full rounded-tarjeta bg-white p-5 transition-shadow hover:shadow-md"
               >
                 <h3 className="text-lg font-bold">{mayuscula(g.nombre)}</h3>
                 <p className="mt-1 text-sm text-gris">{g.resumen}</p>

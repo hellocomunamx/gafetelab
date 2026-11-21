@@ -31,7 +31,7 @@ export default function PorGiro() {
             <li key={g.slug}>
               <Link
                 href={`${ruta}/${g.slug}`}
-                className="block h-full rounded-gl border border-linea p-6 transition-shadow hover:shadow-md"
+                className="block h-full rounded-tarjeta border border-linea p-6 transition-shadow hover:shadow-md"
               >
                 <h2 className="text-xl font-bold">{mayuscula(g.nombre)}</h2>
                 <p className="mt-2 text-gris">{g.resumen}</p>

@@ -1,8 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ciudades } from "@/lib/ciudades";
 import { giros } from "@/lib/giros";
 import { site } from "@/lib/site";
+import { Logo } from "./Logo";
 import { Contenedor } from "./ui";
 
 const mayuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
@@ -12,13 +12,7 @@ export function Pie() {
     <footer className="bg-tinta text-white">
       <Contenedor className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <Image
-            src="/marca/gafetelab-horizontal-inverse.svg"
-            alt="GafeteLab"
-            width={156}
-            height={48}
-            unoptimized
-          />
+          <Logo inverso />
           <p className="mt-4 text-sm text-white/70">
             Gafetes y credenciales para empleados, con envío a todo México desde {site.ciudadBase},{" "}
             {site.estadoBase}.
@@ -30,9 +24,9 @@ export function Pie() {
           </p>
         </div>
 
-        <nav aria-label="GafeteLab">
+        <nav aria-label={site.nombre}>
           <h2 className="font-texto text-sm font-semibold tracking-wider text-white/60 uppercase">
-            GafeteLab
+            {site.nombre}
           </h2>
           <ul className="mt-4 space-y-2 text-sm">
             <li><Link href="/como-funciona" className="hover:text-rojo-claro">Cómo funciona</Link></li>

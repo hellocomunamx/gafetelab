@@ -3,7 +3,7 @@ import { giros } from "./giros";
 
 /** Todas las rutas públicas indexables. Alimenta el sitemap y llms.txt. */
 export const rutasPrincipales = [
-  { ruta: "/", titulo: "Inicio", prioridad: 1, resumen: "Qué es GafeteLab y cómo pedir gafetes y credenciales para empleados." },
+  { ruta: "/", titulo: "Inicio", prioridad: 1, resumen: "Qué es LaGafetería y cómo pedir gafetes y credenciales para empleados." },
   { ruta: "/precios", titulo: "Precios", prioridad: 0.9, resumen: "Tabla de precios por cantidad, costo de frente y vuelta y calculadora." },
   { ruta: "/como-funciona", titulo: "Cómo funciona", prioridad: 0.8, resumen: "Los cinco pasos para pedir: plantilla, campos variables, Excel, vista previa y pago." },
   { ruta: "/preguntas-frecuentes", titulo: "Preguntas frecuentes", prioridad: 0.8, resumen: "Respuestas sobre precios, pedido mínimo, entrega, envíos, materiales, factura y datos." },

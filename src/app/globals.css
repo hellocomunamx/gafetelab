@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Tokens de marca de GafeteLab (manual de identidad v1.0). */
+/* Tokens de marca de LaGafetería (manual de identidad v1.0). */
 @theme {
   --color-rojo: #e63b2e;
   --color-rojo-oscuro: #c92d21;
@@ -15,8 +15,8 @@
   --font-texto: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mano: var(--font-gochi), "Comic Sans MS", cursive;
 
-  --radius-gl: 14px;
-  --radius-gl-chico: 8px;
+  --radius-tarjeta: 14px;
+  --radius-tarjeta-chica: 8px;
 }
 
 html {
