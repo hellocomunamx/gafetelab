@@ -55,10 +55,22 @@ Reglas que conviene saber:
 Las tablas ya están aplicadas en el proyecto `lagafeteria`. Falta esto en el panel de Supabase:
 
 1. **Authentication, URL Configuration.** Site URL: la del sitio. Redirect URLs: `https://TU-DOMINIO/auth/confirmar` y `http://localhost:3000/**`.
-2. **Authentication, Emails.** En las plantillas "Magic Link" y "Confirm signup", pega el contenido de `supabase/templates/acceso.html` y pon de asunto "Tu acceso a LaGafetería". Sin esto la liga funciona, pero el correo no trae el código.
+2. **Authentication, Emails.** Pega cada plantilla de `supabase/templates/` con su asunto (tabla de abajo). Sin la de acceso la liga funciona, pero el correo no trae el código.
 3. **Authentication, Emails, SMTP.** Conecta Resend. El correo integrado de Supabase solo manda unos cuantos mensajes por hora.
 4. **Authentication, Sign In / Providers (opcional).** Activa Google o Azure (Microsoft) y agrégalo en `NEXT_PUBLIC_AUTH_PROVEEDORES`.
 5. En `.env.local` y en la compilación para Cloudflare: `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (Project Settings, API Keys).
+
+Plantillas de correo ([panel de Email Templates](https://supabase.com/dashboard/project/iegmamfbggjvzwktvkjx/auth/templates)):
+
+| Plantilla en Supabase | Archivo | Asunto |
+| --- | --- | --- |
+| Magic Link y Confirm signup | `acceso.html` | `Tu acceso a LaGafetería` |
+| Invite user | `invitacion.html` | `Te invitaron a LaGafetería` |
+| Change email address | `cambio-de-correo.html` | `{{ .Token }} es tu código para confirmar tu nuevo correo` |
+| Reset password | `restablecer-contrasena.html` | `{{ .Token }} es tu código para restablecer tu contraseña` |
+| Reauthentication | `verificacion.html` | `{{ .Token }} es tu código de verificación de LaGafetería` |
+
+Hoy la plataforma solo manda el correo de acceso. Los demás quedan listos para cuando existan las invitaciones, el cambio de correo o las contraseñas; sus ligas regresan a `/auth/confirmar` e inician la sesión.
 
 ### Base de datos local
 

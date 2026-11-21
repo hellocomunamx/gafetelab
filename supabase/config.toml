@@ -262,10 +262,23 @@ content_path = "./supabase/templates/acceso.html"
 subject = "Tu acceso a LaGafetería"
 content_path = "./supabase/templates/acceso.html"
 
-# Uncomment to customize email template
-# [auth.email.template.invite]
-# subject = "You have been invited"
-# content_path = "./supabase/templates/invite.html"
+# Los demás correos de Supabase, con la marca. Hoy la plataforma solo manda el de acceso;
+# estos quedan listos para cuando haya invitaciones, cambio de correo o contraseñas.
+[auth.email.template.invite]
+subject = "Te invitaron a LaGafetería"
+content_path = "./supabase/templates/invitacion.html"
+
+[auth.email.template.email_change]
+subject = "{{ .Token }} es tu código para confirmar tu nuevo correo"
+content_path = "./supabase/templates/cambio-de-correo.html"
+
+[auth.email.template.recovery]
+subject = "{{ .Token }} es tu código para restablecer tu contraseña"
+content_path = "./supabase/templates/restablecer-contrasena.html"
+
+[auth.email.template.reauthentication]
+subject = "{{ .Token }} es tu código de verificación de LaGafetería"
+content_path = "./supabase/templates/verificacion.html"
 
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
