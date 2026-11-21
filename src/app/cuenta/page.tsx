@@ -9,18 +9,20 @@ export default async function Resumen() {
   const base = () =>
     supabase.from("empleados").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id);
 
-  const [activos, bajas, sinFoto, gafetes, direcciones, fiscales] = await Promise.all([
+  const [activos, bajas, sinFoto, gafetes, direcciones, fiscales, disenos] = await Promise.all([
     contar((q) => q.eq("estatus", "activo")),
     contar((q) => q.eq("estatus", "baja")),
     contar((q) => q.neq("estatus", "baja").is("foto_path", null)),
     supabase.from("gafetes").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).then((r) => r.count ?? 0),
     supabase.from("direcciones").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).then((r) => r.count ?? 0),
     supabase.from("datos_fiscales").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).then((r) => r.count ?? 0),
+    supabase.from("disenos").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).then((r) => r.count ?? 0),
   ]);
 
   const pasos = [
     { hecho: activos + bajas > 0, texto: "Sube a tu equipo", href: "/cuenta/equipo/importar", accion: "Importar con Excel" },
     { hecho: activos > 0 && sinFoto === 0, texto: "Sube las fotos", href: "/cuenta/equipo/fotos", accion: "Subir fotos" },
+    { hecho: disenos > 0, texto: "Crea el diseño de tu gafete", href: "/cuenta/disenos/nuevo", accion: "Crear diseño" },
     { hecho: direcciones > 0, texto: "Guarda tu dirección de envío", href: "/cuenta/datos", accion: "Agregar dirección" },
     { hecho: fiscales > 0, texto: "Guarda tus datos de facturación", href: "/cuenta/datos#facturacion", accion: "Agregar datos" },
   ];

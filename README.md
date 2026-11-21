@@ -28,7 +28,7 @@ Para servir en `lagafeteria.com`, quita el comentario de `routes` en `wrangler.j
 
 ## Plataforma (cuenta, empresa y equipo)
 
-Vive en `/cuenta` y pide sesión. Lo que hay hoy: entrar con liga o código por correo (y Google o Microsoft si se activan), crear la empresa, datos de envío y de facturación guardados, equipo con filtros, altas, bajas e historial de gafetes, campos a la medida, plantilla de Excel para subir al equipo y carga masiva de fotos.
+Vive en `/cuenta` y pide sesión. Lo que hay hoy: entrar con liga o código por correo (y Google o Microsoft si se activan), crear la empresa, datos de envío y de facturación guardados, equipo con filtros, altas, bajas e historial de gafetes, campos a la medida, plantilla de Excel para subir al equipo, carga masiva de fotos y editor de diseño con vista previa de cada gafete.
 
 | Qué | Dónde |
 | --- | --- |
@@ -40,6 +40,9 @@ Vive en `/cuenta` y pide sesión. Lo que hay hoy: entrar con liga o código por 
 | Todo lo que guarda o borra (acciones del servidor) | `src/app/cuenta/acciones.ts` |
 | Lectura del Excel y sus columnas | `src/lib/cuenta/excel.ts`, `src/components/cuenta/ImportarExcel.tsx` |
 | A quién corresponde cada foto | `src/lib/cuenta/emparejar.ts`, `src/components/cuenta/SubirFotos.tsx` |
+| Editor de diseño, dibujo del gafete y panel de propiedades | `src/components/diseno/` |
+| Diseños: tipos, plantillas de arranque, acomodo del texto y limpieza de lo que llega del navegador | `src/lib/diseno/` |
+| Páginas de diseños (lista, nuevo, editor, vista previa) y sus acciones | `src/app/cuenta/disenos/` |
 | Tipos de la base de datos | `src/lib/supabase/tipos.ts` (generados) |
 
 Reglas que conviene saber:
@@ -48,6 +51,10 @@ Reglas que conviene saber:
 - Las fotos van a un almacenamiento privado, en `<empresa>/<empleado>.jpg`, ya recortadas a 600 × 800 en el navegador. Se muestran con ligas temporales.
 - Al importar, quien ya existe se actualiza: se reconoce por número de empleado o, si no tiene, por nombre.
 - Una foto se asigna por el archivo indicado en el Excel, luego por número de empleado y luego por nombre completo. Si hay duda, se queda sin asignar para acomodarla a mano.
+- Un diseño guarda sus elementos en milímetros, medidos desde la esquina superior izquierda del corte; lo que sale al sangrado lleva coordenadas negativas. El mismo dibujo (`GafeteSvg`) sirve para el editor, las miniaturas y la vista previa.
+- Si un texto no cabe en su caja, primero se parte en renglones, luego se reduce la letra hasta 55 % y al final se recorta con puntos suspensivos. El editor avisa cuando algo se recorta o se sale de la zona segura.
+- Los fondos, logos e imágenes de los diseños van al almacenamiento privado `disenos`, en `<empresa>/<archivo>`. Al guardar o borrar un diseño se eliminan los archivos de más de un día que ya no usa ningún diseño.
+- Todo diseño que llega del navegador pasa por `limpiarCara` antes de guardarse: solo admite tipos conocidos, medidas dentro del gafete y archivos de la propia empresa.
 - `src/middleware.ts` no se renombra a `proxy.ts` aunque Next lo sugiera: con OpenNext en Cloudflare el proxy de Node responde 500 a cualquier visita que traiga cookies.
 
 ### Configurar Supabase (una vez)
@@ -139,7 +146,7 @@ Al cambiar contenido, actualiza `actualizado` en `src/lib/site.ts` (alimenta `la
 - Proteger `/api/cotizacion` contra abuso antes de lanzar (regla de rate limiting en Cloudflare o Turnstile). Hoy valida origen, formato y un campo trampa.
 - Revisión del aviso de privacidad por una persona abogada. Está adaptado del aviso de Figalo y nombra proveedores (pagos, facturación, talleres, paquetería) que aún no están contratados.
 - Terminar de configurar Supabase para la plataforma (ver "Configurar Supabase").
-- De la plataforma falta: invitar a más personas a la empresa, liga por empleado para que suba sus datos, editor de diseño y diseños por reglas, pedidos con pago (Stripe) y factura, pedido abierto con aviso, paquetes con saldo y gafetes digitales.
+- De la plataforma falta: invitar a más personas a la empresa, liga por empleado para que suba sus datos, diseños por reglas (puesto, departamento, contrato), código QR real de cada persona, pedidos con pago (Stripe) y factura, pedido abierto con aviso, paquetes con saldo y gafetes digitales.
 - Entrega exprés: aparece como "Próximamente" en el cotizador y en las preguntas frecuentes.
 - En Cloudflare, revisar que el bloqueo de bots de IA y el `robots.txt` administrado estén apagados para el dominio; si no, anulan lo que define el sitio.
 - Dar de alta el sitio en Google Search Console y Bing Webmaster Tools y enviar el sitemap.

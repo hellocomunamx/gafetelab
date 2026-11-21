@@ -83,6 +83,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"disenos": {
+                  Row: {
+                    "actualizado_en": string,"creado_en": string,"empresa_id": string,"frente": NonNullable<Json>,"id": string,"nombre": string,"orientacion": string,"predeterminado": boolean,"vuelta": Json | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actualizado_en"?: string,"creado_en"?: string,"empresa_id": string,"frente"?: NonNullable<Json>,"id"?: string,"nombre": string,"orientacion"?: string,"predeterminado"?: boolean,"vuelta"?: Json | null
+                  }
+                  Update: {
+                    "actualizado_en"?: string,"creado_en"?: string,"empresa_id"?: string,"frente"?: NonNullable<Json>,"id"?: string,"nombre"?: string,"orientacion"?: string,"predeterminado"?: boolean,"vuelta"?: Json | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "disenos_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"empleados": {
                   Row: {
                     "actualizado_en": string,"creado_en": string,"datos": NonNullable<Json>,"departamento": string | null,"empresa_id": string,"estatus": string,"fecha_baja": string | null,"foto_path": string | null,"id": string,"nombre": string,"numero_empleado": string | null,"puesto": string | null,"tipo_contrato": string | null
@@ -130,6 +150,12 @@ isOneToOne: false
                   }
                   Relationships: [
                     {
+      foreignKeyName: "gafetes_diseno_id_fkey"
+      columns: ["diseno_id"]
+isOneToOne: false
+      referencedRelation: "disenos"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "gafetes_empleado_id_fkey"
       columns: ["empleado_id"]
 isOneToOne: false

@@ -71,7 +71,8 @@ export default async function Campos() {
             </div>
             <p className="mt-3 text-xs text-gris">
               El nombre siempre va en el gafete. Los campos que no van impresos se guardan igual en tu
-              plataforma. El acomodo exacto lo ajustas en el editor de diseño (próximamente).
+              plataforma. El acomodo exacto lo ajustas en{" "}
+              <Link href="/cuenta/disenos" className="underline">tus diseños</Link>.
             </p>
           </Formulario>
         </Bloque>
