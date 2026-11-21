@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+/* Tokens de marca de GafeteLab (manual de identidad v1.0). */
+@theme {
+  --color-rojo: #e63b2e;
+  --color-rojo-oscuro: #c92d21;
+  --color-rojo-claro: #ff6a5e;
+  --color-tinta: #1b1f3b;
+  --color-resaltador: #ffd23f;
+  --color-papel: #eef0f5;
+  --color-gris: #5c6178;
+  --color-linea: #dcdfea;
+
+  --font-titulos: var(--font-bricolage), "Arial Black", system-ui, sans-serif;
+  --font-texto: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mano: var(--font-gochi), "Comic Sans MS", cursive;
+
+  --radius-gl: 14px;
+  --radius-gl-chico: 8px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #fff;
+  color: var(--color-tinta);
+  font-family: var(--font-texto);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-titulos);
+  text-wrap: balance;
+}
+
+p,
+li {
+  text-wrap: pretty;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-resaltador);
+  outline-offset: 2px;
+}
+
+/* Subrayado tipo resaltador para una o dos palabras. */
+.resaltado {
+  background: linear-gradient(transparent 62%, var(--color-resaltador) 62%);
+  padding: 0 0.1em;
+}
+
+details > summary {
+  list-style: none;
+  cursor: pointer;
+}
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
