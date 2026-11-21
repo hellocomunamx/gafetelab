@@ -104,7 +104,7 @@ export function Seccion({
   id?: string;
 }) {
   return (
-    <section id={id} className={fondo ? "bg-papel" : undefined}>
+    <section id={id} className={`scroll-mt-28 ${fondo ? "bg-papel" : ""}`}>
       <Contenedor className="py-12 sm:py-16">
         {titulo ? <h2 className="mb-6 max-w-3xl text-3xl font-extrabold">{titulo}</h2> : null}
         {children}

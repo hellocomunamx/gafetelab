@@ -3,15 +3,20 @@
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import { condiciones, nombreArchivo, nuevoFolio, renglones, totales } from "@/lib/cotizacion";
+import { grosorTexto, type MaterialId, materiales } from "@/lib/materiales";
 import {
   cotizar,
   envio,
   type Modalidad,
   modalidades,
+  paquetes,
   pesos,
+  precioPaquete,
   tramos,
 } from "@/lib/precios";
 import { entregaTexto } from "@/lib/site";
+import { MuestraMaterial } from "./MuestraMaterial";
+import { VistaGafete } from "./VistaGafete";
 
 type Estado = { tipo: "inactivo" | "enviando" | "listo" | "error"; mensaje?: string };
 
@@ -25,17 +30,19 @@ export function Cotizador() {
   const [cantidad, setCantidad] = useState(30);
   const [modalidad, setModalidad] = useState<Modalidad>("impreso");
   const [dosCaras, setDosCaras] = useState(false);
+  const [material, setMaterial] = useState<MaterialId>("estandar");
   const [empresa, setEmpresa] = useState("");
   const [correo, setCorreo] = useState("");
   const [sitioWeb, setSitioWeb] = useState("");
   const [generando, setGenerando] = useState(false);
   const [estado, setEstado] = useState<Estado>({ tipo: "inactivo" });
 
-  const c = cotizar(cantidad, { modalidad, dosCaras });
+  const opciones = { modalidad, dosCaras, material };
+  const c = cotizar(cantidad, opciones);
   const siguiente = tramos.find((t) => t.desde > c.piezas);
-  const ahorro = siguiente
-    ? c.porPieza - cotizar(siguiente.desde, { modalidad, dosCaras }).porPieza
-    : 0;
+  const ahorro = siguiente ? c.porPieza - cotizar(siguiente.desde, opciones).porPieza : 0;
+  // Pedidos chicos: se sugiere el paquete prepagado más pequeño que los cubre.
+  const paquete = c.llevaEnvio && c.piezas < paquetes[0].piezas ? paquetes[0] : null;
 
   async function descargarPdf() {
     setGenerando(true);
@@ -71,7 +78,7 @@ export function Cotizador() {
       const respuesta = await fetch("/api/cotizacion", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ correo, cantidad: c.piezas, modalidad, dosCaras, empresa, sitioWeb }),
+        body: JSON.stringify({ correo, cantidad: c.piezas, ...opciones, empresa, sitioWeb }),
       });
       const datos = await respuesta.json().catch(() => ({}));
       setEstado(
@@ -133,7 +140,59 @@ export function Cotizador() {
 
         {c.llevaEnvio ? (
           <fieldset className="min-w-0">
-            <legend className="font-semibold">3. Impresión</legend>
+            <legend className="font-semibold">3. Material</legend>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {materiales.map((m) => {
+                const activo = material === m.id;
+                return (
+                  <label
+                    key={m.id}
+                    className={`flex items-center gap-3 rounded-tarjeta-chica border p-3 ${
+                      m.disponible
+                        ? activo
+                          ? "cursor-pointer border-tinta ring-2 ring-tinta"
+                          : "cursor-pointer border-linea hover:border-tinta"
+                        : "border-dashed border-linea text-gris"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="material"
+                      className="sr-only"
+                      disabled={!m.disponible}
+                      checked={activo}
+                      onChange={() => setMaterial(m.id)}
+                    />
+                    <MuestraMaterial material={m} className="w-20 shrink-0" />
+                    <span className="min-w-0">
+                      <span className="block font-semibold">{m.nombre}</span>
+                      <span className="block text-sm text-gris">{grosorTexto(m)}</span>
+                      {m.disponible ? (
+                        <span className="block text-sm font-medium">
+                          {m.extra > 0 ? `+${pesos(m.extra)} por pieza` : "Incluido"}
+                        </span>
+                      ) : (
+                        <span className="mt-0.5 inline-block rounded-full bg-resaltador px-2 py-0.5 text-xs font-semibold text-tinta">
+                          Próximamente
+                        </span>
+                      )}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+            <p className="mt-2 text-sm text-gris">
+              {c.material?.resumen}{" "}
+              <Link href="/materiales" className="underline">
+                Comparar materiales
+              </Link>
+            </p>
+          </fieldset>
+        ) : null}
+
+        {c.llevaEnvio ? (
+          <fieldset className="min-w-0">
+            <legend className="font-semibold">4. Impresión</legend>
             <div className="mt-3 grid max-w-md grid-cols-2 gap-2">
               {[
                 { valor: false, texto: "Una cara" },
@@ -155,7 +214,7 @@ export function Cotizador() {
         ) : null}
 
         <fieldset className="min-w-0">
-          <legend className="font-semibold">{c.llevaEnvio ? "4" : "3"}. Entrega</legend>
+          <legend className="font-semibold">{c.llevaEnvio ? "5" : "3"}. Entrega</legend>
           <div className="mt-3 grid max-w-md grid-cols-2 gap-2">
             <label className={opcion(true)}>
               <input type="radio" name="entrega" className="sr-only" checked readOnly />
@@ -175,9 +234,11 @@ export function Cotizador() {
             </div>
           </div>
         </fieldset>
+
+        {c.llevaEnvio ? <VistaGafete material={c.material} /> : null}
       </div>
 
-      <div className="min-w-0 rounded-tarjeta border border-linea bg-white p-6 shadow-sm sm:p-7">
+      <div className="min-w-0 self-start rounded-tarjeta border border-linea bg-white p-6 shadow-sm sm:p-7">
         <h2 className="text-xl font-extrabold">Tu cotización</h2>
         <div aria-live="polite">
           <table className="mt-4 w-full text-sm">
@@ -217,6 +278,17 @@ export function Cotizador() {
           {c.faltaParaEnvioGratis > 0 ? (
             <p className="mt-4 rounded-tarjeta-chica bg-papel px-4 py-3 text-sm">
               Te faltan <strong>{pesos(c.faltaParaEnvioGratis)}</strong> para que el envío sea gratis.
+            </p>
+          ) : null}
+
+          {paquete ? (
+            <p className="mt-3 rounded-tarjeta-chica border border-linea px-4 py-3 text-sm">
+              <strong>¿Pides de a poquitos?</strong> El paquete de {paquete.piezas} gafetes cuesta{" "}
+              {pesos(precioPaquete(paquete))} e incluye {paquete.envios} envíos: usas{" "}
+              {c.piezas === 1 ? "uno" : c.piezas} hoy y el resto queda a tu favor.{" "}
+              <Link href="/precios#paquetes" className="underline">
+                Ver paquetes
+              </Link>
             </p>
           ) : null}
 

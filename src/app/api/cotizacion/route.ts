@@ -1,5 +1,6 @@
 import { correoActivo, enviarCorreo } from "@/lib/correo";
 import { condiciones, fechaLarga, nuevoFolio, renglones, totales } from "@/lib/cotizacion";
+import { materialPara } from "@/lib/materiales";
 import { cotizar, type Modalidad, modalidades } from "@/lib/precios";
 import { site, urlAbsoluta } from "@/lib/site";
 
@@ -54,6 +55,7 @@ export async function POST(solicitud: Request) {
   const cotizacion = cotizar(Number(cuerpo.cantidad), {
     modalidad,
     dosCaras: cuerpo.dosCaras === true,
+    material: materialPara(cuerpo.material).id,
   });
 
   if (!correoActivo()) {

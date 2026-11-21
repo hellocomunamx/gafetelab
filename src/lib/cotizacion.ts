@@ -2,6 +2,7 @@
  * Datos comunes de una cotización: lo que muestran el cotizador, el PDF y el
  * correo sale de aquí, para que los tres digan exactamente lo mismo.
  */
+import { grosorTexto } from "./materiales";
 import {
   type Cotizacion,
   envio,
@@ -73,6 +74,7 @@ export function condiciones(d: DatosCotizacion): string[] {
   const lista = [
     `Modalidad: ${nombreModalidad(c.modalidad)}${c.llevaEnvio ? (c.dosCaras ? ", impresión por frente y vuelta" : ", impresión a una cara") : ""}.`,
   ];
+  if (c.material) lista.push(`Material: ${c.material.nombre}, ${grosorTexto(c.material)}, tamaño CR80.`);
   if (c.llevaEnvio) {
     lista.push(
       `Entrega estándar: ${entregaTexto} a partir de que confirmas el pago y apruebas la vista previa de tus gafetes.`,

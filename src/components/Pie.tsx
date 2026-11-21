@@ -32,6 +32,7 @@ export function Pie() {
           <ul className="mt-4 space-y-2 text-sm">
             <li><Link href="/como-funciona" className="hover:text-rojo-claro">Cómo funciona</Link></li>
             <li><Link href="/precios" className="hover:text-rojo-claro">Precios</Link></li>
+            <li><Link href="/materiales" className="hover:text-rojo-claro">Materiales y medidas</Link></li>
             <li><Link href="/cotizar" className="hover:text-rojo-claro">Cotizar</Link></li>
             <li><Link href="/preguntas-frecuentes" className="hover:text-rojo-claro">Preguntas frecuentes</Link></li>
             <li><Link href="/aviso-de-privacidad" className="hover:text-rojo-claro">Aviso de privacidad</Link></li>

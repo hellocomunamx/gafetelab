@@ -5,10 +5,9 @@
  */
 import type { Faq } from "./faqs";
 import {
-  digitalMaximo,
-  digitalMinimo,
   envio,
   extraDosCaras,
+  precioDigital,
   precioMaximo,
   precioMinimo,
   tramos,
@@ -113,11 +112,9 @@ export function productoDigital() {
     brand: { "@type": "Brand", name: site.nombre },
     url: urlAbsoluta("/precios"),
     offers: {
-      "@type": "AggregateOffer",
+      "@type": "Offer",
       priceCurrency: site.moneda,
-      lowPrice: digitalMinimo,
-      highPrice: digitalMaximo,
-      offerCount: tramos.length,
+      price: precioDigital,
       availability: "https://schema.org/InStock",
       seller: { "@id": ORG_ID },
       areaServed: { "@type": "Country", name: "México" },

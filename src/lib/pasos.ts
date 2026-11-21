@@ -9,12 +9,12 @@ export const pasos = [
   {
     titulo: "Marca lo que cambia",
     texto:
-      "Señala los campos que son distintos en cada gafete: nombre, puesto, número de empleado, fotografía o código QR.",
+      "Elige los campos que cambian en cada gafete (nombre, puesto, número de empleado, fotografía o código QR) y si van al frente o a la vuelta.",
   },
   {
     titulo: "Sube tu Excel",
     texto:
-      "Carga la lista de tu equipo o captura a las personas una por una. Cada renglón se convierte en un gafete.",
+      "Descarga la plantilla de Excel con tus campos, llénala y súbela, o captura a las personas una por una. Cada renglón se convierte en un gafete.",
   },
   {
     titulo: "Revisa cada gafete",

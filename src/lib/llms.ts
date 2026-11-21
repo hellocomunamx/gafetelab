@@ -7,19 +7,20 @@ import { faqsGenerales } from "./faqs";
 import { giros } from "./giros";
 import { pasos } from "./pasos";
 import {
-  digitalMaximo,
-  digitalMinimo,
   envio,
-  extraDigital,
   extraDosCaras,
   notaIva,
+  paqueteVigenciaMeses,
+  paquetes,
   pesos,
+  precioDigital,
   precioMaximo,
   precioMinimo,
   rangoTexto,
   tramos,
 } from "./precios";
-import { accionesPlataforma } from "./plataforma";
+import { grosorTexto, materiales, medidas, zonas } from "./materiales";
+import { accionesPlataforma, ajustesPlataforma } from "./plataforma";
 import { rutasCiudades, rutasGiros, rutasPrincipales } from "./rutas";
 import { entregaTexto, site, urlAbsoluta } from "./site";
 
@@ -32,13 +33,16 @@ const datosClave = () =>
   [
     `- Producto: gafetes y credenciales para empleados en tres modalidades: impreso (PVC rígido tamaño CR80, 8.6 × 5.4 cm, a una cara o por frente y vuelta), digital (en el celular, con código QR verificable) o impreso + digital.`,
     `- Precio impreso: de ${pesos(precioMinimo)} a ${pesos(precioMaximo)} MXN por pieza a una cara, ${notaIva}, según la cantidad. Frente y vuelta: ${pesos(extraDosCaras)} más por pieza.`,
-    `- Precio digital: de ${pesos(digitalMinimo)} a ${pesos(digitalMaximo)} MXN por pieza, ${notaIva}. Agregar la versión digital a un gafete impreso: ${pesos(extraDigital)} más por pieza.`,
+    `- Precio digital: ${pesos(precioDigital)} MXN por pieza, ${notaIva}, en cualquier cantidad, solo o sumado a un gafete impreso.`,
+    `- Materiales: ${materiales.filter((m) => m.disponible).map((m) => `${m.nombre} de ${grosorTexto(m)}${m.extra ? `, ${pesos(m.extra)} más por pieza` : ""}`).join("; ")}.`,
+    `- Paquetes prepagados: ${paquetes.map((p) => `${p.piezas} gafetes por ${pesos(p.piezas * p.porPieza)} MXN con ${p.envios} envíos incluidos`).join("; ")}. Vigencia de ${paqueteVigenciaMeses} meses.`,
+    `- Archivo de diseño: gafete de ${medidas.ancho} × ${medidas.alto} mm; archivo con sangrado de ${zonas[0].medida} a ${medidas.resolucionDpi} dpi; textos a ${medidas.margenSeguro} mm o más del corte.`,
     `- Forma de pago: pago único por gafete. No hay suscripción, mensualidad ni costo por usar la plataforma.`,
     `- Pedido mínimo: ninguno, desde 1 pieza.`,
     `- Entrega: ${entregaTexto}. Entrega exprés: próximamente.`,
     `- Envío: a todo México desde ${site.estadoBase}, con tarifa única de ${pesos(envio.tarifa)} MXN; gratis en pedidos desde ${pesos(envio.gratisDesde)} MXN antes de IVA.`,
     `- Cotización: el cotizador en línea muestra precio, envío, IVA, total y entrega sin pedir datos, y permite descargar la cotización en PDF o recibirla por correo.`,
-    `- Plataforma: con la cuenta, cada empresa administra ${accionesPlataforma.map((a) => a.titulo.toLowerCase()).join(", ")}.`,
+    `- Plataforma: con la cuenta, cada empresa administra ${accionesPlataforma.map((a) => a.titulo.toLowerCase()).join(", ")}. También guarda ${ajustesPlataforma.map((a) => a.titulo.toLowerCase()).join(", ")}.`,
     `- Cómo se pide: en línea, con plantillas o diseño propio, campos variables (nombre, puesto, número, foto, código QR), carga por Excel y vista previa de cada gafete antes de pagar.`,
     `- Factura: sí (CFDI).`,
     `- Contacto: ${site.correo}`,
@@ -75,11 +79,11 @@ ${lista(rutasCiudades)}
 
 export function llmsFullTxt(): string {
   const tabla = [
-    "| Cantidad de piezas | Impreso, una cara | Impreso, frente y vuelta | Solo digital |",
-    "| --- | --- | --- | --- |",
+    "| Cantidad de piezas | Impreso, una cara | Impreso, frente y vuelta |",
+    "| --- | --- | --- |",
     ...tramos.map(
       (t) =>
-        `| ${rangoTexto(t)} | ${pesos(t.precio)} MXN | ${pesos(t.precio + extraDosCaras)} MXN | ${pesos(t.digital)} MXN |`,
+        `| ${rangoTexto(t)} | ${pesos(t.precio)} MXN | ${pesos(t.precio + extraDosCaras)} MXN |`,
     ),
   ].join("\n");
 
@@ -107,7 +111,7 @@ ${datosClave()}
 
 ${tabla}
 
-Impreso + digital: ${pesos(extraDigital)} MXN más por pieza sobre el precio impreso. La plataforma para diseñar, cargar datos, revisar la vista previa y administrar al equipo no tiene costo. Envío: ${pesos(envio.tarifa)} MXN a todo México, gratis en pedidos desde ${pesos(envio.gratisDesde)} MXN antes de IVA.
+Gafete digital: ${pesos(precioDigital)} MXN por pieza, solo o sumado al impreso. La plataforma para diseñar, cargar datos, revisar la vista previa y administrar al equipo no tiene costo. Envío: ${pesos(envio.tarifa)} MXN a todo México, gratis en pedidos desde ${pesos(envio.gratisDesde)} MXN antes de IVA.
 
 ## Cómo se pide
 

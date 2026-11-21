@@ -4,22 +4,24 @@
  * Todos los importes están en pesos mexicanos y ANTES de IVA.
  */
 
-/** Precio por pieza según la cantidad: impreso a una cara y solo digital. */
-export type Tramo = { desde: number; hasta: number | null; precio: number; digital: number };
+import { type Material, type MaterialId, materialPara } from "./materiales";
+
+/** Precio por pieza del gafete impreso a una cara en PVC estándar, según la cantidad. */
+export type Tramo = { desde: number; hasta: number | null; precio: number };
 
 export const tramos: Tramo[] = [
-  { desde: 1, hasta: 9, precio: 85, digital: 35 },
-  { desde: 10, hasta: 29, precio: 60, digital: 25 },
-  { desde: 30, hasta: 99, precio: 45, digital: 18 },
-  { desde: 100, hasta: 299, precio: 36, digital: 15 },
-  { desde: 300, hasta: null, precio: 30, digital: 12 },
+  { desde: 1, hasta: 9, precio: 85 },
+  { desde: 10, hasta: 29, precio: 60 },
+  { desde: 30, hasta: 99, precio: 45 },
+  { desde: 100, hasta: 299, precio: 36 },
+  { desde: 300, hasta: null, precio: 30 },
 ];
 
 /** Extra por pieza cuando el gafete va impreso por frente y vuelta. */
 export const extraDosCaras = 12;
 
-/** Extra por pieza por agregar el gafete digital a uno impreso. */
-export const extraDigital = 10;
+/** Precio por pieza del gafete digital: el mismo si va solo o sumado a uno impreso. */
+export const precioDigital = 10;
 
 export const tasaIva = 0.16;
 export const notaIva = "más IVA";
@@ -45,8 +47,23 @@ export function nombreModalidad(m: Modalidad): string {
 
 export const precioMinimo = Math.min(...tramos.map((t) => t.precio));
 export const precioMaximo = Math.max(...tramos.map((t) => t.precio));
-export const digitalMinimo = Math.min(...tramos.map((t) => t.digital));
-export const digitalMaximo = Math.max(...tramos.map((t) => t.digital));
+
+/**
+ * Paquetes prepagados: se compran gafetes impresos por adelantado y se van
+ * pidiendo de a poquitos. Cada paquete incluye cierto número de envíos.
+ */
+export type Paquete = { piezas: number; porPieza: number; envios: number };
+
+export const paquetes: Paquete[] = [
+  { piezas: 10, porPieza: 79, envios: 2 },
+  { piezas: 25, porPieza: 62, envios: 3 },
+  { piezas: 50, porPieza: 52, envios: 4 },
+  { piezas: 100, porPieza: 42, envios: 6 },
+];
+
+export const paqueteVigenciaMeses = 12;
+
+export const precioPaquete = (p: Paquete) => p.piezas * p.porPieza;
 
 export function tramoPara(cantidad: number): Tramo {
   return (
@@ -55,12 +72,14 @@ export function tramoPara(cantidad: number): Tramo {
   );
 }
 
-export type Opciones = { modalidad?: Modalidad; dosCaras?: boolean };
+export type Opciones = { modalidad?: Modalidad; dosCaras?: boolean; material?: MaterialId };
 
 export type Cotizacion = {
   piezas: number;
   modalidad: Modalidad;
   dosCaras: boolean;
+  /** Material del gafete impreso; no aplica en la modalidad digital. */
+  material: Material | null;
   /** Renglones que explican el precio por pieza. */
   conceptos: { nombre: string; porPieza: number }[];
   porPieza: number;
@@ -85,15 +104,19 @@ export function cotizar(cantidad: number, opciones: Opciones = {}): Cotizacion {
   const modalidad = opciones.modalidad ?? "impreso";
   const impreso = modalidad !== "digital";
   const dosCaras = impreso && Boolean(opciones.dosCaras);
+  const material = impreso ? materialPara(opciones.material) : null;
   const tramo = tramoPara(piezas);
 
   const conceptos: Cotizacion["conceptos"] = [];
   if (impreso) {
     conceptos.push({ nombre: "Gafete impreso en PVC, una cara", porPieza: tramo.precio });
+    if (material && material.extra > 0) {
+      conceptos.push({ nombre: `Material: ${material.nombre}`, porPieza: material.extra });
+    }
     if (dosCaras) conceptos.push({ nombre: "Impresión por frente y vuelta", porPieza: extraDosCaras });
-    if (modalidad === "ambos") conceptos.push({ nombre: "Gafete digital", porPieza: extraDigital });
+    if (modalidad === "ambos") conceptos.push({ nombre: "Gafete digital", porPieza: precioDigital });
   } else {
-    conceptos.push({ nombre: "Gafete digital", porPieza: tramo.digital });
+    conceptos.push({ nombre: "Gafete digital", porPieza: precioDigital });
   }
 
   const porPieza = conceptos.reduce((suma, c) => suma + c.porPieza, 0);
@@ -106,6 +129,7 @@ export function cotizar(cantidad: number, opciones: Opciones = {}): Cotizacion {
     piezas,
     modalidad,
     dosCaras,
+    material,
     conceptos,
     porPieza,
     subtotal,

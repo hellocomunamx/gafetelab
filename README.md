@@ -32,12 +32,14 @@ Para servir en `lagafeteria.com`, quita el comentario de `routes` en `wrangler.j
 | --- | --- |
 | Nombre, URL, correo, tiempo de entrega, vigencia de la cotización | `src/lib/site.ts` |
 | Datos legales del aviso de privacidad y enlace de Figalo | `src/lib/site.ts` (`legal`, `figalo`) |
-| Precios por pieza (impreso y digital), frente y vuelta, IVA | `src/lib/precios.ts` |
+| Precios por pieza (impreso y digital), frente y vuelta, IVA, paquetes prepagados | `src/lib/precios.ts` |
+| Materiales, grosores, extra por material y medidas del archivo (sangrado, zona segura) | `src/lib/materiales.ts` |
+| Vista del diseño y zona de impresión | `src/components/VistaGafete.tsx`, `src/components/DiagramaGafete.tsx` |
 | Tarifa de envío y monto para envío gratis | `src/lib/precios.ts` (`envio`) |
 | Cotizador | `src/components/Cotizador.tsx` |
 | Textos y PDF de la cotización | `src/lib/cotizacion.ts`, `src/lib/cotizacion-pdf.ts` |
 | Envío de la cotización por correo | `src/app/api/cotizacion/route.ts`, `src/lib/correo.ts` |
-| Modalidades y acciones de la plataforma | `src/lib/plataforma.ts` |
+| Modalidades, acciones y ajustes de la plataforma | `src/lib/plataforma.ts` |
 | Aviso de privacidad | `src/app/aviso-de-privacidad/page.tsx` |
 | Preguntas frecuentes | `src/lib/faqs.ts` |
 | Páginas por giro (`/gafetes-para/...`) | `src/lib/giros.ts` |
@@ -67,12 +69,15 @@ Al cambiar contenido, actualiza `actualizado` en `src/lib/site.ts` (alimenta `la
 ## Pendientes antes de lanzar
 
 - Dominio definitivo: hoy es provisional (`lagafeteria.com`). Se cambia en una línea de `src/lib/site.ts`, más `routes` en `wrangler.jsonc` y `.env.example`.
-- Confirmar precios (impreso y digital), IVA, extra de frente y vuelta, tarifa de envío y monto de envío gratis en `src/lib/precios.ts`.
+- Confirmar precios, IVA, extra de frente y vuelta, tarifa de envío, monto de envío gratis y paquetes prepagados en `src/lib/precios.ts`.
+- Confirmar con el taller o la impresora los materiales, sus costos y las medidas de sangrado y zona segura en `src/lib/materiales.ts`.
+- Cambiar las ilustraciones de materiales (`src/components/MuestraMaterial.tsx`) por fotos reales cuando haya muestras.
+- Los paquetes prepagados se anuncian, pero todavía no se pueden comprar: falta el cobro y el saldo de gafetes en la cuenta.
 - Confirmar el correo de contacto y el tiempo de entrega en `src/lib/site.ts`.
 - Correo de cotizaciones: verificar el dominio en Resend y cargar `RESEND_API_KEY` (y `RESEND_FROM` si aplica).
 - Proteger `/api/cotizacion` contra abuso antes de lanzar (regla de rate limiting en Cloudflare o Turnstile). Hoy valida origen, formato y un campo trampa.
 - Revisión del aviso de privacidad por una persona abogada. Está adaptado del aviso de Figalo y nombra proveedores (pagos, facturación, talleres, paquetería) que aún no están contratados.
-- La plataforma de cuenta y los gafetes digitales se describen en el sitio, pero todavía no están construidos.
+- La plataforma de cuenta y los gafetes digitales se describen en el sitio, pero todavía no están construidos. Esto incluye predeterminados, pedido abierto con aviso, diseños por reglas y campos a la medida con plantilla de Excel.
 - Entrega exprés: aparece como "Próximamente" en el cotizador y en las preguntas frecuentes.
 - En Cloudflare, revisar que el bloqueo de bots de IA y el `robots.txt` administrado estén apagados para el dominio; si no, anulan lo que define el sitio.
 - Dar de alta el sitio en Google Search Console y Bing Webmaster Tools y enviar el sitemap.

@@ -22,6 +22,30 @@ export const accionesPlataforma = [
   },
 ];
 
+/** Cómo se configura la plataforma para que cada pedido salga solo. */
+export const ajustesPlataforma = [
+  {
+    titulo: "Predeterminados de tu negocio",
+    texto:
+      "Guarda una vez tu material, tu diseño, tus campos y tu dirección de entrega. Cada pedido nuevo arranca con eso ya elegido.",
+  },
+  {
+    titulo: "Pedido abierto con aviso",
+    texto:
+      "Ve sumando altas y reposiciones conforme ocurren. Cuando llegas a la cantidad que tú elijas, te avisamos y te mostramos la cotización lista para confirmar.",
+  },
+  {
+    titulo: "Diseños por reglas",
+    texto:
+      "Asigna un diseño distinto según el puesto, el departamento, la sucursal o el tipo de contrato (planta, temporal o visitante). Cada persona recibe el que le toca.",
+  },
+  {
+    titulo: "Campos a tu medida",
+    texto:
+      "Elige qué campos lleva tu gafete y si van al frente o a la vuelta. Con eso se genera la plantilla de Excel que descargas, llenas y subes.",
+  },
+];
+
 /** Qué es cada modalidad, en una línea. */
 export const modalidadesDetalle = [
   {

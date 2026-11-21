@@ -1,12 +1,13 @@
+import { materiales } from "./materiales";
 import { entregaTexto, site } from "./site";
 import {
-  digitalMaximo,
-  digitalMinimo,
   envio,
-  extraDigital,
   extraDosCaras,
   notaIva,
+  paqueteVigenciaMeses,
+  paquetes,
   pesos,
+  precioDigital,
   precioMaximo,
   precioMinimo,
   tramos,
@@ -27,7 +28,7 @@ export const faqsGenerales: Faq[] = [
   },
   {
     pregunta: "¿Cuánto cuesta un gafete o credencial para empleado?",
-    respuesta: `Un gafete impreso cuesta entre ${pesos(precioMinimo)} y ${pesos(precioMaximo)} pesos por pieza a una cara (${notaIva}), según la cantidad. Por ejemplo, de ${tramoVolumen.desde} a ${tramoVolumen.hasta} piezas cuestan ${pesos(tramoVolumen.precio)} cada una. La impresión por frente y vuelta suma ${pesos(extraDosCaras)} por pieza. Un gafete solo digital cuesta entre ${pesos(digitalMinimo)} y ${pesos(digitalMaximo)}. La plataforma para diseñar, cargar datos y administrar a tu equipo no tiene costo.`,
+    respuesta: `Un gafete impreso cuesta entre ${pesos(precioMinimo)} y ${pesos(precioMaximo)} pesos por pieza a una cara (${notaIva}), según la cantidad. Por ejemplo, de ${tramoVolumen.desde} a ${tramoVolumen.hasta} piezas cuestan ${pesos(tramoVolumen.precio)} cada una. La impresión por frente y vuelta suma ${pesos(extraDosCaras)} por pieza. Un gafete digital cuesta ${pesos(precioDigital)} por pieza, solo o sumado al impreso. La plataforma para diseñar, cargar datos y administrar a tu equipo no tiene costo.`,
   },
   {
     pregunta: "¿Hay que pagar una suscripción o mensualidad?",
@@ -36,12 +37,16 @@ export const faqsGenerales: Faq[] = [
   },
   {
     pregunta: "¿Qué es un gafete digital?",
-    respuesta: `Es la versión del gafete que cada persona lleva en su celular, con un código QR que cualquiera puede escanear para comprobar que esa persona sigue vigente en tu empresa. Tú decides qué información muestra: nombre, puesto, fotografía, número de empleado, área o vigencia. Puedes pedirlo solo o junto con el gafete impreso por ${pesos(extraDigital)} más por pieza.`,
+    respuesta: `Es la versión del gafete que cada persona lleva en su celular, con un código QR que cualquiera puede escanear para comprobar que esa persona sigue vigente en tu empresa. Tú decides qué información muestra: nombre, puesto, fotografía, número de empleado, área o vigencia. Cuesta ${pesos(precioDigital)} por pieza, lo pidas solo o junto con el gafete impreso.`,
   },
   {
     pregunta: "¿Hay pedido mínimo?",
     respuesta:
       "No. Puedes pedir desde un solo gafete, por ejemplo para un empleado nuevo o una reposición. Entre más piezas pidas, menor es el precio por pieza.",
+  },
+  {
+    pregunta: "¿Conviene pedir solo uno, dos o tres gafetes?",
+    respuesta: `Sí se puede, y para que el envío no pese más que el gafete existen los paquetes prepagados. Compras, por ejemplo, ${paquetes[0].piezas} gafetes por ${pesos(paquetes[0].piezas * paquetes[0].porPieza)} con ${paquetes[0].envios} envíos incluidos, usas los que necesitas hoy y el resto queda a tu favor durante ${paqueteVigenciaMeses} meses. También puedes dejar un pedido abierto en tu plataforma e ir sumando altas y reposiciones hasta completar un envío.`,
   },
   {
     pregunta: "¿Cuánto tarda en llegar mi pedido?",
@@ -90,8 +95,15 @@ export const faqsGenerales: Faq[] = [
   },
   {
     pregunta: "¿De qué material y tamaño son los gafetes impresos?",
+    respuesta: `Son tarjetas de PVC rígido en tamaño estándar CR80, de 8.6 × 5.4 cm: el mismo tamaño de una tarjeta bancaria, y caben en cualquier portagafete. Puedes elegir entre ${materiales
+      .filter((m) => m.disponible)
+      .map((m) => `${m.nombre} de ${m.grosorMm} mm`)
+      .join(", ")}.`,
+  },
+  {
+    pregunta: "¿Puedo tener un diseño distinto por puesto o departamento?",
     respuesta:
-      "Son tarjetas de PVC rígido en tamaño estándar CR80, de 8.6 × 5.4 cm: el mismo tamaño de una tarjeta bancaria. Caben en cualquier portagafete estándar.",
+      "Sí. En tu plataforma asignas un diseño según el puesto, el departamento, la sucursal o el tipo de contrato, y cada persona recibe el gafete que le corresponde. También eliges qué campos lleva y si van al frente o a la vuelta, y descargas la plantilla de Excel con esas columnas.",
   },
   {
     pregunta: "¿Imprimen por un lado o por los dos?",

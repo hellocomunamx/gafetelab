@@ -12,7 +12,7 @@ const rutaMigas = [{ nombre: "Cotizar", ruta }];
 
 export const metadata = metadatos({
   titulo: "Cotiza gafetes y credenciales con envío incluido",
-  descripcion: `Cotizador de gafetes y credenciales para empleados: precio por pieza, envío, IVA, total y tiempo de entrega al momento, sin dejar tus datos. Descarga tu cotización en PDF o recíbela por correo.`,
+  descripcion: `Cotizador de gafetes y credenciales para empleados: elige material, mira tu diseño con su zona de impresión y ve precio por pieza, envío, IVA, total y tiempo de entrega al momento, sin dejar tus datos. Descarga tu cotización en PDF o recíbela por correo.`,
   ruta,
 });
 
@@ -21,8 +21,8 @@ export default function Cotizar() {
     <>
       <Portada migas={rutaMigas} titulo="Cotiza tus gafetes y credenciales">
         <p>
-          Elige la modalidad y la cantidad, y ve al momento el precio por pieza, el envío, el IVA y
-          el total. Sin dejar tus datos y sin esperar un correo. Entrega en {entregaTexto} a todo
+          Elige la modalidad, la cantidad y el material, y ve al momento el precio por pieza, el
+          envío, el IVA y el total. Sin dejar tus datos y sin esperar un correo. Entrega en {entregaTexto} a todo
           México.
         </p>
       </Portada>

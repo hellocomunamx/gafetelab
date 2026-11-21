@@ -7,7 +7,7 @@ import { Boton, Cierre, Contenedor, CTA_TEXTO, Seccion } from "@/components/ui";
 import { faqsGenerales } from "@/lib/faqs";
 import { giros } from "@/lib/giros";
 import { formasDeEmpezar, pasos } from "@/lib/pasos";
-import { accionesPlataforma, modalidadesDetalle } from "@/lib/plataforma";
+import { accionesPlataforma, ajustesPlataforma, modalidadesDetalle } from "@/lib/plataforma";
 import { envio, notaIva, pesos, precioMinimo } from "@/lib/precios";
 import { paginaFaq, producto } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
@@ -113,7 +113,10 @@ export default function Inicio() {
         </ul>
         <p className="mt-6 max-w-2xl text-gris">
           Tú decides qué información lleva cada gafete: nombre, puesto, fotografía, número de
-          empleado, área, vigencia o código QR. Se paga una sola vez por gafete, sin suscripción.
+          empleado, área, vigencia o código QR. Se paga una sola vez por gafete, sin suscripción.{" "}
+          <Link href="/materiales" className="font-semibold text-rojo underline underline-offset-4">
+            Ver materiales y medidas
+          </Link>
         </p>
       </Seccion>
 
@@ -128,6 +131,10 @@ export default function Inicio() {
           <Link href="/cotizar" className="font-semibold text-rojo underline underline-offset-4">
             Cotizar mi pedido con envío e IVA
           </Link>
+          <span className="text-gris"> · ¿Solo unos cuantos? </span>
+          <Link href="/precios#paquetes" className="font-semibold text-rojo underline underline-offset-4">
+            Ver paquetes prepagados
+          </Link>
         </p>
       </Seccion>
 
@@ -140,6 +147,15 @@ export default function Inicio() {
           {accionesPlataforma.map((a) => (
             <li key={a.titulo} className="rounded-tarjeta bg-papel p-5">
               <h3 className="text-lg font-bold">{a.titulo}</h3>
+              <p className="mt-1 text-sm text-gris">{a.texto}</p>
+            </li>
+          ))}
+        </ul>
+        <h3 className="mt-10 text-xl font-bold">Configúrala una vez y deja que trabaje sola</h3>
+        <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {ajustesPlataforma.map((a) => (
+            <li key={a.titulo} className="rounded-tarjeta border border-linea p-5">
+              <h4 className="font-titulos text-lg font-bold">{a.titulo}</h4>
               <p className="mt-1 text-sm text-gris">{a.texto}</p>
             </li>
           ))}

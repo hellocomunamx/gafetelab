@@ -4,10 +4,11 @@ import { giros } from "./giros";
 /** Todas las rutas públicas indexables. Alimenta el sitemap y llms.txt. */
 export const rutasPrincipales = [
   { ruta: "/", titulo: "Inicio", prioridad: 1, resumen: "Qué es LaGafetería y cómo pedir gafetes y credenciales para empleados." },
-  { ruta: "/precios", titulo: "Precios", prioridad: 0.9, resumen: "Tabla de precios por cantidad para gafetes impresos y digitales, envío y entrega." },
+  { ruta: "/precios", titulo: "Precios", prioridad: 0.9, resumen: "Tabla de precios por cantidad, gafete digital, paquetes prepagados, envío y entrega." },
+  { ruta: "/materiales", titulo: "Materiales y medidas", prioridad: 0.8, resumen: "Materiales y grosores disponibles, y medidas del archivo: sangrado, línea de corte y zona segura." },
   { ruta: "/como-funciona", titulo: "Cómo funciona", prioridad: 0.8, resumen: "Los cinco pasos para pedir: plantilla, campos variables, Excel, vista previa y pago." },
   { ruta: "/preguntas-frecuentes", titulo: "Preguntas frecuentes", prioridad: 0.8, resumen: "Respuestas sobre precios, pedido mínimo, entrega, envíos, materiales, factura y datos." },
-  { ruta: "/cotizar", titulo: "Cotizar", prioridad: 0.9, resumen: "Cotizador con precio, envío, IVA, total y entrega al momento; descarga en PDF o envío por correo." },
+  { ruta: "/cotizar", titulo: "Cotizar", prioridad: 0.9, resumen: "Cotizador por modalidad, cantidad y material, con envío, IVA, total y entrega al momento; vista del diseño con zona de impresión; descarga en PDF o envío por correo." },
   { ruta: "/gafetes-para", titulo: "Gafetes y credenciales por giro", prioridad: 0.7, resumen: "Índice de páginas por giro de empresa." },
   { ruta: "/gafetes-en", titulo: "Gafetes y credenciales por ciudad", prioridad: 0.7, resumen: "Índice de ciudades de México con envío." },
   { ruta: "/aviso-de-privacidad", titulo: "Aviso de privacidad", prioridad: 0.3, resumen: "Quién es responsable de los datos, qué datos se tratan y cómo ejercer los derechos ARCO." },
