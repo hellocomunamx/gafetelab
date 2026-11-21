@@ -34,8 +34,7 @@ Para servir en `lagafeteria.com`, quita el comentario de `routes` en `wrangler.j
 | Páginas por ciudad (`/gafetes-en/...`) | `src/lib/ciudades.ts` |
 | Pasos de "cómo funciona" | `src/lib/pasos.ts` |
 | Colores y tipografías | `src/app/globals.css`, `src/fonts/` |
-| Logo | `src/components/Logo.tsx` |
-| Íconos e imagen para redes | `src/app/`, `public/marca/` |
+| Logo, íconos e imagen para redes | `public/marca/`, `src/app/` (`favicon.ico`, `icon.svg`, `apple-icon.png`) |
 
 Agregar un giro o una ciudad es agregar un objeto a su archivo: la página, el sitemap, el pie y `llms.txt` se actualizan solos.
 
@@ -56,7 +55,6 @@ Al cambiar contenido, actualiza `actualizado` en `src/lib/site.ts` (alimenta `la
 ## Pendientes antes de lanzar
 
 - Dominio definitivo: hoy es provisional (`lagafeteria.com`). Se cambia en una línea de `src/lib/site.ts`, más `routes` en `wrangler.jsonc` y `.env.example`.
-- Logo e íconos definitivos: hoy son provisionales (`src/components/Logo.tsx`, `src/app/icon.svg`, `favicon.ico`, `apple-icon.png` y `public/marca/`).
 - Confirmar precios, IVA y extra de frente y vuelta en `src/lib/precios.ts`.
 - Confirmar el correo de contacto en `src/lib/site.ts`.
 - Aviso de privacidad definitivo (`/aviso-de-privacidad` no se indexa mientras tanto).
