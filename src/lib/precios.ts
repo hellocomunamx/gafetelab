@@ -51,7 +51,7 @@ export type Modalidad = "impreso" | "digital" | "ambos";
 
 export const modalidades: { id: Modalidad; nombre: string; resumen: string }[] = [
   { id: "impreso", nombre: "Impreso", resumen: "Gafete de PVC que llega a tu empresa." },
-  { id: "digital", nombre: "Digital", resumen: "Gafete en el celular, con código QR verificable." },
+  { id: "digital", nombre: "Digital", resumen: "Gafete en el celular, con código QR verificable. Pago único." },
   { id: "ambos", nombre: "Impreso + digital", resumen: "El gafete de PVC y su versión digital." },
 ];
 
