@@ -14,7 +14,7 @@ export const pasos = [
   {
     titulo: "Sube a tu equipo",
     texto:
-      "Como te acomode: con la plantilla de Excel, una persona a la vez o las fotos de todos juntas, que se asignan solas. Muy pronto, también con una liga para que cada quien suba sus datos y su foto.",
+      "Como te acomode: con la plantilla de Excel, una persona a la vez, las fotos de todos juntas, que se asignan solas, o una liga para que cada quien llene sus datos y suba su foto, y tú la apruebas.",
   },
   {
     titulo: "Revisa cada gafete",

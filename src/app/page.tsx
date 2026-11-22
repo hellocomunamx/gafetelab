@@ -11,10 +11,10 @@ import { faqsGenerales } from "@/lib/faqs";
 import { giros } from "@/lib/giros";
 import { formasDeEmpezar, pasos } from "@/lib/pasos";
 import { modalidadesDetalle } from "@/lib/plataforma";
-import { envio, notaIva, pesos, precioMinimo } from "@/lib/precios";
+import { envio, notaIva, paqueteVigenciaMeses, paquetes, pesos, precioMinimo, precioPaquete } from "@/lib/precios";
 import { paginaFaq, producto, video, videoPitch } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
-import { entregaTexto, site } from "@/lib/site";
+import { constancia, entregaTexto, site } from "@/lib/site";
 
 export const metadata = metadatos({
   titulo: `${site.titulo} | ${site.nombre}`,
@@ -153,6 +153,13 @@ export default function Inicio() {
             </li>
           ))}
         </ol>
+        <p className="mt-6 max-w-3xl text-sm text-gris">
+          <strong className="text-tinta">Antes de empezar:</strong> {constancia.corto} Así comprobamos
+          que los gafetes son de tu propia empresa.{" "}
+          <Link href="/como-funciona#constancia" className="underline underline-offset-4">
+            Por qué la pedimos
+          </Link>
+        </p>
       </Seccion>
 
       <Seccion titulo="Tres formas de empezar tu gafete" fondo>
@@ -199,10 +206,28 @@ export default function Inicio() {
           <Link href="/cotizar" className="font-semibold text-rojo underline underline-offset-4">
             Cotizar en línea, con envío e IVA al momento
           </Link>
-          <span className="text-gris"> · ¿Solo unos cuantos? </span>
-          <Link href="/precios#paquetes" className="font-semibold text-rojo underline underline-offset-4">
-            Ver paquetes prepagados
+        </p>
+
+        <h3 className="mt-12 text-2xl font-extrabold">¿Pides de a poquitos? Paquetes prepagados</h3>
+        <p className="mt-2 mb-5 max-w-2xl text-gris">
+          Deja pagados tus gafetes y pídelos conforme los necesites: uno hoy, tres el mes que entra.
+          Cada paquete incluye varios envíos y dura {paqueteVigenciaMeses} meses.
+        </p>
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {paquetes.map((p) => (
+            <li key={p.piezas} className="rounded-tarjeta border border-linea bg-white p-5">
+              <p className="font-titulos text-2xl font-extrabold">{p.piezas} gafetes</p>
+              <p className="mt-1 text-gris">{pesos(p.porPieza)} por pieza</p>
+              <p className="text-gris">{p.envios} envíos incluidos</p>
+              <p className="mt-3 font-titulos text-xl font-extrabold">{pesos(precioPaquete(p))}</p>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-5">
+          <Link href="/precios#paquete-a-la-medida" className="font-semibold text-rojo underline underline-offset-4">
+            Arma tu paquete a la medida
           </Link>
+          <span className="text-gris">: combina cantidades, una cara o frente y vuelta, y materiales.</span>
         </p>
       </Seccion>
 

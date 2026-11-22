@@ -67,6 +67,13 @@ export default function Terminos() {
             <ul>
               <li>Para crear una cuenta debes ser mayor de 18 años y darnos datos verdaderos.</li>
               <li>
+                Para dar de alta a tu empresa te pedimos su Constancia de Situación Fiscal, con no más
+                de {site.constanciaMeses} meses de antigüedad. El RFC y la razón social de la constancia
+                deben coincidir con la empresa que aparece en los gafetes y son los datos con los que
+                te facturamos. Podemos revisar un pedido antes de producirlo y pedirte que aclares o
+                compruebes que los gafetes son de tu propia organización.
+              </li>
+              <li>
                 Tú decides quién más entra a la plataforma de tu empresa y con qué permisos. Eres
                 responsable de lo que hagan las personas a las que invites y de cuidar el acceso a tu
                 correo y, si la usas, tu contraseña.
@@ -207,7 +214,8 @@ export default function Terminos() {
               adelantado cierta cantidad de gafetes impresos, con un número de envíos incluidos, y los
               vas pidiendo conforme los necesitas. Se compran gafetes, no saldo en pesos. Cada paquete
               tiene una vigencia de {paqueteVigenciaMeses} meses desde su compra; los gafetes y envíos
-              que no uses en ese plazo se pierden. Los paquetes no son transferibles a otra empresa.
+              que no uses en ese plazo se pierden. Los paquetes no son reembolsables, ni completos ni por la
+              parte que no se haya usado, pero sí puedes transferirlos sin costo a la cuenta de otra empresa.
             </p>
           </Apartado>
 

@@ -14,7 +14,7 @@ export const site = {
   descripcion:
     "Gafetes y credenciales para tu equipo, impresos en PVC o digitales, sin vueltas: diseña tu gafete, sube a tu equipo y revisa cada uno antes de pagar. Plataforma incluida, sin costo extra. Envíos a todo México.",
   descripcionCorta:
-    "Tienda en línea de gafetes y credenciales para empleados, impresos y digitales, con envíos a todo México.",
+    "Tienda en línea para administrar e imprimir gafetes y credenciales de empleados o de asistentes a eventos, impresos y digitales, con envíos a todo México.",
   correo: `hola@${dominio}`,
   idioma: "es-MX",
   locale: "es_MX",
@@ -22,11 +22,13 @@ export const site = {
   moneda: "MXN",
   estadoBase: "Sonora",
   /** Tiempo de entrega estándar, tal como se muestra en todo el sitio. */
-  entrega: "2 semanas",
+  entrega: "14 días",
   /** Días que se respeta el precio de una cotización descargada o enviada. */
   vigenciaCotizacionDias: 15,
   /** Días después del pedido en los que todavía se puede pedir la factura. */
   plazoFacturaDias: 60,
+  /** Antigüedad máxima, en meses, de la Constancia de Situación Fiscal que se pide a cada empresa. */
+  constanciaMeses: 3,
   /** Fecha de la última revisión de contenido (se muestra y va al sitemap). */
   actualizado: "2026-11-22",
   /** Pon NEXT_PUBLIC_NOINDEX=true para que ningún buscador indexe (por ejemplo, en pruebas). */
@@ -34,6 +36,14 @@ export const site = {
 } as const;
 
 export const entregaTexto = site.entrega;
+
+/** Por qué se pide la Constancia de Situación Fiscal. Se dice igual en todo el sitio. */
+export const constancia = {
+  nombre: "Constancia de Situación Fiscal",
+  corto: `Para abrir la cuenta de tu empresa te pedimos su Constancia de Situación Fiscal, con no más de ${site.constanciaMeses} meses de antigüedad.`,
+  motivo:
+    "Así comprobamos que los gafetes y credenciales son de tu propia empresa: el RFC y la razón social de la constancia deben coincidir con la empresa que aparece en los gafetes, y son los mismos datos con los que te facturamos.",
+} as const;
 
 /** Empresa detrás de LaGafetería: aparece en el "Powered by" y en el aviso de privacidad. */
 export const figalo = {
