@@ -15,6 +15,12 @@
     }
   ],
   "observability": { "enabled": true },
+  // Límite de uso del asistente de IA (/api/asistente): por persona (IP) y en
+  // todo el sitio, para que nadie dispare el gasto de la API de Claude.
+  "ratelimits": [
+    { "name": "LIMITE_ASISTENTE", "namespace_id": "4101", "simple": { "limit": 8, "period": 60 } },
+    { "name": "LIMITE_ASISTENTE_GLOBAL", "namespace_id": "4102", "simple": { "limit": 60, "period": 60 } }
+  ],
   // El dominio debe estar en la misma cuenta de Cloudflare. Los registros de
   // correo (MX, SPF, DKIM) no se tocan: esto solo agrega el sitio.
   "routes": [

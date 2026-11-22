@@ -26,6 +26,16 @@ Sin `RESEND_API_KEY`, el cotizador sigue funcionando y descargando el PDF; solo 
 
 El formulario de contacto (`/contacto`) usa el mismo secreto: manda cada mensaje a `site.correo` con Resend y pone como «responder a» el correo de quien escribió. Sin `RESEND_API_KEY` avisa que todavía no está activo y muestra el correo de contacto.
 
+### Asistente de IA (Gafi)
+
+Botón flotante «¿Dudas?» en todo el sitio público (no aparece dentro de la plataforma). Platica con la API de Claude (`claude-opus-5-5`, esfuerzo bajo) y solo resuelve dudas: no lee ni cambia cuentas ni pedidos. Lo que sabe sale de `llmsFullTxt()` y de los términos (`src/lib/asistente.ts`), así que se actualiza solo cuando cambian precios, entrega o preguntas frecuentes. Nombre, saludo y límites en `src/lib/asistente-publico.ts`.
+
+```bash
+npx wrangler secret put ANTHROPIC_API_KEY
+```
+
+Límite de uso: 8 mensajes por minuto por IP y 60 por minuto en todo el sitio (bindings `ratelimits` en `wrangler.jsonc`), 30 mensajes por conversación y 1,000 caracteres por mensaje. Sin `ANTHROPIC_API_KEY`, el chat responde que todavía no está activo y muestra el contacto.
+
 ### Publicar
 
 `npm run deploy` compila con los valores de `.env.production` (URL del sitio y Supabase, todos públicos) y publica el Worker en `lagafeteria.com` y `www.lagafeteria.com`. Esos valores mandan sobre `.env.local`, así que lo que tengas para desarrollo no se cuela al sitio publicado.
