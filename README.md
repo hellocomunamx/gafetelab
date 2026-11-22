@@ -20,7 +20,7 @@ Secretos en Cloudflare:
 npx wrangler login
 npx wrangler secret put RESEND_API_KEY
 npx wrangler secret put RESEND_FROM      # opcional: "LaGafetería <hola@tudominio>"
-npx wrangler secret put SUPABASE_SECRET_KEY   # opcional: fotografía en la página de verificación del QR
+npx wrangler secret put SUPABASE_SECRET_KEY   # fotografía en la verificación del QR y panel de administración
 ```
 
 Sin `RESEND_API_KEY`, el cotizador sigue funcionando y descargando el PDF; solo el envío por correo responde que todavía no está activo.
@@ -115,6 +115,24 @@ La fotografía vive en almacenamiento privado, así que la página de verificaci
 
 Hoy la verificación responde por cualquier persona activa del equipo. Cuando existan los pedidos se ligará a los gafetes emitidos, para poder desactivar un gafete sin dar de baja a la persona.
 
+### Administración (solo quien opera LaGafetería)
+
+`/admin` es el panel interno. No aparece en ningún menú de las empresas y, a quien no es administradora, le responde «no existe». Trae dos cosas:
+
+- **Empresas**: todas las cuentas con sus personas activas, diseños y gafetes listos, y un aviso de «Revisar» cuando el nombre de la empresa o los textos de sus diseños mencionan autoridades, dependencias o identificaciones oficiales (INE, gobierno, policía, SAT, IMSS y parecidas; la lista está en `src/lib/admin/alertas.ts`). El aviso no bloquea nada: pide que una persona lo vea antes de producir.
+- **PDF de impresión** (`/admin/imprimir/<empresa>`): una página por cara, de 85.6 × 54 mm exactos y de orilla a orilla, para mandarlo tal cual a la impresora de credenciales. Sale de un diseño con los datos de cada persona o de los gafetes que la empresa subió ya terminados. Se elige el orden de las páginas (frente y vuelta seguidos, o frentes y vueltas en archivos aparte), si la vuelta va girada 180° y a quién incluir. Se arma en el navegador, en archivos de hasta 50 gafetes, y no se guarda en ningún lado. Las empresas no tienen ninguna salida a tamaño real.
+
+Necesita `SUPABASE_SECRET_KEY` en el servidor, porque lee los datos de todas las empresas. Esa llave solo se usa después de comprobar que la sesión es de una administradora.
+
+Para dar de alta a una administradora (no se puede desde la app), en el editor SQL de Supabase:
+
+```sql
+insert into privado.administradores (usuario_id)
+select id from auth.users where email = 'correo-de-la-administradora';
+```
+
+Y para quitarla: `delete from privado.administradores where usuario_id = '<id>';`
+
 ### Configurar Supabase (una vez)
 
 Las tablas ya están aplicadas en el proyecto `lagafeteria`. Falta esto en el panel de Supabase:
@@ -166,6 +184,8 @@ Los correos de acceso locales llegan a http://127.0.0.1:54324.
 | Tarifa de envío y monto para envío gratis | `src/lib/precios.ts` (`envio`) |
 | Cotizador | `src/components/Cotizador.tsx` |
 | Qué muestra el QR, generador del código y página de verificación | `src/lib/cuenta/qr.ts`, `src/lib/qr.ts`, `src/app/v/[codigo]/page.tsx` |
+| Panel de administración, alerta de palabras y PDF de impresión | `src/app/admin/`, `src/lib/admin/`, `src/components/admin/ImprimirGafetes.tsx` |
+| Letras de los diseños de gafete, con tamaño óptico fijo | `src/fonts/*-Gafete.woff2`, `src/app/layout.tsx`, `src/lib/diseno/tipos.ts` |
 | Video de la página de inicio (archivo, portada, título y datos estructurados) | `public/video/`, `videoPitch` en `src/lib/schema.ts`, `src/components/VideoPitch.tsx` |
 | Textos y PDF de la cotización | `src/lib/cotizacion.ts`, `src/lib/cotizacion-pdf.ts` |
 | Envío de la cotización por correo | `src/app/api/cotizacion/route.ts`, `src/lib/correo.ts` |

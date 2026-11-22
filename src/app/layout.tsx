@@ -28,6 +28,28 @@ const gochi = localFont({
   display: "swap",
 });
 
+/**
+ * Las letras de los diseños de gafete, con el tamaño óptico fijo. Las de arriba
+ * cambian de forma según el tamaño al que se dibujan, y un gafete debe verse
+ * idéntico en el editor, en la vista previa y en el PDF de impresión. Se
+ * descargan solo donde se usan.
+ */
+const bricolageGafete = localFont({
+  src: "../fonts/BricolageGrotesque-Gafete.woff2",
+  variable: "--font-gafete-bricolage",
+  weight: "600 800",
+  display: "swap",
+  preload: false,
+});
+
+const interGafete = localFont({
+  src: "../fonts/Inter-Gafete.woff2",
+  variable: "--font-gafete-inter",
+  weight: "400 700",
+  display: "swap",
+  preload: false,
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
@@ -72,7 +94,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang={site.idioma}
-      className={`${bricolage.variable} ${inter.variable} ${gochi.variable} h-full antialiased`}
+      className={`${bricolage.variable} ${inter.variable} ${gochi.variable} ${bricolageGafete.variable} ${interGafete.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
         <a

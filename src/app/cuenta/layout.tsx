@@ -5,6 +5,7 @@ import { NavCuenta } from "@/components/cuenta/NavCuenta";
 import { SelectorEmpresa } from "@/components/cuenta/SelectorEmpresa";
 import { Contenedor } from "@/components/ui";
 import { AvisoInvitaciones } from "@/components/cuenta/AvisoInvitaciones";
+import { esAdminPlataforma } from "@/lib/admin/sesion";
 import { COOKIE_EMPRESA, misInvitaciones, requerirUsuario } from "@/lib/cuenta/sesion";
 import { cookies } from "next/headers";
 
@@ -15,9 +16,10 @@ export const metadata: Metadata = {
 
 export default async function CuentaLayout({ children }: { children: ReactNode }) {
   const { supabase, usuario } = await requerirUsuario();
-  const [{ data: empresas }, invitaciones] = await Promise.all([
+  const [{ data: empresas }, invitaciones, esAdmin] = await Promise.all([
     supabase.from("empresas").select("id, nombre").order("creado_en"),
     misInvitaciones(),
+    esAdminPlataforma(),
   ]);
   const elegida = (await cookies()).get(COOKIE_EMPRESA)?.value;
   const actual = empresas?.find((e) => e.id === elegida) ?? empresas?.[0];
@@ -36,6 +38,9 @@ export default async function CuentaLayout({ children }: { children: ReactNode }
             {actual ? <NavCuenta /> : null}
           </div>
           <div className="flex items-center gap-4 text-sm">
+            {esAdmin ? (
+              <Link href="/admin" className="font-semibold underline">Administración</Link>
+            ) : null}
             <Link href="/cuenta/acceso" title="Mi acceso: nombre y contraseña" className="text-gris underline decoration-linea underline-offset-4 hover:text-tinta">
               {usuario.email}
             </Link>

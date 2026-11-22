@@ -22,7 +22,7 @@ const rastreadoresIA = [
 ];
 
 /** Rutas que no deben rastrearse: la API y todo lo que requiere sesión. */
-const privadas = ["/api/", "/auth/", "/cuenta", "/entrar", "/aceptar", "/salir", "/v/"];
+const privadas = ["/api/", "/auth/", "/cuenta", "/admin", "/entrar", "/aceptar", "/salir", "/v/"];
 
 export default function robots(): MetadataRoute.Robots {
   if (!site.indexable) {

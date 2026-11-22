@@ -272,11 +272,19 @@ isOneToOne: false
             "aceptar_invitacion":
 { Args: { "p_invitacion": string }; Returns: string
                            },
+"admin_empresas":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "activos": number,"creado_en": string,"disenos": number,"id": string,"listos": number,"nombre": string
+            }[]
+                           },
 "cambiar_rol_usuario":
 { Args: { "p_empresa": string,"p_rol": string,"p_usuario": string }; Returns: undefined
                            },
 "crear_empresa":
 { Args: { "p_giro"?: string,"p_nombre": string }; Returns: string
+                           },
+"es_admin_plataforma":
+{ Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "invitar_usuario":
 { Args: { "p_correo": string,"p_empresa": string,"p_rol"?: string }; Returns: string
