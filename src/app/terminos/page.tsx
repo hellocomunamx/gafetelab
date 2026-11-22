@@ -223,6 +223,10 @@ export default function Terminos() {
           <Apartado numero={11} titulo="Gafetes digitales y verificación con código QR">
             <ul>
               <li>
+                El gafete digital se paga una sola vez por pieza. No es un cobro recurrente y no
+                genera cargos posteriores.
+              </li>
+              <li>
                 Al escanear el código QR de un gafete se muestra la información que tu empresa
                 decidió hacer visible y si el gafete está vigente. Tú eliges esos datos y eres
                 responsable de mantener al día las altas, las bajas y las desactivaciones.

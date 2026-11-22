@@ -39,7 +39,8 @@ export function TablaPrecios() {
       <ul className="mt-3 space-y-1 text-sm text-gris">
         <li>
           <strong className="text-tinta">Gafete digital: {pesos(precioDigital)} por pieza</strong>, solo
-          o sumado al impreso, en cualquier cantidad.
+          o sumado al impreso, en cualquier cantidad. Es un pago único: no se cobra cada mes ni
+          cada año.
         </li>
         <li>
           Precios en PVC estándar.{" "}
