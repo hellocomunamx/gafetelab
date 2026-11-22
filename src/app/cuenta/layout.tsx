@@ -5,6 +5,7 @@ import { NavCuenta } from "@/components/cuenta/NavCuenta";
 import { SelectorEmpresa } from "@/components/cuenta/SelectorEmpresa";
 import { Contenedor } from "@/components/ui";
 import { AvisoInvitaciones } from "@/components/cuenta/AvisoInvitaciones";
+import { RUTA_ADMIN } from "@/lib/admin/ruta";
 import { esAdminPlataforma } from "@/lib/admin/sesion";
 import { COOKIE_EMPRESA, misInvitaciones, requerirUsuario } from "@/lib/cuenta/sesion";
 import { cookies } from "next/headers";
@@ -39,7 +40,7 @@ export default async function CuentaLayout({ children }: { children: ReactNode }
           </div>
           <div className="flex items-center gap-4 text-sm">
             {esAdmin ? (
-              <Link href="/admin" className="font-semibold underline">Administración</Link>
+              <Link href={RUTA_ADMIN} className="font-semibold underline">Administración</Link>
             ) : null}
             <Link href="/cuenta/acceso" title="Mi acceso: nombre y contraseña" className="text-gris underline decoration-linea underline-offset-4 hover:text-tinta">
               {usuario.email}

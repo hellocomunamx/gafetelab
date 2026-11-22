@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Contenedor } from "@/components/ui";
+import { RUTA_ADMIN } from "@/lib/admin/ruta";
 import { requerirAdmin } from "@/lib/admin/sesion";
 
 export const metadata: Metadata = {
@@ -19,7 +20,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <p className="font-titulos text-lg font-extrabold">Administración</p>
             <nav aria-label="Administración" className="flex gap-1">
-              <Link href="/admin" className="rounded-full px-4 py-2 text-sm font-semibold hover:bg-white">
+              <Link href={RUTA_ADMIN} className="rounded-full px-4 py-2 text-sm font-semibold hover:bg-white">
                 Empresas
               </Link>
             </nav>

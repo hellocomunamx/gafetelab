@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { RUTA_ADMIN } from "@/lib/admin/ruta";
 import { requerirAdmin } from "@/lib/admin/sesion";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -22,6 +23,6 @@ export async function revisarConstancia(d: FormData) {
     })
     .eq("id", id)
     .eq("estado", "pendiente");
-  revalidatePath("/admin");
+  revalidatePath(RUTA_ADMIN);
   revalidatePath("/cuenta", "layout");
 }
