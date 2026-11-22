@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Afiliados } from "@/components/Afiliados";
 import { Faq } from "@/components/Faq";
 import { GruposFunciones, MuyPronto, Palomita, SinCostoExtra } from "@/components/Funciones";
 import { HeroAnimado } from "@/components/HeroAnimado";
@@ -258,6 +259,8 @@ export default function Inicio() {
           </Link>
         </p>
       </Seccion>
+
+      <Afiliados />
 
       <Cierre
         titulo="¿Listo para decir “Hola, soy”?"

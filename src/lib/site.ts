@@ -55,7 +55,15 @@ export const figalo = {
  * Negocios afiliados: de ellos puede llegar publicidad a quien la haya aceptado.
  * Con `url` y `texto`, el afiliado aparece con una mención discreta en la landing.
  */
-export const afiliados: { nombre: string; url?: string; texto?: string }[] = [{ nombre: "Talentu" }];
+export const afiliados: { nombre: string; url?: string; texto?: string; logo?: string }[] = [
+  {
+    nombre: "Talentu",
+    url: "https://talentu.work/?utm_source=lagafeteria&utm_medium=referido",
+    texto:
+      "Software de recursos humanos para PyMEs en México: checador desde el celular, expedientes, vacaciones y recibos de nómina para el mismo equipo que ya trae su gafete.",
+    logo: "/marca/talentu-isotipo.svg",
+  },
+];
 
 /** Responsable legal del tratamiento de datos (aviso de privacidad). */
 export const legal = {
