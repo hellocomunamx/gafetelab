@@ -223,7 +223,8 @@ export default function Terminos() {
             <ul>
               <li>
                 El gafete digital se paga una sola vez por pieza. No es un cobro recurrente y no
-                genera cargos posteriores.
+                genera cargos posteriores. Sigue activo mientras la cuenta de tu empresa esté
+                activa y no lo desactives ni des de baja a la persona.
               </li>
               <li>
                 Al escanear el código QR de un gafete se muestra la información que tu empresa
