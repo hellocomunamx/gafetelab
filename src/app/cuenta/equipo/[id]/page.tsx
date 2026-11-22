@@ -10,7 +10,8 @@ import { FotoEmpleado } from "@/components/cuenta/FotoEmpleado";
 import { estadosGafete, motivosGafete } from "@/lib/cuenta/catalogos";
 import { camposDe, sugerenciasDe } from "@/lib/cuenta/consultas";
 import { QrSvg } from "@/components/QrSvg";
-import { ligasDeFotos } from "@/lib/cuenta/fotos";
+import { ligasDe, ligasDeFotos } from "@/lib/cuenta/fotos";
+import { avisosDeGafete, type CaraGuardada } from "@/lib/cuenta/listos";
 import { contenidoQr, rutaVerificacion } from "@/lib/cuenta/qr";
 import { datosDePersona } from "@/lib/diseno/datos";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
@@ -39,12 +40,23 @@ export default async function Persona({ params }: { params: Promise<{ id: string
     .maybeSingle();
   if (!persona) notFound();
 
-  const [campos, sugerencias, { data: gafetes }, fotos] = await Promise.all([
+  const [campos, sugerencias, { data: gafetes }, fotos, { data: listo }] = await Promise.all([
     camposDe(supabase, empresa.id),
     sugerenciasDe(supabase, empresa.id),
     supabase.from("gafetes").select("*").eq("empleado_id", id).order("emitido_en", { ascending: false }),
     ligasDeFotos(supabase, [persona.foto_path]),
+    supabase
+      .from("gafetes_listos")
+      .select("frente_path, frente_ancho, frente_alto, vuelta_path, vuelta_ancho, vuelta_alto")
+      .eq("empleado_id", id)
+      .maybeSingle(),
   ]);
+  const caraLista = (ruta?: string | null, ancho?: number | null, alto?: number | null): CaraGuardada | null =>
+    ruta && ancho && alto ? { ruta, ancho, alto } : null;
+  const frenteListo = caraLista(listo?.frente_path, listo?.frente_ancho, listo?.frente_alto);
+  const vueltaLista = caraLista(listo?.vuelta_path, listo?.vuelta_ancho, listo?.vuelta_alto);
+  const avisosListo = listo ? avisosDeGafete(frenteListo, vueltaLista) : [];
+  const ligasListo = listo ? await ligasDe(supabase, "gafetes", [frenteListo?.ruta, vueltaLista?.ruta]) : null;
   const deBaja = persona.estatus === "baja";
   const qr = contenidoQr(empresa, { codigo: persona.codigo, valores: datosDePersona(persona, campos) });
 
@@ -110,6 +122,40 @@ export default async function Persona({ params }: { params: Promise<{ id: string
               ) : null}
             </FotoEmpleado>
           </Bloque>
+
+          {ligasListo ? (
+            <Bloque titulo="Gafete listo">
+              <div className="flex items-center justify-center gap-2 rounded-tarjeta-chica bg-papel p-3">
+                {[
+                  { cara: "Frente", ruta: frenteListo?.ruta },
+                  { cara: "Vuelta", ruta: vueltaLista?.ruta },
+                ].map(({ cara, ruta }) => {
+                  const url = ruta ? ligasListo.get(ruta) : undefined;
+                  return url ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- liga temporal de almacenamiento privado
+                    <img
+                      key={cara}
+                      src={url}
+                      alt={`${cara} del gafete de ${persona.nombre}`}
+                      className="max-h-32 min-w-0 flex-1 rounded object-contain drop-shadow"
+                    />
+                  ) : null;
+                })}
+              </div>
+              {avisosListo.length ? (
+                <ul className="mt-3 space-y-0.5 rounded-tarjeta-chica bg-resaltador/30 px-2.5 py-1.5 text-sm">
+                  {avisosListo.map((a) => <li key={a}>{a}</li>)}
+                </ul>
+              ) : (
+                <p className="mt-3 text-sm text-[#0a7d4f]">Medida y calidad correctas</p>
+              )}
+              <p className="mt-3 text-sm">
+                <Link href="/cuenta/disenos/listos" className="font-semibold underline underline-offset-4">
+                  Cambiarlo o quitarlo
+                </Link>
+              </p>
+            </Bloque>
+          ) : null}
 
           <Bloque titulo="Código QR">
             {qr ? (

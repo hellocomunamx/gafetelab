@@ -4,7 +4,7 @@ import type { Database } from "@/lib/supabase/tipos";
 /** Ligas temporales (1 hora) para mostrar archivos de un almacenamiento privado. */
 export async function ligasDe(
   supabase: SupabaseClient<Database>,
-  almacen: "fotos" | "disenos",
+  almacen: "fotos" | "disenos" | "gafetes",
   rutas: (string | null | undefined)[],
 ): Promise<Map<string, string>> {
   const unicas = [...new Set(rutas.filter((r): r is string => Boolean(r)))];

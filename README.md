@@ -93,6 +93,14 @@ Para usar la cuenta hay que aceptar los términos y condiciones (`/terminos`) y 
 
 Cada aceptación queda en la tabla `aceptaciones`: usuario, versión de los términos, versión del aviso y fecha. La fecha y el usuario los pone la base de datos, y los renglones no se pueden cambiar ni borrar desde la app. Las versiones salen de `legal` en `src/lib/site.ts`: al cambiar un documento, sube ahí su versión y su fecha. Hoy basta con haber aceptado una vez; si un cambio futuro debe volver a aceptarse, se ajusta `miAceptacion` en `src/lib/cuenta/sesion.ts`.
 
+### Ya tengo mis gafetes listos
+
+En `/cuenta/disenos/listos` una empresa sube de forma masiva los gafetes que ya tiene terminados, una imagen por persona y por cara (JPG o PNG, sueltas o en un ZIP). No pasan por el editor.
+
+- **A quién le toca cada archivo.** Por el nombre: número de empleado o nombre completo, igual que las fotos (`src/lib/cuenta/emparejar.ts`). Si termina en `-frente`, `-vuelta`, `_f`, `_v`, `-1` o `-2`, ese final dice la cara. Lo que no se reconoce queda sin asignar y se elige a mano.
+- **Revisión.** `revisarGafete` en `src/lib/cuenta/listos.ts` compara la proporción con la del gafete con margen de corte y sin él, y calcula los dpi. Bloquea lo que no tiene proporción de gafete o trae menos de 150 dpi; lo demás se sube con su aviso (sin margen de corte, proporción no exacta, resolución baja o justa, frente y vuelta con distinta orientación).
+- **Dónde quedan.** Tabla `gafetes_listos` (un renglón por persona, con ruta, ancho y alto de cada cara) y bucket privado `gafetes`, en `<empresa>/<empleado>-<cara>.<jpg|png>`. Subir otra vez la misma cara la reemplaza. Las imágenes de más de 3000 px o de 8 MB se reducen a JPEG de 2400 px antes de subir.
+
 ### Qué muestra tu QR
 
 Cada empresa decide en `/cuenta/campos#qr` qué lleva el código QR de sus gafetes (columnas `qr_*` de `empresas`). Solo lo cambia quien administra.

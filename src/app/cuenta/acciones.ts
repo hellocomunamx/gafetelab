@@ -256,6 +256,13 @@ export async function borrarEmpleado(d: FormData) {
   if (fila) {
     const { data } = await supabase.from("empleados").select("foto_path").eq("id", fila).maybeSingle();
     if (data?.foto_path) await supabase.storage.from("fotos").remove([data.foto_path]);
+    const { data: listo } = await supabase
+      .from("gafetes_listos")
+      .select("frente_path, vuelta_path")
+      .eq("empleado_id", fila)
+      .maybeSingle();
+    const caras = [listo?.frente_path, listo?.vuelta_path].filter((r): r is string => Boolean(r));
+    if (caras.length) await supabase.storage.from("gafetes").remove(caras);
     await supabase.from("empleados").delete().eq("id", fila);
   }
   refrescar();

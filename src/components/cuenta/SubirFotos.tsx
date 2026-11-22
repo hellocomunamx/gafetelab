@@ -6,6 +6,7 @@ import { type ChangeEvent, type DragEvent, useEffect, useMemo, useRef, useState 
 import { asignarFotos } from "@/app/cuenta/acciones";
 import { crearEmparejador, type PersonaFoto, type Via } from "@/lib/cuenta/emparejar";
 import { prepararFoto, rutaFoto } from "@/lib/cuenta/imagen";
+import { extraerImagenes, type ImagenSuelta } from "@/lib/cuenta/zip";
 import { crearClienteNavegador } from "@/lib/supabase/client";
 import { claseBoton, claseBotonSecundario } from "./Formulario";
 
@@ -22,35 +23,12 @@ type Foto = {
 };
 
 const MAXIMO = 500;
-const ES_IMAGEN = /\.(jpe?g|png|webp)$/i;
-const TIPOS: Record<string, string> = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp" };
 const VIAS: Record<string, string> = {
   archivo: "Por el archivo del Excel",
   numero: "Por número de empleado",
   nombre: "Por nombre",
   manual: "Elegida a mano",
 };
-
-/** Saca las imágenes de lo que la persona soltó: fotos sueltas o un ZIP con fotos. */
-async function extraer(archivos: File[]): Promise<{ archivo: string; contenido: Blob }[]> {
-  const fotos: { archivo: string; contenido: Blob }[] = [];
-  for (const a of archivos) {
-    if (/\.zip$/i.test(a.name)) {
-      const { unzipSync } = await import("fflate");
-      const contenido = unzipSync(new Uint8Array(await a.arrayBuffer()), {
-        filter: (f) => ES_IMAGEN.test(f.name) && !/(^|\/)(__MACOSX|\.)/.test(f.name),
-      });
-      for (const [ruta, bytes] of Object.entries(contenido)) {
-        const nombre = ruta.split("/").pop()!;
-        const tipo = TIPOS[nombre.split(".").pop()!.toLowerCase()];
-        fotos.push({ archivo: nombre, contenido: new Blob([bytes as BlobPart], { type: tipo }) });
-      }
-    } else if (ES_IMAGEN.test(a.name)) {
-      fotos.push({ archivo: a.name, contenido: a });
-    }
-  }
-  return fotos;
-}
 
 /** Carga masiva: empareja cada foto con su persona, deja revisar y sube. */
 export function SubirFotos({ empresaId, personas }: { empresaId: string; personas: Persona[] }) {
@@ -72,9 +50,9 @@ export function SubirFotos({ empresaId, personas }: { empresaId: string; persona
   async function agregar(archivos: File[]) {
     setAviso("");
     setResultado(undefined);
-    let nuevas: Awaited<ReturnType<typeof extraer>>;
+    let nuevas: ImagenSuelta[];
     try {
-      nuevas = await extraer(archivos);
+      nuevas = await extraerImagenes(archivos);
     } catch {
       return setAviso("No pudimos abrir el ZIP. Prueba a comprimirlo de nuevo o sube las fotos sueltas.");
     }

@@ -183,6 +183,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"gafetes_listos": {
+                  Row: {
+                    "actualizado_en": string,"creado_en": string,"empleado_id": string,"empresa_id": string,"frente_alto": number | null,"frente_ancho": number | null,"frente_path": string | null,"vuelta_alto": number | null,"vuelta_ancho": number | null,"vuelta_path": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actualizado_en"?: string,"creado_en"?: string,"empleado_id": string,"empresa_id": string,"frente_alto"?: number | null,"frente_ancho"?: number | null,"frente_path"?: string | null,"vuelta_alto"?: number | null,"vuelta_ancho"?: number | null,"vuelta_path"?: string | null
+                  }
+                  Update: {
+                    "actualizado_en"?: string,"creado_en"?: string,"empleado_id"?: string,"empresa_id"?: string,"frente_alto"?: number | null,"frente_ancho"?: number | null,"frente_path"?: string | null,"vuelta_alto"?: number | null,"vuelta_ancho"?: number | null,"vuelta_path"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "gafetes_listos_empleado_id_fkey"
+      columns: ["empleado_id"]
+isOneToOne: true
+      referencedRelation: "empleados"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "gafetes_listos_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"invitaciones": {
                   Row: {
                     "correo": string,"creado_en": string,"empresa_id": string,"id": string,"invitado_por": string | null,"rol": string

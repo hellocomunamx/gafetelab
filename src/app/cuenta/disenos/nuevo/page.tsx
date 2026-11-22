@@ -24,7 +24,9 @@ export default async function DisenoNuevo() {
       </Bloque>
       <p className="text-sm text-gris">
         Las plantillas usan los campos que marcaste para el gafete en{" "}
-        <Link href="/cuenta/campos" className="underline">Campos</Link>.
+        <Link href="/cuenta/campos" className="underline">Campos</Link>. ¿Ya tienes el gafete terminado de
+        cada persona?{" "}
+        <Link href="/cuenta/disenos/listos" className="underline">Súbelos de forma masiva</Link>.
       </p>
     </div>
   );

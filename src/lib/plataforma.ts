@@ -137,6 +137,11 @@ export const funcionesPlataforma: { grupo: string; resumen: string; funciones: F
           "Arrastra tu logo, los campos, la foto y el código QR a donde quieras, por frente y vuelta. Parte de una plantilla, de tu propio fondo o de cero.",
       },
       {
+        titulo: "Sube tus gafetes ya listos",
+        texto:
+          "Si ya tienes el gafete terminado de cada persona, súbelos de forma masiva. Cada uno se asigna solo por el nombre del archivo y revisamos su medida y su calidad.",
+      },
+      {
         titulo: "Campos a tu medida",
         texto: "Tú decides qué lleva tu gafete: puesto, área, tipo de sangre, vigencia o lo que tu empresa necesite.",
       },

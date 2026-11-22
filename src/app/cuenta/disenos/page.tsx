@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Confirmar } from "@/components/cuenta/Confirmar";
-import { claseBoton } from "@/components/cuenta/Formulario";
+import { claseBoton, claseBotonSecundario } from "@/components/cuenta/Formulario";
 import { GafeteSvg } from "@/components/diseno/GafeteSvg";
 import { camposDe } from "@/lib/cuenta/consultas";
 import { ligasDe } from "@/lib/cuenta/fotos";
@@ -17,7 +17,7 @@ const ligaAccion = "font-semibold underline underline-offset-4";
 
 export default async function Disenos() {
   const { supabase, empresa } = await requerirEmpresa();
-  const [{ data: filas }, campos] = await Promise.all([
+  const [{ data: filas }, campos, { count: listos }] = await Promise.all([
     supabase
       .from("disenos")
       .select("id, nombre, orientacion, frente, vuelta, predeterminado")
@@ -25,6 +25,7 @@ export default async function Disenos() {
       .order("predeterminado", { ascending: false })
       .order("creado_en"),
     camposDe(supabase, empresa.id),
+    supabase.from("gafetes_listos").select("empleado_id", { count: "exact", head: true }).eq("empresa_id", empresa.id),
   ]);
   const disenos = (filas ?? []).map((f) => ({ ...disenoDeFila(f), predeterminado: f.predeterminado }));
   const ligas = await ligasDe(supabase, "disenos", disenos.flatMap((d) => rutasDe(d.frente)));
@@ -102,6 +103,19 @@ export default async function Disenos() {
           <Link href="/cuenta/disenos/nuevo" className={`${claseBoton} mt-4`}>Crear mi primer diseño</Link>
         </div>
       )}
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-tarjeta border border-linea bg-white p-5">
+        <div className="min-w-0 flex-1 basis-64">
+          <h2 className="text-lg font-extrabold">¿Ya tienes tus gafetes terminados?</h2>
+          <p className="text-sm text-gris">
+            {listos
+              ? `${listos === 1 ? "1 persona ya tiene" : `${listos.toLocaleString("es-MX")} personas ya tienen`} su gafete listo. Sube más o cámbialos cuando quieras.`
+              : "Si ya tienes el gafete de cada persona con su nombre y su foto, súbelos de forma masiva y sáltate el editor."}
+          </p>
+        </div>
+        <Link href="/cuenta/disenos/listos" className={claseBotonSecundario}>
+          {listos ? "Ver mis gafetes listos" : "Subir gafetes listos"}
+        </Link>
+      </div>
       <p className="text-sm text-gris">
         El diseño predeterminado es el que se usará en tus pedidos. Los datos de las miniaturas son de ejemplo.
       </p>

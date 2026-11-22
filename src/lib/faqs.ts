@@ -91,7 +91,7 @@ export const faqsGenerales: Faq[] = [
   {
     pregunta: "¿Puedo usar el diseño que ya tiene mi empresa?",
     respuesta:
-      "Sí. Hay tres formas de empezar: subir tu propio diseño, elegir una plantilla y ponerle tu logo y colores, o crear el gafete desde cero. En las tres marcas qué partes cambian de un empleado a otro.",
+      "Sí. Hay tres formas de empezar: subir tu propio diseño, elegir una plantilla y ponerle tu logo y colores, o crear el gafete desde cero. En las tres marcas qué partes cambian de un empleado a otro. Y si ya tienes el gafete terminado de cada persona, con su nombre y su foto, los subes de forma masiva en tu cuenta y se imprimen tal cual.",
   },
   {
     pregunta: "¿Qué datos puede llevar cada gafete?",
