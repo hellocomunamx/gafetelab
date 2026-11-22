@@ -17,8 +17,22 @@ export const tramos: Tramo[] = [
   { desde: 300, hasta: null, precio: 30 },
 ];
 
-/** Extra por pieza cuando el gafete va impreso por frente y vuelta. */
-export const extraDosCaras = 12;
+/** Extra por pieza cuando el gafete va impreso por frente y vuelta: también baja con la cantidad. */
+export const tramosDosCaras: Tramo[] = [
+  { desde: 1, hasta: 29, precio: 12 },
+  { desde: 30, hasta: 99, precio: 10 },
+  { desde: 100, hasta: null, precio: 8 },
+];
+
+export function extraDosCaras(cantidad: number): number {
+  const tramo =
+    tramosDosCaras.find((t) => cantidad >= t.desde && (t.hasta === null || cantidad <= t.hasta)) ??
+    tramosDosCaras[tramosDosCaras.length - 1];
+  return tramo.precio;
+}
+
+export const extraDosCarasMinimo = Math.min(...tramosDosCaras.map((t) => t.precio));
+export const extraDosCarasMaximo = Math.max(...tramosDosCaras.map((t) => t.precio));
 
 /** Precio por pieza del gafete digital: el mismo si va solo o sumado a uno impreso. */
 export const precioDigital = 10;
@@ -113,7 +127,7 @@ export function cotizar(cantidad: number, opciones: Opciones = {}): Cotizacion {
     if (material && material.extra > 0) {
       conceptos.push({ nombre: `Material: ${material.nombre}`, porPieza: material.extra });
     }
-    if (dosCaras) conceptos.push({ nombre: "Impresión por frente y vuelta", porPieza: extraDosCaras });
+    if (dosCaras) conceptos.push({ nombre: "Impresión por frente y vuelta", porPieza: extraDosCaras(piezas) });
     if (modalidad === "ambos") conceptos.push({ nombre: "Gafete digital", porPieza: precioDigital });
   } else {
     conceptos.push({ nombre: "Gafete digital", porPieza: precioDigital });
@@ -154,6 +168,15 @@ export function pesos(n: number): string {
     maximumFractionDigits: 2,
   })}`;
 }
+
+/** "$12 de 1 a 29 piezas, $10 de 30 a 99 y $8 de 100 o más". */
+export const extraDosCarasDetalle = tramosDosCaras
+  .map((t) => `${pesos(t.precio)} de ${rangoTexto(t)}${t === tramosDosCaras[0] ? " piezas" : ""}`)
+  .join(", ")
+  .replace(/, ([^,]*)$/, " y $1");
+
+/** "de $8 a $12". */
+export const extraDosCarasRango = `de ${pesos(extraDosCarasMinimo)} a ${pesos(extraDosCarasMaximo)}`;
 
 export const envioGratisTexto =
   envio.gratisDesde > 0 ? `Envío gratis desde ${pesos(envio.gratisDesde)}` : "Envío gratis";

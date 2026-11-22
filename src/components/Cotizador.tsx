@@ -6,6 +6,7 @@ import { condiciones, nombreArchivo, nuevoFolio, renglones, totales } from "@/li
 import { grosorTexto, type MaterialId, materiales } from "@/lib/materiales";
 import {
   cotizar,
+  extraDosCaras,
   envio,
   type Modalidad,
   modalidades,
@@ -22,12 +23,16 @@ type Estado = { tipo: "inactivo" | "enviando" | "listo" | "error"; mensaje?: str
 
 const hoy = () => new Date().toISOString().slice(0, 10);
 
+const CANTIDAD_MAXIMA = 100000;
+
 /**
  * Cotizador completo: precio por pieza, envío, IVA, total y entrega a la vista.
  * La cotización se puede descargar en PDF o recibir por correo.
  */
 export function Cotizador() {
-  const [cantidad, setCantidad] = useState(30);
+  // Lo que está escrito en el campo, que puede quedar vacío mientras la persona teclea.
+  const [piezas, setPiezas] = useState("30");
+  const cantidad = Math.min(CANTIDAD_MAXIMA, Math.max(1, Number.parseInt(piezas, 10) || 1));
   const [modalidad, setModalidad] = useState<Modalidad>("impreso");
   const [dosCaras, setDosCaras] = useState(false);
   const [material, setMaterial] = useState<MaterialId>("estandar");
@@ -126,9 +131,12 @@ export function Cotizador() {
             type="number"
             inputMode="numeric"
             min={1}
-            max={100000}
-            value={cantidad}
-            onChange={(e) => setCantidad(Number(e.target.value))}
+            max={CANTIDAD_MAXIMA}
+            value={piezas}
+            // Solo dígitos y sin ceros a la izquierda: "010" se vuelve "10".
+            onChange={(e) => setPiezas(e.target.value.replace(/\D/g, "").replace(/^0+(?=\d)/, "").slice(0, 6))}
+            // Al salir, el campo muestra la cantidad con la que se cotizó (mínimo 1).
+            onBlur={() => setPiezas(String(cantidad))}
             className="mt-3 w-full max-w-48 rounded-tarjeta-chica border border-linea px-4 py-3 text-lg font-semibold"
           />
           {siguiente && ahorro > 0 ? (
@@ -158,6 +166,9 @@ export function Cotizador() {
                 </label>
               ))}
             </div>
+            <p className="mt-2 text-sm text-gris">
+              Frente y vuelta suma {pesos(extraDosCaras(cantidad))} por pieza con esta cantidad.
+            </p>
           </fieldset>
         ) : null}
 
