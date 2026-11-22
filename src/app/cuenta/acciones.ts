@@ -1,16 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { estadosMexico, regimenesFiscales, usosCfdi } from "@/lib/cuenta/catalogos";
-import { COOKIE_EMPRESA, requerirEmpresa, requerirUsuario } from "@/lib/cuenta/sesion";
+import { recordarEmpresa, requerirEmpresa, requerirUsuario } from "@/lib/cuenta/sesion";
 import { claveDe, normalizar } from "@/lib/cuenta/texto";
 import type { FilaImportada, Resultado } from "@/lib/cuenta/tipos";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const ERROR_GENERAL = "No pudimos guardar. Intenta de nuevo.";
+const SOLO_ADMIN = "Solo quien administra la empresa puede cambiar estos datos.";
 
 const texto = (d: FormData, clave: string, max = 200) =>
   String(d.get(clave) ?? "").trim().slice(0, max);
@@ -20,15 +20,6 @@ const id = (d: FormData, clave = "id") => {
   return UUID.test(v) ? v : null;
 };
 const refrescar = () => revalidatePath("/cuenta", "layout");
-
-async function recordarEmpresa(empresaId: string) {
-  (await cookies()).set(COOKIE_EMPRESA, empresaId, {
-    path: "/",
-    httpOnly: true,
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 365,
-  });
-}
 
 // --- Empresa ---------------------------------------------------------------
 
@@ -67,7 +58,7 @@ export async function guardarEmpresa(_: Resultado, d: FormData): Promise<Resulta
     .eq("id", empresa.id)
     .select("id");
   if (error) return { error: ERROR_GENERAL };
-  if (!data.length) return { error: "Solo quien administra la empresa puede cambiar estos datos." };
+  if (!data.length) return { error: SOLO_ADMIN };
   refrescar();
   return { ok: "Guardado." };
 }
@@ -75,7 +66,8 @@ export async function guardarEmpresa(_: Resultado, d: FormData): Promise<Resulta
 // --- Datos de envío --------------------------------------------------------
 
 export async function guardarDireccion(_: Resultado, d: FormData): Promise<Resultado> {
-  const { supabase, empresa } = await requerirEmpresa();
+  const { supabase, empresa, administra } = await requerirEmpresa();
+  if (!administra) return { error: SOLO_ADMIN };
   const fila = {
     alias: opcional(d, "alias", 60),
     destinatario: texto(d, "destinatario", 120),
@@ -137,7 +129,8 @@ export async function predeterminarDireccion(d: FormData) {
 // --- Datos de facturación --------------------------------------------------
 
 export async function guardarDatosFiscales(_: Resultado, d: FormData): Promise<Resultado> {
-  const { supabase, empresa } = await requerirEmpresa();
+  const { supabase, empresa, administra } = await requerirEmpresa();
+  if (!administra) return { error: SOLO_ADMIN };
   const fila = {
     rfc: texto(d, "rfc", 13).toUpperCase().replace(/[\s-]/g, ""),
     razon_social: texto(d, "razon_social", 200),

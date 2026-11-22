@@ -20,12 +20,12 @@ const AVISOS: Record<string, string> = {
 export default async function Entrar({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; correo?: string }>;
 }) {
   const supabase = await crearClienteServidor();
   const { data } = await supabase.auth.getUser();
   if (data.user) redirect("/cuenta");
-  const { error } = await searchParams;
+  const { error, correo } = await searchParams;
 
   return (
     <Contenedor className="py-14 sm:py-20">
@@ -35,7 +35,11 @@ export default async function Entrar({
           Tu plataforma de {site.nombre}: tu equipo, sus gafetes y tus datos guardados.
         </p>
         <div className="mt-8 rounded-tarjeta border border-linea p-6 sm:p-7">
-          <FormularioEntrar proveedores={proveedoresActivos()} aviso={error ? AVISOS[error] : undefined} />
+          <FormularioEntrar
+            proveedores={proveedoresActivos()}
+            aviso={error ? AVISOS[error] : undefined}
+            correoInicial={typeof correo === "string" ? correo.slice(0, 254) : undefined}
+          />
         </div>
         <p className="mt-4 text-sm text-gris">
           Al entrar aceptas nuestro{" "}

@@ -9,6 +9,7 @@ const ENLACES = [
   { href: "/cuenta/campos", texto: "Campos" },
   { href: "/cuenta/disenos", texto: "Diseños" },
   { href: "/cuenta/datos", texto: "Envío y facturación" },
+  { href: "/cuenta/usuarios", texto: "Usuarios" },
 ];
 
 export function NavCuenta() {

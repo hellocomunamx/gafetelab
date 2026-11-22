@@ -45,6 +45,29 @@ export async function verificarCodigo(_: EstadoAcceso, datos: FormData): Promise
   redirect("/cuenta");
 }
 
+/** Entra con correo y contraseña, para quien ya creó una en "Mi acceso". */
+export async function entrarConContrasena(_: EstadoAcceso, datos: FormData): Promise<EstadoAcceso> {
+  const correo = String(datos.get("correo") ?? "").trim().toLowerCase();
+  const contrasena = String(datos.get("contrasena") ?? "");
+  if (correo.length > 254 || !CORREO_VALIDO.test(correo)) {
+    return { paso: "correo", error: "Escribe un correo válido." };
+  }
+  if (!contrasena) return { paso: "correo", correo, error: "Escribe tu contraseña." };
+  const supabase = await crearClienteServidor();
+  const { error } = await supabase.auth.signInWithPassword({ email: correo, password: contrasena });
+  if (error) {
+    return {
+      paso: "correo",
+      correo,
+      error:
+        error.status === 429
+          ? "Demasiados intentos. Espera un minuto y vuelve a intentar."
+          : "El correo o la contraseña no son correctos. Si no tienes contraseña o la olvidaste, entra con la liga por correo.",
+    };
+  }
+  redirect("/cuenta");
+}
+
 /** Entra con una cuenta de Google o Microsoft, si están activadas. */
 export async function entrarConProveedor(datos: FormData) {
   const proveedor = proveedoresActivos().find((p) => p === datos.get("proveedor"));

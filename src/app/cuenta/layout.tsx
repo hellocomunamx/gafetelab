@@ -4,7 +4,8 @@ import type { ReactNode } from "react";
 import { NavCuenta } from "@/components/cuenta/NavCuenta";
 import { SelectorEmpresa } from "@/components/cuenta/SelectorEmpresa";
 import { Contenedor } from "@/components/ui";
-import { COOKIE_EMPRESA, requerirUsuario } from "@/lib/cuenta/sesion";
+import { AvisoInvitaciones } from "@/components/cuenta/AvisoInvitaciones";
+import { COOKIE_EMPRESA, misInvitaciones, requerirUsuario } from "@/lib/cuenta/sesion";
 import { cookies } from "next/headers";
 
 export const metadata: Metadata = {
@@ -14,12 +15,16 @@ export const metadata: Metadata = {
 
 export default async function CuentaLayout({ children }: { children: ReactNode }) {
   const { supabase, usuario } = await requerirUsuario();
-  const { data: empresas } = await supabase.from("empresas").select("id, nombre").order("creado_en");
+  const [{ data: empresas }, invitaciones] = await Promise.all([
+    supabase.from("empresas").select("id, nombre").order("creado_en"),
+    misInvitaciones(),
+  ]);
   const elegida = (await cookies()).get(COOKIE_EMPRESA)?.value;
   const actual = empresas?.find((e) => e.id === elegida) ?? empresas?.[0];
 
   return (
     <div className="min-h-[70vh] bg-papel">
+      <AvisoInvitaciones empresas={invitaciones.map((i) => i.empresa)} />
       <div className="border-b border-linea">
         <Contenedor className="flex flex-col gap-3 py-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -31,7 +36,9 @@ export default async function CuentaLayout({ children }: { children: ReactNode }
             {actual ? <NavCuenta /> : null}
           </div>
           <div className="flex items-center gap-4 text-sm">
-            <span className="text-gris">{usuario.email}</span>
+            <Link href="/cuenta/acceso" title="Mi acceso: nombre y contraseña" className="text-gris underline decoration-linea underline-offset-4 hover:text-tinta">
+              {usuario.email}
+            </Link>
             {actual ? (
               <Link href="/cuenta/empresa/nueva" className="underline">Otra empresa</Link>
             ) : null}

@@ -41,13 +41,14 @@ Antes de la primera vez:
 
 ## Plataforma (cuenta, empresa y equipo)
 
-Vive en `/cuenta` y pide sesión. Lo que hay hoy: entrar con liga o código por correo (y Google o Microsoft si se activan), crear la empresa, datos de envío y de facturación guardados, equipo con filtros, altas, bajas e historial de gafetes, campos a la medida, plantilla de Excel para subir al equipo, carga masiva de fotos y editor de diseño con vista previa de cada gafete.
+Vive en `/cuenta` y pide sesión. Lo que hay hoy: entrar con liga o código por correo, con contraseña (opcional, se crea en `/cuenta/acceso`) o con Google o Microsoft si se activan; invitar usuarios a la empresa con roles; crear la empresa, datos de envío y de facturación guardados, equipo con filtros, altas, bajas e historial de gafetes, campos a la medida, plantilla de Excel para subir al equipo, carga masiva de fotos y editor de diseño con vista previa de cada gafete.
 
 | Qué | Dónde |
 | --- | --- |
 | Tablas, permisos, reglas de acceso y almacenamiento de fotos | `supabase/migrations/` |
 | Correo de acceso (liga y código) | `supabase/templates/acceso.html` |
 | Sesión: renovarla y proteger `/cuenta` | `src/middleware.ts`, `src/lib/cuenta/sesion.ts` |
+| Usuarios, invitaciones, roles y contraseña | `src/app/cuenta/usuarios/`, `src/app/cuenta/invitaciones/`, `src/app/cuenta/acceso/`, `src/lib/cuenta/roles.ts` |
 | Entrar, confirmar la liga y salir | `src/app/entrar/`, `src/app/auth/confirmar/route.ts`, `src/app/salir/route.ts` |
 | Páginas de la cuenta | `src/app/cuenta/` |
 | Todo lo que guarda o borra (acciones del servidor) | `src/app/cuenta/acciones.ts` |
@@ -70,6 +71,21 @@ Reglas que conviene saber:
 - Todo diseño que llega del navegador pasa por `limpiarCara` antes de guardarse: solo admite tipos conocidos, medidas dentro del gafete y archivos de la propia empresa.
 - `src/middleware.ts` no se renombra a `proxy.ts` aunque Next lo sugiera: con OpenNext en Cloudflare el proxy de Node responde 500 a cualquier visita que traiga cookies.
 
+### Usuarios y roles
+
+Cada empresa puede invitar a más personas a su plataforma desde `/cuenta/usuarios`:
+
+| Rol | Qué puede hacer |
+| --- | --- |
+| Dueño (`propietario`) | Todo, incluido invitar administradores, cambiar roles y quitar personas. La empresa nunca se queda sin dueño. |
+| Administrador | Todo lo de la empresa (equipo, diseños, envío y facturación). Invita y quita editores. |
+| Editor | Equipo, campos y diseños. Ve envío y facturación, pero no los cambia. |
+
+- La invitación va a un correo. Quien entra con ese correo la ve en `/cuenta/invitaciones` y la acepta; el aviso sale con Resend (`RESEND_API_KEY`) y, si no está configurado, la invitación se guarda igual y la pantalla lo dice.
+- Los permisos se cumplen en la base de datos (reglas de acceso y funciones `invitar_usuario`, `aceptar_invitacion`, `cambiar_rol_usuario`, `quitar_usuario`), no solo en la pantalla.
+- **Importante:** las invitaciones confían en que el correo de la sesión está verificado. En Supabase, deja activado "Confirm email" en Authentication, Sign In / Providers, Email (viene activado). Si se apaga, alguien podría registrarse con un correo ajeno y aceptar su invitación.
+- La contraseña es opcional y se crea en `/cuenta/acceso`. No hay pantalla de "olvidé mi contraseña": se entra con la liga o el código por correo y se crea otra.
+
 ### Configurar Supabase (una vez)
 
 Las tablas ya están aplicadas en el proyecto `lagafeteria`. Falta esto en el panel de Supabase:
@@ -90,7 +106,7 @@ Plantillas de correo ([panel de Email Templates](https://supabase.com/dashboard/
 | Reset password | `restablecer-contrasena.html` | `{{ .Token }} es tu código para restablecer tu contraseña` |
 | Reauthentication | `verificacion.html` | `{{ .Token }} es tu código de verificación de LaGafetería` |
 
-Hoy la plataforma solo manda el correo de acceso. Los demás quedan listos para cuando existan las invitaciones, el cambio de correo o las contraseñas; sus ligas regresan a `/auth/confirmar` e inician la sesión.
+Hoy Supabase solo manda el correo de acceso; el aviso de invitación a una empresa lo manda la propia app con Resend. Los demás quedan listos para cuando existan el cambio de correo o el restablecimiento de contraseña; sus ligas regresan a `/auth/confirmar` e inician la sesión.
 
 ### Base de datos local
 

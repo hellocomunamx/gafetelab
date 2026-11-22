@@ -117,6 +117,10 @@ export const funcionesPlataforma: { grupo: string; resumen: string; funciones: F
         texto: "Cuántos gafetes se le han emitido, cuándo y por qué: alta, reposición o cambio de datos.",
       },
       {
+        titulo: "Usuarios con roles",
+        texto: "Invita a quien te ayuda con los gafetes y decide qué puede hacer: dueño, administrador o editor.",
+      },
+      {
         titulo: "Liga para cada persona",
         texto: "Cada quien sube sus datos y su foto desde su celular, y tú apruebas o rechazas.",
         pronto: true,

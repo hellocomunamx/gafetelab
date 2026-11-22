@@ -169,6 +169,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"invitaciones": {
+                  Row: {
+                    "correo": string,"creado_en": string,"empresa_id": string,"id": string,"invitado_por": string | null,"rol": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "correo": string,"creado_en"?: string,"empresa_id": string,"id"?: string,"invitado_por"?: string | null,"rol"?: string
+                  }
+                  Update: {
+                    "correo"?: string,"creado_en"?: string,"empresa_id"?: string,"id"?: string,"invitado_por"?: string | null,"rol"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "invitaciones_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"miembros": {
                   Row: {
                     "creado_en": string,"empresa_id": string,"rol": string,"usuario_id": string
@@ -209,8 +229,30 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "crear_empresa":
+            "aceptar_invitacion":
+{ Args: { "p_invitacion": string }; Returns: string
+                           },
+"cambiar_rol_usuario":
+{ Args: { "p_empresa": string,"p_rol": string,"p_usuario": string }; Returns: undefined
+                           },
+"crear_empresa":
 { Args: { "p_giro"?: string,"p_nombre": string }; Returns: string
+                           },
+"invitar_usuario":
+{ Args: { "p_correo": string,"p_empresa": string,"p_rol"?: string }; Returns: string
+                           },
+"mis_invitaciones":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "creado_en": string,"empresa": string,"empresa_id": string,"id": string,"rol": string
+            }[]
+                           },
+"quitar_usuario":
+{ Args: { "p_empresa": string,"p_usuario": string }; Returns: undefined
+                           },
+"usuarios_de":
+{ Args: { "p_empresa": string }; Returns: {
+              "correo": string,"desde": string,"nombre": string,"rol": string,"usuario_id": string
+            }[]
                            }
           }
           Enums: {

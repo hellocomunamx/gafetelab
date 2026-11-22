@@ -13,17 +13,40 @@ export const requerirUsuario = cache(async () => {
   return { supabase, usuario: data.user };
 });
 
-/** Empresa activa de la persona; si no tiene ninguna, manda a crearla. */
+export type Rol = "propietario" | "administrador" | "editor";
+
+/** Invitaciones pendientes para el correo de la sesión. */
+export const misInvitaciones = cache(async () => {
+  const { supabase } = await requerirUsuario();
+  const { data } = await supabase.rpc("mis_invitaciones");
+  return data ?? [];
+});
+
+/**
+ * Empresa activa de la persona y su rol en ella. Si no tiene ninguna, la manda
+ * a aceptar sus invitaciones o, si no hay, a crear su empresa.
+ */
 export const requerirEmpresa = cache(async () => {
   const { supabase, usuario } = await requerirUsuario();
-  const { data: empresas } = await supabase
-    .from("empresas")
-    .select("id, nombre, giro")
-    .order("creado_en");
-  if (!empresas?.length) redirect("/cuenta/empresa/nueva");
+  const [{ data: empresas }, { data: membresias }] = await Promise.all([
+    supabase.from("empresas").select("id, nombre, giro").order("creado_en"),
+    supabase.from("miembros").select("empresa_id, rol").eq("usuario_id", usuario.id),
+  ]);
+  if (!empresas?.length) {
+    redirect((await misInvitaciones()).length ? "/cuenta/invitaciones" : "/cuenta/empresa/nueva");
+  }
   const elegida = (await cookies()).get(COOKIE_EMPRESA)?.value;
   const empresa = empresas.find((e) => e.id === elegida) ?? empresas[0];
-  return { supabase, usuario, empresa, empresas };
+  const rol = (membresias?.find((m) => m.empresa_id === empresa.id)?.rol ?? "editor") as Rol;
+  return {
+    supabase,
+    usuario,
+    empresa,
+    empresas,
+    rol,
+    /** Dueño o administrador: puede cambiar datos de la empresa, envío y facturación. */
+    administra: rol !== "editor",
+  };
 });
 
 /** Origen de la solicitud ("https://dominio"), para armar ligas de regreso. */
@@ -40,4 +63,14 @@ export function proveedoresActivos(): ("google" | "azure")[] {
     .split(",")
     .map((p) => p.trim())
     .filter((p): p is "google" | "azure" => p === "google" || p === "azure");
+}
+
+/** Deja elegida una empresa para las siguientes visitas. Solo desde acciones del servidor. */
+export async function recordarEmpresa(empresaId: string) {
+  (await cookies()).set(COOKIE_EMPRESA, empresaId, {
+    path: "/",
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 365,
+  });
 }
