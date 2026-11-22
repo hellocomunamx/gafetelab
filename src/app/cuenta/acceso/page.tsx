@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { guardarContrasena, guardarPerfil } from "@/app/cuenta/usuarios/acciones";
+import { guardarContrasena, guardarPerfil, guardarPublicidad } from "@/app/cuenta/usuarios/acciones";
 import { Bloque, Entrada } from "@/components/cuenta/Entrada";
 import { Formulario } from "@/components/cuenta/Formulario";
 import { LARGO_MINIMO_CONTRASENA } from "@/lib/cuenta/roles";
 import { miAceptacion, proveedoresActivos, requerirUsuario } from "@/lib/cuenta/sesion";
+import { afiliados, site } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Mi acceso" };
 
@@ -12,7 +13,7 @@ const NOMBRES = { google: "Google", azure: "Microsoft" } as const;
 
 export default async function Acceso() {
   const { supabase, usuario } = await requerirUsuario();
-  const { data: perfil } = await supabase.from("perfiles").select("nombre").eq("id", usuario.id).maybeSingle();
+  const { data: perfil } = await supabase.from("perfiles").select("nombre, publicidad").eq("id", usuario.id).maybeSingle();
   const conContrasena = usuario.user_metadata?.con_contrasena === true;
   const proveedores = proveedoresActivos().map((p) => NOMBRES[p]);
   const { aceptacion } = await miAceptacion();
@@ -94,6 +95,27 @@ export default async function Acceso() {
             </li>
           ) : null}
         </ul>
+      </Bloque>
+
+      <Bloque titulo="Novedades y promociones">
+        <Formulario accion={guardarPublicidad} boton="Guardar">
+          <label className="flex cursor-pointer items-start gap-3">
+            <input
+              type="checkbox"
+              name="publicidad"
+              defaultChecked={perfil?.publicidad ?? false}
+              className="mt-1 size-5 shrink-0 accent-tinta"
+            />
+            <span>
+              Quiero recibir novedades y promociones de {site.nombre} y de sus negocios afiliados
+              {afiliados.length ? `, como ${afiliados.map((a) => a.nombre).join(" y ")}` : ""}.
+              <span className="mt-1 block text-sm text-gris">
+                Es opcional. Te las mandamos nosotros: no compartimos tu correo con nadie, y nunca usamos
+                los datos de tu personal para publicidad.
+              </span>
+            </span>
+          </label>
+        </Formulario>
       </Bloque>
 
       <p className="text-sm text-gris">

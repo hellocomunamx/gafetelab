@@ -91,7 +91,7 @@ Cada empresa puede invitar a más personas a su plataforma desde `/cuenta/usuari
 
 Para usar la cuenta hay que aceptar los términos y condiciones (`/terminos`) y el aviso de privacidad. Quien entra sin haberlo hecho llega a `/aceptar`, con una casilla obligatoria; aplica igual a quien entra con liga, contraseña, Google o Microsoft, y a las cuentas que ya existían (una sola vez).
 
-Cada aceptación queda en la tabla `aceptaciones`: usuario, versión de los términos, versión del aviso y fecha. La fecha y el usuario los pone la base de datos, y los renglones no se pueden cambiar ni borrar desde la app. Las versiones salen de `legal` en `src/lib/site.ts`: al cambiar un documento, sube ahí su versión y su fecha. Hoy basta con haber aceptado una vez; si un cambio futuro debe volver a aceptarse, se ajusta `miAceptacion` en `src/lib/cuenta/sesion.ts`.
+Cada aceptación queda en la tabla `aceptaciones`: usuario, versión de los términos, versión del aviso y fecha. La fecha y el usuario los pone la base de datos, y los renglones no se pueden cambiar ni borrar desde la app. Las versiones salen de `legal` en `src/lib/site.ts`: al cambiar un documento, sube ahí su versión y su fecha. La casilla de novedades y promociones es opcional y va aparte: se guarda en `perfiles.publicidad` (con la fecha del último cambio en `publicidad_en`), nace apagada y cada persona la cambia en `/cuenta/acceso`. Los negocios afiliados que se nombran salen de `afiliados` en `src/lib/site.ts`. Hoy basta con haber aceptado una vez; si un cambio futuro debe volver a aceptarse, se ajusta `miAceptacion` en `src/lib/cuenta/sesion.ts`.
 
 ### Qué muestra tu QR
 
