@@ -12,6 +12,7 @@ import {
   precioMinimo,
   tramos,
 } from "./precios";
+import { funcionesPlataforma } from "./plataforma";
 import { figalo, site, urlAbsoluta } from "./site";
 
 const ORG_ID = `${site.url}/#organizacion`;
@@ -196,5 +197,23 @@ export function comoHacerlo(pasos: { titulo: string; texto: string }[]) {
       name: p.titulo,
       text: p.texto,
     })),
+  };
+}
+
+/** La plataforma como aplicación web gratuita (página /plataforma). Solo anuncia lo ya disponible. */
+export function plataforma() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: `Plataforma de ${site.nombre}`,
+    url: urlAbsoluta("/plataforma"),
+    description:
+      "Plataforma en línea para administrar los gafetes y credenciales de los empleados de una empresa. Incluida con la cuenta, sin costo extra.",
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web",
+    inLanguage: site.idioma,
+    provider: { "@id": ORG_ID },
+    offers: { "@type": "Offer", price: 0, priceCurrency: site.moneda },
+    featureList: funcionesPlataforma.flatMap((g) => g.funciones.filter((f) => !f.pronto).map((f) => f.titulo)),
   };
 }

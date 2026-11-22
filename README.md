@@ -118,11 +118,12 @@ Los correos de acceso locales llegan a http://127.0.0.1:54324.
 | Cotizador | `src/components/Cotizador.tsx` |
 | Textos y PDF de la cotización | `src/lib/cotizacion.ts`, `src/lib/cotizacion-pdf.ts` |
 | Envío de la cotización por correo | `src/app/api/cotizacion/route.ts`, `src/lib/correo.ts` |
-| Modalidades, acciones y ajustes de la plataforma | `src/lib/plataforma.ts` |
+| Modalidades, funciones de la plataforma (con la marca `pronto` de lo que aún no está disponible), formas de subir al equipo y lo que no cobra | `src/lib/plataforma.ts` |
+| Animación del héroe y maquetas de gafetes, celular y plataforma (solo HTML y CSS) | `src/components/HeroAnimado.tsx`, `src/components/Muestras.tsx`, `.heroe-animado` en `src/app/globals.css` |
 | Aviso de privacidad | `src/app/aviso-de-privacidad/page.tsx` |
 | Preguntas frecuentes | `src/lib/faqs.ts` |
 | Páginas por giro (`/gafetes-para/...`) | `src/lib/giros.ts` |
-| Páginas por ciudad (`/gafetes-en/...`) | `src/lib/ciudades.ts` |
+| Página de envíos (`/gafetes-en`) y páginas por ciudad (`/gafetes-en/...`) | `src/lib/ciudades.ts` |
 | Pasos de "cómo funciona" | `src/lib/pasos.ts` |
 | Colores y tipografías | `src/app/globals.css`, `src/fonts/` |
 | Logo, íconos e imagen para redes | `public/marca/`, `src/app/` (`favicon.ico`, `icon.svg`, `apple-icon.png`) |

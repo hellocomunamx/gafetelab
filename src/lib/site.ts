@@ -1,7 +1,4 @@
-/**
- * Dominio PROVISIONAL: cámbialo aquí cuando esté definido el definitivo.
- * De este valor salen la URL canónica y el correo de contacto.
- */
+/** Dominio del sitio. De este valor salen la URL canónica y el correo de contacto. */
 const dominio = "lagafeteria.com";
 
 /**
@@ -15,7 +12,7 @@ export const site = {
   lema: "Hola, soy ___",
   titulo: "Gafetes y credenciales para empleados en todo México",
   descripcion:
-    "Gafetes y credenciales para tu equipo, impresos en PVC o digitales, sin vueltas: sube tu Excel, revisa cada gafete y conoce el precio con envío desde el primer paso. Envíos a todo México.",
+    "Gafetes y credenciales para tu equipo, impresos en PVC o digitales, sin vueltas: diseña tu gafete, sube a tu equipo y revisa cada uno antes de pagar. Plataforma incluida, sin costo extra. Envíos a todo México.",
   descripcionCorta:
     "Tienda en línea de gafetes y credenciales para empleados, impresos y digitales, con envíos a todo México.",
   correo: `hola@${dominio}`,

@@ -20,7 +20,7 @@ import {
   tramos,
 } from "./precios";
 import { grosorTexto, materiales, medidas, zonas } from "./materiales";
-import { accionesPlataforma, ajustesPlataforma } from "./plataforma";
+import { accionesPlataforma, ajustesPlataforma, formasDeCargar, funcionesPlataforma } from "./plataforma";
 import { rutasCiudades, rutasGiros, rutasPrincipales } from "./rutas";
 import { entregaTexto, site, urlAbsoluta } from "./site";
 
@@ -28,6 +28,13 @@ type Enlace = { ruta: string; titulo: string; resumen: string };
 
 const lista = (rutas: Enlace[]) =>
   rutas.map((r) => `- [${r.titulo}](${urlAbsoluta(r.ruta)}): ${r.resumen}`).join("\n");
+
+const funciones = (pronto: boolean) =>
+  funcionesPlataforma
+    .flatMap((g) => g.funciones)
+    .filter((f) => Boolean(f.pronto) === pronto)
+    .map((f) => f.titulo.toLowerCase())
+    .join(", ");
 
 const datosClave = () =>
   [
@@ -42,8 +49,10 @@ const datosClave = () =>
     `- Entrega: ${entregaTexto}. Entrega exprés: próximamente.`,
     `- Envío: a todo México desde ${site.estadoBase}, con tarifa única de ${pesos(envio.tarifa)} MXN; gratis en pedidos desde ${pesos(envio.gratisDesde)} MXN antes de IVA.`,
     `- Cotización: el cotizador en línea muestra precio, envío, IVA, total y entrega sin pedir datos, y permite descargar la cotización en PDF o recibirla por correo.`,
-    `- Plataforma: con la cuenta, cada empresa administra ${accionesPlataforma.map((a) => a.titulo.toLowerCase()).join(", ")}. También guarda ${ajustesPlataforma.map((a) => a.titulo.toLowerCase()).join(", ")}.`,
-    `- Cómo se pide: en línea, con plantillas o diseño propio, campos variables (nombre, puesto, número, foto, código QR), carga por Excel y vista previa de cada gafete antes de pagar.`,
+    `- Plataforma: incluida con la cuenta, sin costo extra (sin mensualidad, sin costo por usuario y sin pedido mínimo). Hoy incluye: ${funciones(false)}. Próximamente: ${funciones(true)}.`,
+    `- Administración del equipo: ${accionesPlataforma.map((a) => a.titulo.toLowerCase()).join(", ")}. Ajustes de la empresa: ${ajustesPlataforma.map((a) => a.titulo.toLowerCase()).join(", ")}.`,
+    `- Carga de datos del equipo: ${formasDeCargar.map((f) => `${f.titulo.charAt(0).toLowerCase()}${f.titulo.slice(1)}${f.pronto ? " (próximamente)" : ""}`).join("; ")}.`,
+    `- Cómo se pide: en línea, con plantillas o diseño propio, campos variables (nombre, puesto, número, foto, código QR), carga del equipo y vista previa de cada gafete antes de pagar.`,
     `- Factura: sí (CFDI).`,
     `- Contacto: ${site.correo}`,
   ].join("\n");
@@ -51,7 +60,7 @@ const datosClave = () =>
 export function llmsTxt(): string {
   return `# ${site.nombre}
 
-> ${site.nombre} es una tienda en línea mexicana dedicada exclusivamente a gafetes y credenciales para empleados. Los hace impresos en PVC o digitales. El pedido es guiado: plantilla o diseño propio, carga de datos con Excel, vista previa de cada gafete y precio con envío desde el primer paso. Envía a todo México.
+> ${site.nombre} es una tienda en línea mexicana dedicada exclusivamente a gafetes y credenciales para empleados. Los hace impresos en PVC o digitales. El pedido es guiado: plantilla o diseño propio, carga del equipo con Excel, una por una o con las fotos de todos juntas, vista previa de cada gafete y precio con envío desde el primer paso. Incluye, sin costo extra, una plataforma para administrar los gafetes del equipo. Envía a todo México.
 
 Nota de vocabulario: en México, "gafete" y "credencial" se usan para la tarjeta de identificación del empleado. El "portagafete" es la funda o broche donde se coloca. ${site.nombre} hace la tarjeta, impresa o digital.
 
@@ -67,7 +76,7 @@ ${lista(rutasPrincipales)}
 
 ${lista(rutasGiros)}
 
-## Por ciudad
+## Envíos por ciudad
 
 ${lista(rutasCiudades)}
 

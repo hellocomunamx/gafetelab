@@ -12,9 +12,9 @@ export const pasos = [
       "Elige los campos que cambian en cada gafete (nombre, puesto, número de empleado, fotografía o código QR) y si van al frente o a la vuelta.",
   },
   {
-    titulo: "Sube tu Excel",
+    titulo: "Sube a tu equipo",
     texto:
-      "Descarga la plantilla de Excel con tus campos, llénala y súbela, o captura a las personas una por una. Cada renglón se convierte en un gafete.",
+      "Como te acomode: con la plantilla de Excel, una persona a la vez o las fotos de todos juntas, que se asignan solas. Muy pronto, también con una liga para que cada quien suba sus datos y su foto.",
   },
   {
     titulo: "Revisa cada gafete",

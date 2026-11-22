@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ciudades } from "@/lib/ciudades";
 import { giros } from "@/lib/giros";
 import { figalo, site } from "@/lib/site";
 import { Logo } from "./Logo";
@@ -34,6 +33,7 @@ export function Pie() {
             <li><Link href="/precios" className="hover:text-rojo-claro">Precios</Link></li>
             <li><Link href="/materiales" className="hover:text-rojo-claro">Materiales y medidas</Link></li>
             <li><Link href="/cotizar" className="hover:text-rojo-claro">Cotizar</Link></li>
+            <li><Link href="/gafetes-en" className="hover:text-rojo-claro">Envíos a todo México</Link></li>
             <li><Link href="/preguntas-frecuentes" className="hover:text-rojo-claro">Preguntas frecuentes</Link></li>
             <li><Link href="/aviso-de-privacidad" className="hover:text-rojo-claro">Aviso de privacidad</Link></li>
           </ul>
@@ -54,18 +54,15 @@ export function Pie() {
           </ul>
         </nav>
 
-        <nav aria-label="Gafetes y credenciales por ciudad">
+        <nav aria-label="Tu plataforma">
           <h2 className="font-texto text-sm font-semibold tracking-wider text-white/60 uppercase">
-            Por ciudad
+            Tu plataforma
           </h2>
-          <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-            {ciudades.map((c) => (
-              <li key={c.slug}>
-                <Link href={`/gafetes-en/${c.slug}`} className="hover:text-rojo-claro">
-                  {c.nombre}
-                </Link>
-              </li>
-            ))}
+          <ul className="mt-4 space-y-2 text-sm">
+            <li><Link href="/plataforma" className="hover:text-rojo-claro">Qué incluye</Link></li>
+            <li><Link href="/plataforma#costo" className="hover:text-rojo-claro">Sin costo extra</Link></li>
+            <li><Link href="/plataforma#cargar" className="hover:text-rojo-claro">Formas de subir a tu equipo</Link></li>
+            <li><Link href="/cuenta" className="hover:text-rojo-claro">Entrar a mi cuenta</Link></li>
           </ul>
         </nav>
       </Contenedor>

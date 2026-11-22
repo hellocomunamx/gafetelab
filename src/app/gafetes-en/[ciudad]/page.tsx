@@ -44,7 +44,7 @@ export default async function PaginaCiudad({ params }: PageProps<"/gafetes-en/[c
   const ruta = `/gafetes-en/${ciudad.slug}`;
   const titulo = `Gafetes y credenciales ${ciudad.enTexto}`;
   const rutaMigas = [
-    { nombre: "Por ciudad", ruta: "/gafetes-en" },
+    { nombre: "Envíos a todo México", ruta: "/gafetes-en" },
     { nombre: ciudad.nombre, ruta },
   ];
   const girosLocales = ciudad.giros.map(giroPorSlug).filter((g) => g !== undefined);

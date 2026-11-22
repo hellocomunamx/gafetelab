@@ -1,8 +1,10 @@
+import Link from "next/link";
 import { Etiqueta } from "@/components/Etiqueta";
+import { MuyPronto } from "@/components/Funciones";
 import { JsonLd } from "@/components/JsonLd";
 import { Cierre, Portada, Seccion } from "@/components/ui";
 import { formasDeEmpezar, pasos } from "@/lib/pasos";
-import { accionesPlataforma, ajustesPlataforma } from "@/lib/plataforma";
+import { accionesPlataforma, ajustesPlataforma, formasDeCargar } from "@/lib/plataforma";
 import { comoHacerlo, migas } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
 import { entregaTexto, site } from "@/lib/site";
@@ -11,9 +13,9 @@ const ruta = "/como-funciona";
 const rutaMigas = [{ nombre: "Cómo funciona", ruta }];
 
 export const metadata = metadatos({
-  titulo: "Cómo pedir gafetes y credenciales con Excel, paso a paso",
+  titulo: "Cómo pedir gafetes y credenciales para tu equipo, paso a paso",
   descripcion:
-    "Así se piden gafetes y credenciales para empleados en LaGafetería: eliges plantilla o subes tu diseño, marcas los campos variables, cargas tu Excel, revisas cada gafete y pagas con el envío a la vista.",
+    "Así se piden gafetes y credenciales para empleados en LaGafetería: eliges plantilla o subes tu diseño, marcas los campos variables, subes a tu equipo con Excel, uno por uno o con las fotos de todos juntas, revisas cada gafete y pagas con el envío a la vista.",
   ruta,
 });
 
@@ -31,7 +33,7 @@ export default function ComoFunciona() {
       <Portada migas={rutaMigas} titulo="¿Cómo se piden gafetes y credenciales en LaGafetería?">
         <p>
           En cinco pasos y todo en línea: eliges cómo empezar, marcas lo que cambia en cada gafete,
-          subes tu Excel, revisas la vista previa de cada uno y pagas. Tu pedido llega en{" "}
+          subes a tu equipo, revisas la vista previa de cada uno y pagas. Tu pedido llega en{" "}
           {entregaTexto}.
         </p>
       </Portada>
@@ -58,14 +60,34 @@ export default function ComoFunciona() {
         </ol>
       </Seccion>
 
-      <Seccion titulo="¿Con qué puedo empezar mi gafete?" fondo>
+      <Seccion id="cargar" titulo="¿Cómo subo a mi equipo?" fondo>
+        <p className="-mt-2 mb-6 max-w-2xl text-lg text-gris">
+          No todo es Excel. En el paso 3 usas la forma que te acomode, o varias: lo que subes por
+          un lado se junta con lo que ya tenías.
+        </p>
+        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {formasDeCargar.map((f) => (
+            <li key={f.titulo} className="rounded-tarjeta bg-white p-5">
+              <h3 className="text-lg font-bold">{f.titulo}</h3>
+              {f.pronto ? (
+                <p className="mt-1">
+                  <MuyPronto />
+                </p>
+              ) : null}
+              <p className="mt-2 text-sm text-gris">{f.texto}</p>
+            </li>
+          ))}
+        </ul>
+      </Seccion>
+
+      <Seccion titulo="¿Con qué puedo empezar mi gafete?">
         <p className="-mt-2 mb-6 max-w-2xl text-lg text-gris">
           Con lo que tengas. Hay tres formas de empezar y las tres terminan igual: un diseño con
           campos que se llenan solos para cada persona.
         </p>
         <ul className="grid gap-5 md:grid-cols-3">
           {formasDeEmpezar.map((f) => (
-            <li key={f.titulo} className="rounded-tarjeta bg-white p-6">
+            <li key={f.titulo} className="rounded-tarjeta border border-linea p-6">
               <h3 className="text-xl font-bold">{f.titulo}</h3>
               <p className="mt-2 text-gris">{f.texto}</p>
             </li>
@@ -73,15 +95,15 @@ export default function ComoFunciona() {
         </ul>
       </Seccion>
 
-      <Seccion titulo="¿Qué es un campo variable?">
+      <Seccion titulo="¿Qué es un campo variable?" fondo>
         <div className="grid items-center gap-10 lg:grid-cols-[1.4fr_1fr]">
           <div>
             <p className="max-w-2xl text-lg text-gris">
               Es la parte del gafete que cambia de una persona a otra. El logo y los colores son
               fijos; el nombre, el puesto o la foto son variables. Tú marcas cuáles son y el sistema
-              los llena con cada renglón de tu Excel.
+              los llena con los datos de cada persona.
             </p>
-            <dl className="mt-6 divide-y divide-linea rounded-tarjeta border border-linea">
+            <dl className="mt-6 divide-y divide-linea rounded-tarjeta border border-linea bg-white">
               {campos.map((c) => (
                 <div key={c.nombre} className="grid gap-1 px-5 py-3 sm:grid-cols-[12rem_1fr]">
                   <dt className="font-semibold">{c.nombre}</dt>
@@ -96,13 +118,30 @@ export default function ComoFunciona() {
         </div>
       </Seccion>
 
-      <Seccion titulo="¿Qué puedo hacer después, en mi cuenta?" fondo>
+      <Seccion titulo="¿Qué puedo hacer después, en mi cuenta?">
         <p className="-mt-2 mb-8 max-w-2xl text-lg text-gris">
           Una vez creada tu cuenta tienes acceso a tu plataforma de {site.nombre}. Ahí queda tu
-          equipo guardado y administras sus gafetes sin volver a empezar:
+          equipo guardado y administras sus gafetes sin volver a empezar, sin costo extra.{" "}
+          <Link href="/plataforma" className="font-semibold text-rojo underline underline-offset-4">
+            Ver todo lo que incluye la plataforma
+          </Link>
         </p>
         <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {accionesPlataforma.map((a) => (
+            <div key={a.titulo} className="rounded-tarjeta bg-papel p-5">
+              <dt className="text-lg font-bold">{a.titulo}</dt>
+              <dd className="mt-1 text-sm text-gris">{a.texto}</dd>
+            </div>
+          ))}
+        </dl>
+      </Seccion>
+
+      <Seccion titulo="¿Cómo dejo configurados los gafetes de mi empresa?" fondo>
+        <p className="-mt-2 mb-8 max-w-2xl text-lg text-gris">
+          Lo configuras una vez y cada pedido siguiente sale casi solo:
+        </p>
+        <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {ajustesPlataforma.map((a) => (
             <div key={a.titulo} className="rounded-tarjeta bg-white p-5">
               <dt className="text-lg font-bold">{a.titulo}</dt>
               <dd className="mt-1 text-sm text-gris">{a.texto}</dd>
@@ -111,22 +150,8 @@ export default function ComoFunciona() {
         </dl>
       </Seccion>
 
-      <Seccion titulo="¿Cómo dejo configurados los gafetes de mi empresa?">
-        <p className="-mt-2 mb-8 max-w-2xl text-lg text-gris">
-          Lo configuras una vez y cada pedido siguiente sale casi solo:
-        </p>
-        <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {ajustesPlataforma.map((a) => (
-            <div key={a.titulo} className="rounded-tarjeta border border-linea p-5">
-              <dt className="text-lg font-bold">{a.titulo}</dt>
-              <dd className="mt-1 text-sm text-gris">{a.texto}</dd>
-            </div>
-          ))}
-        </dl>
-      </Seccion>
-
       <Cierre
-        titulo="Empieza con tu lista de Excel"
+        titulo="Empieza con tu lista de personal"
         texto="Cuéntanos cuántos gafetes necesitas y te decimos el precio con envío."
       />
 

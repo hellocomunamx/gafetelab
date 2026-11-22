@@ -24,7 +24,7 @@ const tramoVolumen = tramos.find((t) => t.desde === 30) ?? tramos[2];
 export const faqsGenerales: Faq[] = [
   {
     pregunta: `¿Qué es ${site.nombre}?`,
-    respuesta: `${site.nombre} es una tienda en línea mexicana dedicada solo a gafetes y credenciales para empleados, impresos en PVC o digitales. En lugar de mandar archivos por correo, armas tu pedido paso a paso: eliges una plantilla o subes tu diseño, cargas los datos de tu equipo con Excel, revisas cada gafete en pantalla y ves el precio con envío antes de pagar.`,
+    respuesta: `${site.nombre} es una tienda en línea mexicana dedicada solo a gafetes y credenciales para empleados, impresos en PVC o digitales. En lugar de mandar archivos por correo, armas tu pedido paso a paso: eliges una plantilla o subes tu diseño, subes a tu equipo con Excel, uno por uno o con las fotos de todos juntas, revisas cada gafete en pantalla y ves el precio con envío antes de pagar. Con tu cuenta tienes una plataforma para administrar los gafetes de tu equipo, sin costo extra.`,
   },
   {
     pregunta: "¿Cuánto cuesta un gafete o credencial para empleado?",
@@ -80,7 +80,7 @@ export const faqsGenerales: Faq[] = [
   {
     pregunta: "¿Cómo mando los datos de mis empleados?",
     respuesta:
-      "Con un archivo de Excel o capturándolos uno por uno. Cada columna de tu Excel (nombre, puesto, número de empleado) se conecta con un campo del gafete, y el sistema genera un gafete por cada renglón.",
+      "Como te acomode: con la plantilla de Excel, capturándolos uno por uno o subiendo las fotos de todos juntas, que se asignan solas por número de empleado o por nombre. Cada columna de tu Excel (nombre, puesto, número de empleado) se conecta con un campo del gafete, y el sistema genera un gafete por cada renglón. Muy pronto también podrás mandar una liga para que cada persona suba sus datos y su foto.",
   },
   {
     pregunta: "¿Puedo usar el diseño que ya tiene mi empresa?",
