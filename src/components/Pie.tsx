@@ -41,6 +41,7 @@ export function Pie() {
             <li><Link href="/preguntas-frecuentes" className="hover:text-rojo-claro">Preguntas frecuentes</Link></li>
             <li><Link href="/contacto" className="hover:text-rojo-claro">Contacto</Link></li>
             <li><Link href="/aviso-de-privacidad" className="hover:text-rojo-claro">Aviso de privacidad</Link></li>
+            <li><Link href="/terminos" className="hover:text-rojo-claro">Términos y condiciones</Link></li>
           </ul>
         </nav>
 

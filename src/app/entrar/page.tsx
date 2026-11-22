@@ -38,7 +38,11 @@ export default async function Entrar({
           <FormularioEntrar proveedores={proveedoresActivos()} aviso={error ? AVISOS[error] : undefined} />
         </div>
         <p className="mt-4 text-sm text-gris">
-          Al entrar aceptas nuestro{" "}
+          Al entrar aceptas nuestros{" "}
+          <Link href="/terminos" className="underline">
+            términos y condiciones
+          </Link>{" "}
+          y nuestro{" "}
           <Link href="/aviso-de-privacidad" className="underline">
             aviso de privacidad
           </Link>

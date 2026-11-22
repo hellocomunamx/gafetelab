@@ -13,6 +13,7 @@ export const rutasPrincipales = [
   { ruta: "/gafetes-para", titulo: "Gafetes y credenciales por giro", prioridad: 0.7, resumen: "Índice de páginas por giro de empresa." },
   { ruta: "/gafetes-en", titulo: "Envíos a todo México", prioridad: 0.7, resumen: "Cobertura, costo y tiempo de envío, con las ciudades a las que más enviamos." },
   { ruta: "/contacto", titulo: "Contacto", prioridad: 0.5, resumen: "Formulario de contacto para dudas, pedidos especiales y seguimiento. Para saber el precio no hace falta escribir: el cotizador en línea lo da al momento." },
+  { ruta: "/terminos", titulo: "Términos y condiciones", prioridad: 0.3, resumen: "Reglas de uso del sitio y de la plataforma: pedidos, precios, pagos, facturas, envíos, cancelaciones, reposiciones y datos del personal." },
   { ruta: "/aviso-de-privacidad", titulo: "Aviso de privacidad", prioridad: 0.3, resumen: "Quién es responsable de los datos, qué datos se tratan y cómo ejercer los derechos ARCO." },
 ];
 
