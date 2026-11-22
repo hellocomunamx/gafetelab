@@ -1,3 +1,4 @@
+import { ArmaPaquete } from "@/components/ArmaPaquete";
 import { Faq } from "@/components/Faq";
 import { JsonLd } from "@/components/JsonLd";
 import { TablaPaquetes } from "@/components/TablaPaquetes";
@@ -64,7 +65,7 @@ const faqsPrecios: FaqItem[] = [
   },
   {
     pregunta: "¿Qué son los paquetes prepagados?",
-    respuesta: `Son gafetes impresos que compras por adelantado y vas pidiendo conforme los necesitas, sin pagar envío cada vez. Hay paquetes de ${paquetes.map((p) => p.piezas).join(", ")} gafetes; el de ${paquetes[0].piezas} cuesta ${pesos(precioPaquete(paquetes[0]))} e incluye ${paquetes[0].envios} envíos. Los gafetes se pueden usar durante ${paqueteVigenciaMeses} meses.`,
+    respuesta: `Son gafetes impresos que compras por adelantado y vas pidiendo conforme los necesitas, sin pagar envío cada vez. Hay paquetes de ${paquetes.map((p) => p.piezas).join(", ")} gafetes; el de ${paquetes[0].piezas} cuesta ${pesos(precioPaquete(paquetes[0]))} e incluye ${paquetes[0].envios} envíos. También puedes armar un paquete a la medida, combinando cantidades, caras y materiales. Los gafetes se pueden usar durante ${paqueteVigenciaMeses} meses.`,
   },
   {
     pregunta: "¿Cuánto cuesta cambiar de material?",
@@ -119,6 +120,15 @@ export default function Precios() {
           lo que no uses queda a tu favor.
         </p>
         <TablaPaquetes />
+        <h3 id="paquete-a-la-medida" className="mt-10 scroll-mt-28 text-2xl font-extrabold">
+          O arma tu paquete a la medida
+        </h3>
+        <p className="mt-2 mb-5 max-w-2xl text-gris">
+          Combina lo que tu empresa necesita: por ejemplo, 10 gafetes por frente y vuelta para
+          gerencia y 100 a una cara para el resto, cada tipo con su material. Entre más gafetes
+          dejes prepagados, menos cuesta cada uno.
+        </p>
+        <ArmaPaquete />
       </Seccion>
 
       <Seccion titulo="¿Qué modalidad me conviene?">

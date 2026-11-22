@@ -79,6 +79,61 @@ export const paqueteVigenciaMeses = 12;
 
 export const precioPaquete = (p: Paquete) => p.piezas * p.porPieza;
 
+/**
+ * Paquete a la medida: la empresa combina varios tipos de gafete (cada renglón
+ * con su cantidad, sus caras y su material) y los deja prepagados juntos.
+ * El precio base por pieza y los envíos incluidos salen del paquete de lista
+ * más grande que cabe en el total de piezas; la vuelta y el material se suman
+ * por pieza, igual que en un pedido normal.
+ */
+export const paqueteMinimoPiezas = paquetes[0].piezas;
+export const paqueteMaximoPiezas = 5000;
+export const paqueteMaximoRenglones = 6;
+
+export type RenglonPaquete = { piezas: number; dosCaras: boolean; material: MaterialId };
+
+export type CotizacionPaquete = {
+  piezas: number;
+  /** Falta llegar al mínimo de piezas. */
+  incompleto: boolean;
+  basePorPieza: number;
+  envios: number;
+  renglones: { piezas: number; dosCaras: boolean; material: Material; porPieza: number; importe: number }[];
+  subtotal: number;
+  iva: number;
+  total: number;
+  /** Si con unas piezas más baja el precio por pieza: cuántas faltan y a cuánto baja. */
+  siguiente: { faltan: number; porPieza: number } | null;
+};
+
+export function cotizarPaquete(renglones: RenglonPaquete[]): CotizacionPaquete {
+  const limpios = renglones
+    .slice(0, paqueteMaximoRenglones)
+    .map((r) => ({ ...r, piezas: Math.min(paqueteMaximoPiezas, Math.max(0, Math.floor(Number(r.piezas)) || 0)) }))
+    .filter((r) => r.piezas > 0);
+  const piezas = limpios.reduce((suma, r) => suma + r.piezas, 0);
+  const base = [...paquetes].reverse().find((p) => piezas >= p.piezas) ?? paquetes[0];
+  const mayor = paquetes.find((p) => p.piezas > piezas && p.porPieza < base.porPieza);
+  const detalle = limpios.map((r) => {
+    const material = materialPara(r.material);
+    const porPieza = base.porPieza + material.extra + (r.dosCaras ? extraDosCaras(piezas) : 0);
+    return { piezas: r.piezas, dosCaras: r.dosCaras, material, porPieza, importe: porPieza * r.piezas };
+  });
+  const subtotal = detalle.reduce((suma, r) => suma + r.importe, 0);
+  const iva = Math.round(subtotal * tasaIva * 100) / 100;
+  return {
+    piezas,
+    incompleto: piezas < paqueteMinimoPiezas,
+    basePorPieza: base.porPieza,
+    envios: base.envios,
+    renglones: detalle,
+    subtotal,
+    iva,
+    total: Math.round((subtotal + iva) * 100) / 100,
+    siguiente: mayor && piezas >= paqueteMinimoPiezas ? { faltan: mayor.piezas - piezas, porPieza: mayor.porPieza } : null,
+  };
+}
+
 export function tramoPara(cantidad: number): Tramo {
   return (
     tramos.find((t) => cantidad >= t.desde && (t.hasta === null || cantidad <= t.hasta)) ??
@@ -169,11 +224,15 @@ export function pesos(n: number): string {
   })}`;
 }
 
-/** "$12 de 1 a 29 piezas, $10 de 30 a 99 y $8 de 100 o más". */
-export const extraDosCarasDetalle = tramosDosCaras
-  .map((t) => `${pesos(t.precio)} de ${rangoTexto(t)}${t === tramosDosCaras[0] ? " piezas" : ""}`)
-  .join(", ")
-  .replace(/, ([^,]*)$/, " y $1");
+/** Una escala de precios en una frase: "$12 de 1 a 29 piezas, $10 de 30 a 99 y $8 de 100 o más". */
+export const escalaTexto = (escala: Tramo[]) =>
+  escala
+    .map((t, i) => `${pesos(t.precio)} de ${rangoTexto(t)}${i === 0 ? " piezas" : ""}`)
+    .join(", ")
+    .replace(/, ([^,]*)$/, " y $1");
+
+export const tramosDetalle = escalaTexto(tramos);
+export const extraDosCarasDetalle = escalaTexto(tramosDosCaras);
 
 /** "de $8 a $12". */
 export const extraDosCarasRango = `de ${pesos(extraDosCarasMinimo)} a ${pesos(extraDosCarasMaximo)}`;

@@ -150,7 +150,9 @@ Los correos de acceso locales llegan a http://127.0.0.1:54324.
 | --- | --- |
 | Nombre, URL, correo, tiempo de entrega, vigencia de la cotización | `src/lib/site.ts` |
 | Datos legales del aviso de privacidad y enlace de Figalo | `src/lib/site.ts` (`legal`, `figalo`) |
-| Precios por pieza (impreso y digital), frente y vuelta, IVA, paquetes prepagados | `src/lib/precios.ts` |
+| Precios por pieza (impreso y digital), frente y vuelta, IVA, paquetes prepagados y paquete a la medida (`cotizarPaquete`) | `src/lib/precios.ts` |
+| Texto de la Constancia de Situación Fiscal y su antigüedad máxima | `src/lib/site.ts` (`constancia`, `site.constanciaMeses`) |
+| Motivos del formulario de contacto, incluido «Tengo una idea» (`/contacto#idea`) | `src/lib/contacto.ts` |
 | Materiales, grosores, extra por material y medidas del archivo (margen de corte, zona segura) | `src/lib/materiales.ts` |
 | Vista del diseño y zona de impresión | `src/components/VistaGafete.tsx`, `src/components/DiagramaGafete.tsx` |
 | Tarifa de envío y monto para envío gratis | `src/lib/precios.ts` (`envio`) |
