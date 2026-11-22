@@ -57,6 +57,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"constancias": {
+                  Row: {
+                    "creado_en": string,"empresa_id": string,"estado": string,"fecha_emision": string,"id": string,"motivo": string | null,"revisada_en": string | null,"ruta": string,"subida_por": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "creado_en"?: string,"empresa_id": string,"estado"?: string,"fecha_emision": string,"id"?: string,"motivo"?: string | null,"revisada_en"?: string | null,"ruta": string,"subida_por"?: string | null
+                  }
+                  Update: {
+                    "creado_en"?: string,"empresa_id"?: string,"estado"?: string,"fecha_emision"?: string,"id"?: string,"motivo"?: string | null,"revisada_en"?: string | null,"ruta"?: string,"subida_por"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "constancias_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"datos_fiscales": {
                   Row: {
                     "actualizado_en": string,"correo": string,"cp_fiscal": string,"creado_en": string,"empresa_id": string,"id": string,"predeterminado": boolean,"razon_social": string,"regimen_fiscal": string,"rfc": string,"uso_cfdi": string

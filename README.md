@@ -115,11 +115,16 @@ La fotografía vive en almacenamiento privado, así que la página de verificaci
 
 Hoy la verificación responde por cualquier persona activa del equipo. Cuando existan los pedidos se ligará a los gafetes emitidos, para poder desactivar un gafete sin dar de baja a la persona.
 
+### Constancia de Situación Fiscal
+
+Al crear una empresa, lo primero que se le pide es su Constancia de Situación Fiscal (`/cuenta/constancia`), en PDF, JPG o PNG de hasta 5 MB y con no más de 3 meses de antigüedad (`site.constanciaMeses`). Puede dejarla para después, pero debe estar **aprobada antes del primer pedido**: `puedePedir()` en `src/lib/cuenta/constancia.ts` es la comprobación que usarán los pedidos. La sube quien es dueño o administrador de la empresa; queda «en revisión» y se aprueba o se rechaza (con motivo) desde el panel de administración. La empresa no puede cambiarla ni borrarla; si se rechaza, sube una nueva. Tabla `constancias` y almacenamiento privado `constancias`.
+
 ### Administración (solo quien opera LaGafetería)
 
 `/admin` es el panel interno. No aparece en ningún menú de las empresas y, a quien no es administradora, le responde «no existe». Trae dos cosas:
 
-- **Empresas**: todas las cuentas con sus personas activas, diseños y gafetes listos, y un aviso de «Revisar» cuando el nombre de la empresa o los textos de sus diseños mencionan autoridades, dependencias o identificaciones oficiales (INE, gobierno, policía, SAT, IMSS y parecidas; la lista está en `src/lib/admin/alertas.ts`). El aviso no bloquea nada: pide que una persona lo vea antes de producir.
+- **Constancias por revisar**: abre el archivo, lo compara con el RFC y la razón social que la empresa capturó, y aprueba o rechaza.
+- **Empresas**: todas las cuentas con el estado de su constancia, sus personas activas, diseños y gafetes listos, y un aviso de «Revisar» cuando el nombre de la empresa o los textos de sus diseños mencionan autoridades, dependencias o identificaciones oficiales (INE, gobierno, policía, SAT, IMSS y parecidas; la lista está en `src/lib/admin/alertas.ts`). El aviso no bloquea nada: pide que una persona lo vea antes de producir.
 - **PDF de impresión** (`/admin/imprimir/<empresa>`): una página por cara, de 85.6 × 54 mm exactos y de orilla a orilla, para mandarlo tal cual a la impresora de credenciales. Sale de un diseño con los datos de cada persona o de los gafetes que la empresa subió ya terminados. Se elige el orden de las páginas (frente y vuelta seguidos, o frentes y vueltas en archivos aparte), si la vuelta va girada 180° y a quién incluir. Se arma en el navegador, en archivos de hasta 50 gafetes, y no se guarda en ningún lado. Las empresas no tienen ninguna salida a tamaño real.
 
 Necesita `SUPABASE_SECRET_KEY` en el servidor, porque lee los datos de todas las empresas. Esa llave solo se usa después de comprobar que la sesión es de una administradora.

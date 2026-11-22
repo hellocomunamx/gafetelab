@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { BotonPlantilla } from "@/components/cuenta/BotonPlantilla";
 import { Bloque } from "@/components/cuenta/Entrada";
+import { constanciaDe } from "@/lib/cuenta/constancia";
 import { camposDe } from "@/lib/cuenta/consultas";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
 import { claveDe } from "@/lib/cuenta/texto";
@@ -12,7 +13,8 @@ export default async function Resumen() {
   const base = () =>
     supabase.from("empleados").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id);
 
-  const [campos, activos, bajas, sinFoto, gafetes, direcciones, fiscales, disenos] = await Promise.all([
+  const [constancia, campos, activos, bajas, sinFoto, gafetes, direcciones, fiscales, disenos] = await Promise.all([
+    constanciaDe(supabase, empresa.id),
     camposDe(supabase, empresa.id),
     contar((q) => q.eq("estatus", "activo")),
     contar((q) => q.eq("estatus", "baja")),
@@ -24,6 +26,12 @@ export default async function Resumen() {
   ]);
 
   const pasos = [
+    {
+      hecho: constancia?.estado === "aprobada",
+      texto: constancia?.estado === "pendiente" ? "Tu Constancia de Situación Fiscal está en revisión" : "Sube la Constancia de Situación Fiscal de tu empresa",
+      href: "/cuenta/constancia",
+      accion: constancia?.estado === "pendiente" ? "Ver" : constancia ? "Subir una nueva" : "Subir constancia",
+    },
     { hecho: activos + bajas > 0, texto: "Sube a tu equipo", href: "/cuenta/equipo/importar", accion: "Importar con Excel" },
     { hecho: activos > 0 && sinFoto === 0, texto: "Sube las fotos", href: "/cuenta/equipo/fotos", accion: "Subir fotos" },
     { hecho: disenos > 0, texto: "Crea el diseño de tu gafete", href: "/cuenta/disenos/nuevo", accion: "Crear diseño" },
@@ -34,6 +42,19 @@ export default async function Resumen() {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-extrabold">Hola, {empresa.nombre}</h1>
+      {!constancia || constancia.estado === "rechazada" ? (
+        <p role={constancia ? "alert" : undefined} className="rounded-tarjeta bg-resaltador/30 p-4 text-sm">
+          <strong>
+            {constancia
+              ? "No pudimos aceptar tu Constancia de Situación Fiscal."
+              : "Falta la Constancia de Situación Fiscal de tu empresa."}
+          </strong>{" "}
+          {constancia ? (constancia.motivo ?? "") : "La necesitas antes de tu primer pedido."}{" "}
+          <Link href="/cuenta/constancia" className="font-semibold underline underline-offset-4">
+            {constancia ? "Subir una nueva" : "Subirla ahora"}
+          </Link>
+        </p>
+      ) : null}
       <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[
           { dato: activos, detalle: "personas activas", href: "/cuenta/equipo?estatus=activo" },

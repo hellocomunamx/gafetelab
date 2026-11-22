@@ -136,7 +136,8 @@ export default async function Datos({
         <p className="mb-5 rounded-tarjeta-chica bg-resaltador/30 p-4 text-sm">
           <strong>Revisa bien tus datos.</strong> La factura (CFDI) se pide dentro de los{" "}
           {site.plazoFacturaDias} días posteriores a tu pedido y, una vez emitida, no se puede
-          modificar. Captúralos tal como aparecen en tu Constancia de Situación Fiscal.
+          modificar. Captúralos tal como aparecen en tu{" "}
+          <Link href="/cuenta/constancia" className="underline">Constancia de Situación Fiscal</Link>.
         </p>
 
         {fiscales?.length ? (

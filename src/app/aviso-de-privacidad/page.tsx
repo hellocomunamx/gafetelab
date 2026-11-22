@@ -61,7 +61,8 @@ export default function AvisoDePrivacidad() {
               <li>
                 <strong>De quien compra o crea una cuenta:</strong> nombre, correo electrónico,
                 teléfono, empresa, domicilio de entrega y datos de facturación (RFC, nombre o razón
-                social, régimen fiscal, código postal y uso del comprobante).
+                social, régimen fiscal, código postal y uso del comprobante). También la Constancia
+                de Situación Fiscal de la empresa, con los datos que trae impresos.
               </li>
               <li>
                 <strong>De las personas que aparecen en los gafetes y credenciales:</strong> los
@@ -110,6 +111,10 @@ export default function AvisoDePrivacidad() {
               <li>
                 Crear y administrar tu cuenta y tu plataforma: altas, bajas, reposiciones,
                 desactivaciones y reactivaciones.
+              </li>
+              <li>
+                Comprobar, con la Constancia de Situación Fiscal, que la empresa que pide los
+                gafetes y credenciales es la misma que aparece en ellos.
               </li>
               <li>Cobrar tu pedido, emitir tu factura y cumplir obligaciones fiscales.</li>
               <li>Atender dudas, aclaraciones y solicitudes de soporte.</li>
