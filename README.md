@@ -20,7 +20,9 @@ Secretos en Cloudflare:
 npx wrangler login
 npx wrangler secret put RESEND_API_KEY
 npx wrangler secret put RESEND_FROM      # opcional: "LaGafetería <hola@tudominio>"
-npx wrangler secret put SUPABASE_SECRET_KEY   # fotografía en la verificación del QR y panel de administración
+npx wrangler secret put SUPABASE_SECRET_KEY   # fotografía en la verificación del QR, panel de administración y pedidos
+npx wrangler secret put STRIPE_SECRET_KEY     # cobro de pedidos (llave restringida rk_...)
+npx wrangler secret put STRIPE_WEBHOOK_SECRET # firma de los avisos de Stripe (whsec_...)
 ```
 
 Sin `RESEND_API_KEY`, el cotizador sigue funcionando y descargando el PDF; solo el envío por correo responde que todavía no está activo.
@@ -117,15 +119,42 @@ Hoy la verificación responde por cualquier persona activa del equipo. Cuando ex
 
 ### Constancia de Situación Fiscal
 
-Al crear una empresa, lo primero que se le pide es su Constancia de Situación Fiscal (`/cuenta/constancia`), en PDF, JPG o PNG de hasta 5 MB y con no más de 3 meses de antigüedad (`site.constanciaMeses`). Puede dejarla para después, pero debe estar **aprobada antes del primer pedido**: `puedePedir()` en `src/lib/cuenta/constancia.ts` es la comprobación que usarán los pedidos. La sube quien es dueño o administrador de la empresa; queda «en revisión» y se aprueba o se rechaza (con motivo) desde el panel de administración. La empresa no puede cambiarla ni borrarla; si se rechaza, sube una nueva. Tabla `constancias` y almacenamiento privado `constancias`.
+Al crear una empresa, lo primero que se le pide es su Constancia de Situación Fiscal (`/cuenta/constancia`), en PDF, JPG o PNG de hasta 5 MB y con no más de 3 meses de antigüedad (`site.constanciaMeses`). Puede dejarla para después, pero debe estar **aprobada antes del primer pedido**: `puedePedir()` en `src/lib/cuenta/constancia.ts` es la comprobación que usan los pedidos. La sube quien es dueño o administrador de la empresa; queda «en revisión» y se aprueba o se rechaza (con motivo) desde el panel de administración. La empresa no puede cambiarla ni borrarla; si se rechaza, sube una nueva. Tabla `constancias` y almacenamiento privado `constancias`.
+
+### Pedidos y pago
+
+Quien es dueño o administrador de una empresa con la constancia aprobada pide desde `/cuenta/pedidos/nuevo`: elige el diseño (o sus gafetes listos), a quién incluir, el material, la dirección y si quiere factura, revisa el resumen, marca que aprobó la vista previa y pasa a pagar. El precio se vuelve a calcular en el servidor con `cotizar()`; lo que mande el navegador no cuenta.
+
+El pedido guarda una **copia** de todo lo que se va a imprimir y a cobrar (diseño, datos de cada persona, dirección, datos de facturación e importes), para que nada cambie después de aprobado. Los pedidos solo los escribe el servidor con la llave secreta; las empresas los leen, sin las notas internas ni los controles de revisión (migración `20261123040000_pedidos.sql`).
+
+Estados: `por_pagar`, `pago_en_proceso` (ficha de OXXO o datos de transferencia generados), `autorizado` (tarjeta autorizada, corren los minutos de gracia), `pagado`, `en_produccion`, `enviado`, `entregado`, `cancelado` y `reembolsado`. Las reglas viven en `src/lib/pedidos/reglas.ts`:
+
+- **Solo transferencia** desde 300 piezas o desde $10,000 de total.
+- **Ficha de OXXO** con 3 días de vigencia.
+- **30 minutos de gracia** con tarjeta: el cargo queda solo autorizado y la empresa puede cancelar desde su plataforma sin costo. Pasado ese tiempo se hace el cargo. Con OXXO o SPEI se cancela sin costo mientras no se haya pagado.
+- **No se produce sin pago confirmado**, y el primer pedido de cada empresa (o uno con alertas) pide revisión antes de producir.
+- Máximo 5 pedidos abiertos por empresa y 5,000 piezas por pedido.
+
+El cobro es un Checkout alojado de Stripe, creado con `fetch` desde `src/lib/stripe.ts` (sin SDK), con 3D Secure en tarjeta. Stripe avisa a `/api/stripe/webhook`, que comprueba la firma, no procesa dos veces el mismo aviso y mueve el pedido (`src/lib/pedidos/avisos.ts`).
+
+El cargo después de la gracia no tiene reloj propio: se hace cuando llega cualquier aviso de Stripe y cuando alguien abre el panel de pedidos, la lista o el detalle de un pedido. La autorización dura cerca de 7 días; si se vence, el pedido vuelve a «por pagar».
+
+Configurar Stripe (una vez):
+
+1. Crear una llave restringida con escritura en Checkout Sessions, Customers y PaymentIntents, y cargarla como `STRIPE_SECRET_KEY`.
+2. Con el sitio ya publicado, crear el webhook hacia `https://lagafeteria.com/api/stripe/webhook` con estos eventos: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `payment_intent.payment_failed`, `payment_intent.canceled`, `charge.refunded`, `charge.dispute.created` y `charge.dispute.closed`. Su secreto de firma va en `STRIPE_WEBHOOK_SECRET`.
+
+Sin esas dos llaves (o sin `SUPABASE_SECRET_KEY`), la plataforma dice que los pedidos todavía no están activos y todo lo demás funciona igual. `STRIPE_API_URL` solo sirve para apuntar a un Stripe simulado en pruebas locales.
 
 ### Administración (solo quien opera LaGafetería)
 
-`/8admins` es el panel interno (la ruta está en `src/lib/admin/ruta.ts`; no es `/admin` a propósito, y no se anuncia en `robots.txt` ni en el sitemap). No aparece en ningún menú de las empresas y, a quien no es administradora o no ha iniciado sesión, le responde «no existe». Trae tres cosas:
+`/8admins` es el panel interno (la ruta está en `src/lib/admin/ruta.ts`; no es `/admin` a propósito, y no se anuncia en `robots.txt` ni en el sitemap). No aparece en ningún menú de las empresas y, a quien no es administradora o no ha iniciado sesión, le responde «no existe». Trae cuatro cosas:
 
 - **Constancias por revisar**: abre el archivo, lo compara con el RFC y la razón social que la empresa capturó, y aprueba o rechaza.
 - **Empresas**: todas las cuentas con el estado de su constancia, sus personas activas, diseños y gafetes listos, y un aviso de «Revisar» cuando el nombre de la empresa o los textos de sus diseños mencionan autoridades, dependencias o identificaciones oficiales (INE, gobierno, policía, SAT, IMSS y parecidas; la lista está en `src/lib/admin/alertas.ts`). El aviso no bloquea nada: pide que una persona lo vea antes de producir.
 - **PDF de impresión** (`/8admins/imprimir/<empresa>`): una página por cara, de 85.6 × 54 mm exactos y de orilla a orilla, para mandarlo tal cual a la impresora de credenciales. Sale de un diseño con los datos de cada persona o de los gafetes que la empresa subió ya terminados. Se elige el orden de las páginas (frente y vuelta seguidos, o frentes y vueltas en archivos aparte), si la vuelta va girada 180° y a quién incluir. Se arma en el navegador, en archivos de hasta 50 gafetes, y no se guarda en ningún lado. Las empresas no tienen ninguna salida a tamaño real.
+
+- **Pedidos** (`/8admins/pedidos`): el historial con estado, fechas, piezas, total y forma de pago, con filtros (por atender, en producción, enviados, sin pagar, cerrados) y búsqueda por folio o empresa. El detalle de cada pedido dice qué sigue (revisar, producir, enviar con guía, entregar), abre el PDF de impresión desde la copia guardada en el pedido, y junta la evidencia para una disputa: quién aprobó, cuándo, desde qué IP y navegador, con qué versión de los términos, y la bitácora completa.
 
 Necesita `SUPABASE_SECRET_KEY` en el servidor, porque lee los datos de todas las empresas. Esa llave solo se usa después de comprobar que la sesión es de una administradora.
 
@@ -233,7 +262,7 @@ Al cambiar contenido, actualiza `actualizado` en `src/lib/site.ts` (alimenta `la
 - Proteger `/api/cotizacion` contra abuso antes de lanzar (regla de rate limiting en Cloudflare o Turnstile). Hoy valida origen, formato y un campo trampa.
 - Revisión del aviso de privacidad por una persona abogada. Está adaptado del aviso de Figalo y nombra proveedores (pagos, facturación, talleres, paquetería) que aún no están contratados.
 - Terminar de configurar Supabase para la plataforma (ver "Configurar Supabase").
-- De la plataforma falta: invitar a más personas a la empresa, liga por empleado para que suba sus datos, diseños por reglas (puesto, departamento, contrato), código QR real de cada persona, pedidos con pago (Stripe) y factura, pedido abierto con aviso, paquetes con saldo y gafetes digitales.
+- De la plataforma falta: invitar a más personas a la empresa, liga por empleado para que suba sus datos, diseños por reglas (puesto, departamento, contrato), la factura de cada pedido, pedido abierto con aviso, paquetes con saldo y gafetes digitales.
 - Entrega exprés: aparece como "Próximamente" en el cotizador y en las preguntas frecuentes.
 - En Cloudflare, revisar que el bloqueo de bots de IA y el `robots.txt` administrado estén apagados para el dominio; si no, anulan lo que define el sitio.
 - Dar de alta el sitio en Google Search Console y Bing Webmaster Tools y enviar el sitemap.

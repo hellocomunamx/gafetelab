@@ -15,6 +15,8 @@ import { ligasDe } from "@/lib/cuenta/fotos";
 import { contenidoQr } from "@/lib/cuenta/qr";
 import { datosDePersona, disenoDeFila, faltantes } from "@/lib/diseno/datos";
 import { rutasDe } from "@/lib/diseno/limpiar";
+import type { GafeteCopiado } from "@/lib/pedidos/reglas";
+import type { Servicio } from "@/lib/pedidos/servidor";
 
 export const metadata: Metadata = { title: "PDF de impresión" };
 
@@ -31,7 +33,7 @@ export default async function Imprimir({
   searchParams,
 }: {
   params: Promise<{ empresa: string }>;
-  searchParams: Promise<{ fuente?: string }>;
+  searchParams: Promise<{ fuente?: string; pedido?: string }>;
 }) {
   const { empresa: empresaId } = await params;
   if (!UUID.test(empresaId)) notFound();
@@ -68,8 +70,14 @@ export default async function Imprimir({
   ]);
   if (!empresa) notFound();
 
+  const consulta = await searchParams;
+  if (consulta.pedido) {
+    if (!UUID.test(consulta.pedido)) notFound();
+    return <ImprimirPedido servicio={servicio} empresa={empresa} pedidoId={consulta.pedido} etiquetas={Object.fromEntries(campos.map((c) => [c.clave, c.etiqueta]))} />;
+  }
+
   const activos = equipo ?? [];
-  const elegida = (await searchParams).fuente;
+  const elegida = consulta.fuente;
   const fila =
     elegida === "listos" ? undefined : (disenos?.find((d) => d.id === elegida) ?? (listos?.length && !disenos?.length ? undefined : disenos?.[0]));
   const usaListos = !fila && Boolean(listos?.length);
@@ -168,6 +176,96 @@ export default async function Imprimir({
       {activos.length >= LIMITE ? (
         <p className="text-sm text-gris">Se muestran las primeras {LIMITE.toLocaleString("es-MX")} personas activas.</p>
       ) : null}
+    </div>
+  );
+}
+
+/** Estados en los que un pedido ya tiene el pago confirmado y se puede imprimir. */
+const IMPRIMIBLES = ["pagado", "en_produccion", "enviado", "entregado"];
+
+/**
+ * El PDF de un pedido: sale de la copia que se guardó al pedir (diseño y datos
+ * de cada persona), no de lo que la empresa tenga hoy en su plataforma.
+ */
+async function ImprimirPedido({
+  servicio,
+  empresa,
+  pedidoId,
+  etiquetas,
+}: {
+  servicio: Servicio;
+  empresa: { id: string; nombre: string };
+  pedidoId: string;
+  etiquetas: Record<string, string>;
+}) {
+  const [{ data: pedido }, { data: gafetes }] = await Promise.all([
+    servicio.from("pedidos").select("id, folio, estado, fuente, diseno_id, diseno, alertas").eq("id", pedidoId).eq("empresa_id", empresa.id).maybeSingle(),
+    servicio.from("gafetes").select("id, datos").eq("pedido_id", pedidoId).eq("tipo", "impreso").neq("estado", "cancelado").limit(LIMITE),
+  ]);
+  if (!pedido) notFound();
+  const copias = (gafetes ?? [])
+    .map((g) => ({ id: g.id, ...(g.datos as unknown as GafeteCopiado) }))
+    .sort((a, b) => (a.nombre ?? "").localeCompare(b.nombre ?? "", "es"));
+
+  let fuente: FuenteDeImpresion | null = null;
+  let personas: PersonaParaImprimir[] = [];
+  if (IMPRIMIBLES.includes(pedido.estado)) {
+    const copiaDiseno = pedido.diseno as { nombre: string; orientacion: string; frente: unknown; vuelta: unknown } | null;
+    if (pedido.fuente === "diseno" && copiaDiseno) {
+      const diseno = disenoDeFila({ id: pedido.diseno_id ?? pedido.id, ...copiaDiseno });
+      const [imagenes, fotos] = await Promise.all([
+        ligasDe(servicio, "disenos", [...rutasDe(diseno.frente), ...rutasDe(diseno.vuelta)]),
+        ligasDe(servicio, "fotos", copias.map((c) => c.foto)),
+      ]);
+      fuente = { tipo: "diseno", diseno, etiquetas, imagenes: Object.fromEntries(imagenes) };
+      personas = copias.map((c) => ({
+        id: c.id,
+        nombre: c.nombre,
+        numero: c.numero,
+        datos: c.valores ?? {},
+        qr: c.qr ?? "",
+        foto: (c.foto && fotos.get(c.foto)) || undefined,
+        faltan: [],
+      }));
+    } else if (pedido.fuente === "listos") {
+      const ligas = await ligasDe(servicio, "gafetes", copias.flatMap((c) => [c.frente?.ruta, c.vuelta?.ruta]));
+      const cara = (c: GafeteCopiado["frente"]): CaraListaParaImprimir | undefined => {
+        const url = c ? ligas.get(c.ruta) : undefined;
+        return c && url ? { url, formato: formato(c.ruta), ancho: c.ancho, alto: c.alto } : undefined;
+      };
+      fuente = { tipo: "listos" };
+      personas = copias.map((c) => {
+        const frente = cara(c.frente);
+        return { id: c.id, nombre: c.nombre, numero: c.numero, frente, vuelta: cara(c.vuelta), faltan: frente ? [] : ["El frente"] };
+      });
+    }
+  }
+
+  return (
+    <div className="space-y-5">
+      <p className="text-sm">
+        <Link href={`${RUTA_ADMIN}/pedidos`} className="underline">Pedidos</Link> /{" "}
+        <Link href={`${RUTA_ADMIN}/pedidos/${pedido.id}`} className="underline">{pedido.folio}</Link> / PDF de impresión
+      </p>
+      <h1 className="text-3xl font-extrabold">PDF de impresión del pedido {pedido.folio}</h1>
+      <p className="text-gris">
+        {empresa.nombre}. Sale de la copia que se guardó al hacer el pedido: el diseño y los datos que la empresa aprobó.
+      </p>
+      {pedido.alertas.length ? (
+        <p role="alert" className="rounded-tarjeta bg-resaltador/30 p-4 text-sm">
+          <strong>Revisa antes de producir.</strong> Aquí se menciona: {pedido.alertas.join(", ")}. Confirma que la empresa tiene derecho a
+          usar esos nombres.
+        </p>
+      ) : null}
+      {fuente && personas.length ? (
+        <ImprimirGafetes key={pedido.id} empresa={`${empresa.nombre} ${pedido.folio}`} fuente={fuente} personas={personas} />
+      ) : (
+        <p className="rounded-tarjeta border border-dashed border-linea bg-white p-8 text-center font-semibold">
+          {IMPRIMIBLES.includes(pedido.estado)
+            ? "Este pedido no tiene gafetes para imprimir."
+            : "Este pedido todavía no tiene el pago confirmado, así que no se imprime."}
+        </p>
+      )}
     </div>
   );
 }

@@ -1,0 +1,240 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { palabrasSensibles, textosDeDiseno } from "@/lib/admin/alertas";
+import { constanciaDe, puedePedir } from "@/lib/cuenta/constancia";
+import { miAceptacion, requerirEmpresa } from "@/lib/cuenta/sesion";
+import { type MaterialId, materiales } from "@/lib/materiales";
+import { FUENTE_LISTOS, llevaVuelta, prepararPedido } from "@/lib/pedidos/preparar";
+import {
+  type AprobacionPedido,
+  type DireccionCopiada,
+  type FacturacionCopiada,
+  pedidoMaximoPiezas,
+  pedidosAbiertosMaximo,
+  sigueEnGracia,
+  soloTransferencia,
+} from "@/lib/pedidos/reglas";
+import { abrirCobro, anotar, cancelarAutorizado, cerrarCobro } from "@/lib/pedidos/servidor";
+import { cotizar } from "@/lib/precios";
+import { stripeActivo } from "@/lib/stripe";
+import { clienteServicio } from "@/lib/supabase/publico";
+import type { Json } from "@/lib/supabase/tipos";
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const SIN_ACTIVAR = "Los pedidos en línea todavía no están activos. Escríbenos y lo resolvemos.";
+const SOLO_ADMIN = "Solo quien es dueño o administrador de la empresa puede hacer pedidos.";
+
+export type EntradaPedido = {
+  /** Id de un diseño o "listos". */
+  fuente: string;
+  personas: string[];
+  material: string;
+  direccion: string;
+  /** Id de los datos de facturación, o null si no necesita factura. */
+  facturacion: string | null;
+  /** La casilla "revisé la vista previa y apruebo que se imprima así". */
+  aprobado: boolean;
+};
+
+/**
+ * Crea el pedido con una copia de todo lo que se va a imprimir y devuelve la
+ * liga de Stripe para pagarlo. Nada de lo que manda el navegador se da por
+ * bueno: personas, precio y permisos se vuelven a calcular aquí.
+ */
+export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: string; pedido?: string; error?: string }> {
+  const { supabase, usuario, empresa, administra } = await requerirEmpresa();
+  if (!administra) return { error: SOLO_ADMIN };
+  const servicio = clienteServicio();
+  if (!servicio || !stripeActivo()) return { error: SIN_ACTIVAR };
+  if (!puedePedir(await constanciaDe(supabase, empresa.id))) {
+    return { error: "Para hacer tu primer pedido necesitamos aprobar la Constancia de Situación Fiscal de tu empresa." };
+  }
+  if (entrada?.aprobado !== true) return { error: "Confirma que revisaste la vista previa de tus gafetes." };
+
+  const ids = [...new Set(Array.isArray(entrada.personas) ? entrada.personas.filter((p) => typeof p === "string" && UUID.test(p)) : [])];
+  if (!ids.length) return { error: "Elige al menos a una persona." };
+  if (ids.length > pedidoMaximoPiezas) return { error: `Un pedido lleva hasta ${pedidoMaximoPiezas.toLocaleString("es-MX")} gafetes.` };
+
+  const material = materiales.find((m) => m.id === entrada.material && m.disponible);
+  if (!material) return { error: "Elige el material de tus gafetes." };
+
+  const { fuentes } = await prepararPedido(supabase, empresa);
+  const fuente = fuentes.find((f) => f.id === entrada.fuente);
+  if (!fuente) return { error: "Ese diseño ya no existe. Vuelve a cargar la página." };
+  const copias = ids.map((id) => ({ id, gafete: fuente.gafetes.get(id) }));
+  if (copias.some((c) => !c.gafete)) return { error: "Alguna de las personas ya no está activa. Vuelve a cargar la página." };
+  if (copias.some((c) => c.gafete!.faltan.length)) {
+    return { error: "A alguno de los gafetes elegidos le faltan datos. Complétalos o quita a esa persona del pedido." };
+  }
+
+  const [{ data: direccion }, { data: fiscales }, { count: abiertos }, { count: pagados }, aceptacion] = await Promise.all([
+    UUID.test(entrada.direccion ?? "")
+      ? supabase.from("direcciones").select("*").eq("id", entrada.direccion).eq("empresa_id", empresa.id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    entrada.facturacion && UUID.test(entrada.facturacion)
+      ? supabase.from("datos_fiscales").select("*").eq("id", entrada.facturacion).eq("empresa_id", empresa.id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    servicio.from("pedidos").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).eq("estado", "por_pagar"),
+    servicio.from("pedidos").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).not("pagado_en", "is", null),
+    miAceptacion(),
+  ]);
+  if (!direccion) return { error: "Elige a dónde enviamos tu pedido." };
+  if (entrada.facturacion && !fiscales) return { error: "Esos datos de facturación ya no existen. Vuelve a cargar la página." };
+  if ((abiertos ?? 0) >= pedidosAbiertosMaximo) {
+    return { error: "Tienes varios pedidos sin pagar. Paga o cancela alguno antes de hacer otro." };
+  }
+
+  const dosCaras = llevaVuelta(fuente, ids);
+  const c = cotizar(ids.length, { modalidad: "impreso", dosCaras, material: material.id as MaterialId });
+  const h = await headers();
+  const aprobacion: AprobacionPedido = {
+    vista_previa: true,
+    terminos_version: aceptacion.aceptacion?.terminos_version ?? null,
+    aviso_version: aceptacion.aceptacion?.aviso_version ?? null,
+    correo: usuario.email ?? null,
+    ip: h.get("cf-connecting-ip") ?? h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+    navegador: h.get("user-agent")?.slice(0, 300) ?? null,
+    en: new Date().toISOString(),
+  };
+  const copiaDireccion: DireccionCopiada = {
+    destinatario: direccion.destinatario,
+    telefono: direccion.telefono,
+    calle: direccion.calle,
+    colonia: direccion.colonia,
+    ciudad: direccion.ciudad,
+    estado: direccion.estado,
+    cp: direccion.cp,
+    referencias: direccion.referencias,
+  };
+  const copiaFiscal: FacturacionCopiada | null = fiscales
+    ? {
+        rfc: fiscales.rfc,
+        razon_social: fiscales.razon_social,
+        regimen_fiscal: fiscales.regimen_fiscal,
+        cp_fiscal: fiscales.cp_fiscal,
+        uso_cfdi: fiscales.uso_cfdi,
+        correo: fiscales.correo,
+      }
+    : null;
+  const elegidas = copias.map((x) => x.gafete!.copia);
+  const alertas = palabrasSensibles([
+    empresa.nombre,
+    ...(fuente.fila ? textosDeDiseno(fuente.fila) : []),
+    ...elegidas.flatMap((g) => [g.valores?.puesto, g.valores?.departamento]),
+  ]);
+
+  const { data: pedido, error } = await servicio
+    .from("pedidos")
+    .insert({
+      empresa_id: empresa.id,
+      creado_por: usuario.id,
+      modalidad: "impreso",
+      material: material.id,
+      dos_caras: dosCaras,
+      piezas: c.piezas,
+      fuente: fuente.tipo,
+      diseno_id: fuente.fila?.id ?? null,
+      diseno: fuente.fila
+        ? ({ nombre: fuente.fila.nombre, orientacion: fuente.fila.orientacion, frente: fuente.fila.frente, vuelta: fuente.fila.vuelta } as Json)
+        : null,
+      por_pieza: c.porPieza,
+      subtotal: c.subtotal,
+      envio: c.envio,
+      iva: c.iva,
+      total: c.total,
+      direccion: copiaDireccion as unknown as Json,
+      facturacion: copiaFiscal as unknown as Json,
+      aprobacion: aprobacion as unknown as NonNullable<Json>,
+      primer_pedido: (pagados ?? 0) === 0,
+      alertas,
+      solo_transferencia: soloTransferencia(c.piezas, c.total),
+    })
+    .select("*")
+    .single();
+  if (error || !pedido) return { error: "No pudimos guardar tu pedido. Intenta de nuevo." };
+
+  // Los gafetes del pedido, con la copia de cada persona. Quien ya tuvo un gafete impreso lleva una reposición.
+  const { data: previos } = await servicio
+    .from("gafetes")
+    .select("empleado_id")
+    .eq("empresa_id", empresa.id)
+    .eq("tipo", "impreso")
+    .neq("estado", "cancelado")
+    .limit(20000);
+  const conGafete = new Set((previos ?? []).map((g) => g.empleado_id));
+  const renglones = copias.map((x) => ({
+    empresa_id: empresa.id,
+    empleado_id: x.id,
+    tipo: "impreso",
+    motivo: conGafete.has(x.id) ? "reposicion" : "alta",
+    estado: "en_pedido",
+    datos: x.gafete!.copia as unknown as NonNullable<Json>,
+    diseno_id: fuente.fila?.id ?? null,
+    pedido_id: pedido.id,
+  }));
+  for (let i = 0; i < renglones.length; i += 500) {
+    const { error: falla } = await servicio.from("gafetes").insert(renglones.slice(i, i + 500));
+    if (falla) {
+      await servicio.from("pedidos").delete().eq("id", pedido.id);
+      return { error: "No pudimos guardar tu pedido. Intenta de nuevo." };
+    }
+  }
+  await anotar(servicio, pedido.id, "creado", { piezas: c.piezas, total: c.total, fuente: fuente.id === FUENTE_LISTOS ? "listos" : fuente.nombre }, usuario.id);
+  revalidatePath("/cuenta", "layout");
+
+  try {
+    return { url: await abrirCobro(servicio, pedido, empresa, usuario.email ?? null) };
+  } catch {
+    // El pedido quedó guardado: se puede pagar desde su página.
+    return { pedido: pedido.id };
+  }
+}
+
+/** Manda a pagar un pedido que sigue por pagar. */
+export async function pagarPedido(d: FormData) {
+  const { usuario, empresa, administra } = await requerirEmpresa();
+  const id = String(d.get("id") ?? "");
+  const servicio = clienteServicio();
+  if (!administra || !servicio || !stripeActivo() || !UUID.test(id)) redirect(`/cuenta/pedidos/${id}?pago=error`);
+  const { data: pedido } = await servicio.from("pedidos").select("*").eq("id", id).eq("empresa_id", empresa.id).maybeSingle();
+  if (!pedido || pedido.estado !== "por_pagar") redirect(`/cuenta/pedidos/${id}`);
+  let url: string;
+  try {
+    url = await abrirCobro(servicio, pedido, empresa, usuario.email ?? null);
+  } catch {
+    redirect(`/cuenta/pedidos/${id}?pago=error`);
+  }
+  redirect(url);
+}
+
+/** Cancela un pedido que todavía no se paga, o uno con tarjeta autorizada dentro de sus minutos de gracia. */
+export async function cancelarPedido(d: FormData) {
+  const { usuario, empresa, administra } = await requerirEmpresa();
+  const id = String(d.get("id") ?? "");
+  const servicio = clienteServicio();
+  if (!administra || !servicio || !UUID.test(id)) return;
+  const { data: pedido } = await servicio.from("pedidos").select("*").eq("id", id).eq("empresa_id", empresa.id).maybeSingle();
+  if (!pedido) return;
+  if (pedido.estado === "autorizado") {
+    if (sigueEnGracia(pedido.gracia_hasta)) {
+      await cancelarAutorizado(servicio, pedido, usuario.id, "empresa");
+    }
+  } else if (pedido.estado === "por_pagar") {
+    // Primero se cierra el cobro, para que no se pueda pagar un pedido cancelado.
+    await cerrarCobro(pedido);
+    const { data: movido } = await servicio
+      .from("pedidos")
+      .update({ estado: "cancelado", cancelado_en: new Date().toISOString(), stripe_sesion: null, stripe_url: null })
+      .eq("id", id)
+      .eq("estado", "por_pagar")
+      .select("id");
+    if (movido?.length) {
+      await servicio.from("gafetes").update({ estado: "cancelado" }).eq("pedido_id", id);
+      await anotar(servicio, id, "cancelado", { por: "empresa" }, usuario.id);
+    }
+  }
+  revalidatePath("/cuenta", "layout");
+}

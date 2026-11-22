@@ -1,5 +1,6 @@
 import { materiales } from "./materiales";
 import { adicionalesPendientes } from "./contacto";
+import { pago } from "./pedidos/reglas";
 import { constancia, entregaTexto, legal, site } from "./site";
 import {
   cotizar,
@@ -129,6 +130,14 @@ export const faqsGenerales: Faq[] = [
   {
     pregunta: "¿Imprimen por un lado o por los dos?",
     respuesta: `Las dos opciones. A una cara es lo más común y económico; frente y vuelta suma ${extraDosCarasRango} por pieza según la cantidad (${extraDosCarasDetalle}) y sirve para poner datos de emergencia, reglamento o un código QR al reverso.`,
+  },
+  {
+    pregunta: "¿Cómo puedo pagar mi pedido?",
+    respuesta: `Con tarjeta de crédito o débito, en efectivo en OXXO o por transferencia (SPEI). Pagas en línea desde tu plataforma, en la página segura de Stripe; nosotros no vemos ni guardamos los datos de tu tarjeta. Con OXXO te damos una ficha que dura ${pago.diasFichaOxxo} días y con SPEI, una CLABE y una referencia; en ambos casos tu pedido entra a producción cuando el pago se acredita. Los pedidos de ${pago.soloTransferenciaDesdePiezas} gafetes o más, o de ${pesos(pago.soloTransferenciaDesdeTotal)} o más, se pagan solo por transferencia.`,
+  },
+  {
+    pregunta: "¿Puedo cancelar mi pedido después de pagarlo?",
+    respuesta: `Sí. Si pagaste con tarjeta, tienes ${pago.minutosDeGracia} minutos para cancelarlo tú mismo desde tu plataforma: en ese rato el cargo solo queda autorizado, así que al cancelar se libera y no se te cobra nada. Pasados los ${pago.minutosDeGracia} minutos se hace el cargo. Con OXXO o SPEI puedes cancelar sin costo mientras no hayas pagado la ficha o hecho la transferencia. Después de eso, y mientras tu pedido no haya entrado a producción, escríbenos y lo cancelamos con la devolución completa de tu pago. Una vez en producción ya no se puede cancelar, porque cada gafete se hace con los datos de tu personal.`,
   },
   {
     pregunta: "¿Dan factura?",

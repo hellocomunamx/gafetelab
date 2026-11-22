@@ -6,6 +6,7 @@
 import { faqsGenerales } from "./faqs";
 import { giros } from "./giros";
 import { pasos } from "./pasos";
+import { pago } from "./pedidos/reglas";
 import {
   envio,
   extraDosCaras,
@@ -49,6 +50,8 @@ const datosClave = () =>
     `- Paquetes prepagados: ${paquetes.map((p) => `${p.piezas} gafetes por ${pesos(p.piezas * p.porPieza)} MXN con ${p.envios} envíos incluidos`).join("; ")}. Vigencia de ${paqueteVigenciaMeses} meses.`,
     `- Archivo de diseño: gafete de ${medidas.ancho} × ${medidas.alto} mm; archivo con margen de corte (sangrado) de ${zonas[0].medida} a ${medidas.resolucionDpi} dpi; textos a ${medidas.margenSeguro} mm o más del corte.`,
     `- Forma de pago: pago único por gafete. No hay suscripción, mensualidad ni costo por usar la plataforma.`,
+    `- Medios de pago: tarjeta de crédito o débito, efectivo en OXXO o transferencia (SPEI), en línea desde la plataforma. Los pedidos de ${pago.soloTransferenciaDesdePiezas} gafetes o más, o de ${pesos(pago.soloTransferenciaDesdeTotal)} MXN o más, se pagan solo por transferencia.`,
+    `- Cancelación: con tarjeta hay ${pago.minutosDeGracia} minutos después de pagar para cancelar desde la plataforma sin que se haga el cargo; con OXXO o SPEI se cancela sin costo mientras no se haya pagado. Después, y antes de que el pedido entre a producción, se cancela por correo con devolución completa.`,
     `- Pedido mínimo: ninguno, desde 1 pieza.`,
     `- Entrega: ${entregaTexto}. Entrega exprés: próximamente.`,
     `- Envío: a todo México desde ${site.estadoBase}, con tarifa única de ${pesos(envio.tarifa)} MXN; gratis en pedidos desde ${pesos(envio.gratisDesde)} MXN antes de IVA.`,

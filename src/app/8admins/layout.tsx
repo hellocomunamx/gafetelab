@@ -20,6 +20,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <p className="font-titulos text-lg font-extrabold">Administración</p>
             <nav aria-label="Administración" className="flex gap-1">
+              <Link href={`${RUTA_ADMIN}/pedidos`} className="rounded-full px-4 py-2 text-sm font-semibold hover:bg-white">
+                Pedidos
+              </Link>
               <Link href={RUTA_ADMIN} className="rounded-full px-4 py-2 text-sm font-semibold hover:bg-white">
                 Empresas
               </Link>

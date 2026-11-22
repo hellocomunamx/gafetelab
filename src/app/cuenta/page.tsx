@@ -19,7 +19,7 @@ export default async function Resumen() {
     contar((q) => q.eq("estatus", "activo")),
     contar((q) => q.eq("estatus", "baja")),
     contar((q) => q.neq("estatus", "baja").is("foto_path", null)),
-    supabase.from("gafetes").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).then((r) => r.count ?? 0),
+    supabase.from("gafetes").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).neq("estado", "cancelado").then((r) => r.count ?? 0),
     supabase.from("direcciones").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).then((r) => r.count ?? 0),
     supabase.from("datos_fiscales").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).then((r) => r.count ?? 0),
     supabase.from("disenos").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).then((r) => r.count ?? 0),
@@ -118,9 +118,11 @@ export default async function Resumen() {
           ))}
         </ul>
         <p className="mt-4 text-sm text-gris">
-          Los pedidos desde tu plataforma se activan pronto. Mientras, puedes{" "}
-          ver tu precio al momento en el{" "}
-          <Link href="/cotizar" className="underline">cotizador en línea</Link>.
+          ¿Ya está todo?{" "}
+          <Link href="/cuenta/pedidos/nuevo" className="font-semibold text-rojo underline underline-offset-4">
+            Haz tu pedido
+          </Link>{" "}
+          y ve tu total con envío e IVA antes de pagar.
         </p>
       </Bloque>
     </div>

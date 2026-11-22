@@ -74,7 +74,7 @@ export const legal = {
   horario: "lunes a viernes de 09:00 a 15:00 horas (hora del centro de México)",
   avisoVersion: "1.4",
   avisoFecha: "2026-11-22",
-  terminosVersion: "1.0",
+  terminosVersion: "1.1",
   terminosFecha: "2026-11-22",
   /** Días naturales, desde la entrega, para reportar un gafete con defecto. */
   plazoDefectosDias: 10,
