@@ -52,7 +52,7 @@ const faqsPrecios: FaqItem[] = [
   },
   {
     pregunta: "¿Cuánto cuesta el gafete digital?",
-    respuesta: `${pesos(precioDigital)} por pieza, que se pagan una sola vez: no es un pago recurrente ni hay que renovarlo. El precio es el mismo en cualquier cantidad, lo pidas solo o junto con el gafete impreso. Por ejemplo, ${ejemploAmbos.piezas} gafetes impresos con su versión digital cuestan ${pesos(ejemploAmbos.porPieza)} cada uno.`,
+    respuesta: `${pesos(precioDigital)} por pieza, que se pagan una sola vez: no es un pago recurrente ni hay que renovarlo. El gafete sigue activo mientras tu cuenta esté activa y tú no lo desactives. El precio es el mismo en cualquier cantidad, lo pidas solo o junto con el gafete impreso. Por ejemplo, ${ejemploAmbos.piezas} gafetes impresos con su versión digital cuestan ${pesos(ejemploAmbos.porPieza)} cada uno.`,
   },
   {
     pregunta: "¿Hay suscripción, mensualidad o costo por usar la plataforma?",
