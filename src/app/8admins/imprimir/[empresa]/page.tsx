@@ -8,6 +8,7 @@ import {
   type PersonaParaImprimir,
 } from "@/components/admin/ImprimirGafetes";
 import { palabrasSensibles, textosDeDiseno } from "@/lib/admin/alertas";
+import { RUTA_ADMIN } from "@/lib/admin/ruta";
 import { requerirAdmin } from "@/lib/admin/sesion";
 import { camposDe } from "@/lib/cuenta/consultas";
 import { ligasDe } from "@/lib/cuenta/fotos";
@@ -125,19 +126,19 @@ export default async function Imprimir({
   return (
     <div className="space-y-5">
       <p className="text-sm">
-        <Link href="/admin" className="underline">Empresas</Link> / {empresa.nombre}
+        <Link href={RUTA_ADMIN} className="underline">Empresas</Link> / {empresa.nombre}
       </p>
       <h1 className="text-3xl font-extrabold">PDF de impresión</h1>
 
       {(disenos?.length ?? 0) + (listos?.length ? 1 : 0) > 1 ? (
         <nav aria-label="Qué imprimir" className="flex flex-wrap gap-2">
           {(disenos ?? []).map((d) => (
-            <Link key={d.id} href={`/admin/imprimir/${empresa.id}?fuente=${d.id}`} aria-current={fila?.id === d.id ? "page" : undefined} className={chip(fila?.id === d.id)}>
+            <Link key={d.id} href={`${RUTA_ADMIN}/imprimir/${empresa.id}?fuente=${d.id}`} aria-current={fila?.id === d.id ? "page" : undefined} className={chip(fila?.id === d.id)}>
               {d.nombre}
             </Link>
           ))}
           {listos?.length ? (
-            <Link href={`/admin/imprimir/${empresa.id}?fuente=listos`} aria-current={usaListos ? "page" : undefined} className={chip(usaListos)}>
+            <Link href={`${RUTA_ADMIN}/imprimir/${empresa.id}?fuente=listos`} aria-current={usaListos ? "page" : undefined} className={chip(usaListos)}>
               Gafetes listos ({listos.length})
             </Link>
           ) : null}

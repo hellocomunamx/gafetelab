@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { palabrasSensibles, textosDeDiseno } from "@/lib/admin/alertas";
+import { RUTA_ADMIN } from "@/lib/admin/ruta";
 import { requerirAdmin } from "@/lib/admin/sesion";
 
 export const metadata: Metadata = { title: "Empresas" };
@@ -77,7 +78,7 @@ export default async function Admin() {
                   <td className="px-4 py-3 text-right">{Number(e.listos).toLocaleString("es-MX")}</td>
                   <td className="px-4 py-3 text-right">
                     {Number(e.disenos) + Number(e.listos) > 0 ? (
-                      <Link href={`/admin/imprimir/${e.id}`} className="font-semibold text-rojo underline underline-offset-4">
+                      <Link href={`${RUTA_ADMIN}/imprimir/${e.id}`} className="font-semibold text-rojo underline underline-offset-4">
                         Imprimir
                       </Link>
                     ) : (
