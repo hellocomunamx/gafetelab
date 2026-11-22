@@ -7,7 +7,7 @@ import { formasDeEmpezar, pasos } from "@/lib/pasos";
 import { accionesPlataforma, ajustesPlataforma, formasDeCargar } from "@/lib/plataforma";
 import { comoHacerlo, migas } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
-import { entregaTexto, site } from "@/lib/site";
+import { constancia, entregaTexto, site } from "@/lib/site";
 
 const ruta = "/como-funciona";
 const rutaMigas = [{ nombre: "Cómo funciona", ruta }];
@@ -37,6 +37,17 @@ export default function ComoFunciona() {
           {entregaTexto}.
         </p>
       </Portada>
+
+      <Seccion id="constancia" titulo="Antes de empezar: ten a la mano tu constancia fiscal" fondo>
+        <div className="max-w-3xl space-y-3 text-lg text-gris">
+          <p>{constancia.corto}</p>
+          <p>{constancia.motivo}</p>
+          <p>
+            La descargas gratis en el portal del SAT y la subes una sola vez. No hacemos gafetes ni
+            credenciales de una empresa distinta a la que hace el pedido.
+          </p>
+        </div>
+      </Seccion>
 
       <Seccion titulo="Los cinco pasos">
         <ol className="max-w-3xl space-y-6">
