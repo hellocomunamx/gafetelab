@@ -220,6 +220,33 @@ export function plataforma() {
 }
 
 /** Página de contacto: enlaza el formulario con la organización. */
+/** El video de presentación de la página de inicio. */
+export const videoPitch = {
+  src: "/video/pitch-lagafeteria.mp4",
+  portada: "/video/pitch-lagafeteria-portada.jpg",
+  titulo: `${site.nombre} en 50 segundos`,
+  descripcion:
+    "Cómo pasar de fotos por chat y un Excel a los gafetes y credenciales de todo tu equipo: eliges una plantilla, subes a tu equipo, cada quien manda su foto y cotizas en línea al momento.",
+  duracion: "50 segundos",
+  duracionIso: "PT50S",
+  publicado: "2026-11-22",
+};
+
+export function video() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    name: videoPitch.titulo,
+    description: videoPitch.descripcion,
+    thumbnailUrl: urlAbsoluta(videoPitch.portada),
+    contentUrl: urlAbsoluta(videoPitch.src),
+    uploadDate: videoPitch.publicado,
+    duration: videoPitch.duracionIso,
+    inLanguage: "es-MX",
+    publisher: { "@id": ORG_ID },
+  };
+}
+
 export function paginaContacto() {
   return {
     "@context": "https://schema.org",
