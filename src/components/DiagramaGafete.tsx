@@ -143,7 +143,7 @@ export function DiagramaGafete({
       role="img"
       aria-label={
         guias
-          ? `Gafete de ${medidas.ancho} por ${medidas.alto} milímetros con su zona de sangrado, línea de corte y zona segura`
+          ? `Gafete de ${medidas.ancho} por ${medidas.alto} milímetros con su margen de corte, línea de corte y zona segura`
           : `Vista del gafete terminado, con canto de ${grosorMm} milímetros`
       }
       className={className}

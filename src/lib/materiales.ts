@@ -110,10 +110,10 @@ const px = (n: number) => Math.round((n / 25.4) * medidas.resolucionDpi);
 export const zonas = [
   {
     id: "sangrado",
-    nombre: "Sangrado",
+    nombre: "Margen de corte",
     medida: `${mm(medidas.ancho + medidas.sangrado * 2)} × ${mm(medidas.alto + medidas.sangrado * 2)}`,
     pixeles: `${px(medidas.ancho + medidas.sangrado * 2)} × ${px(medidas.alto + medidas.sangrado * 2)} px`,
-    texto: `El tamaño del archivo. El fondo debe llegar hasta aquí: son ${medidas.sangrado} mm extra por lado que se recortan.`,
+    texto: `El tamaño del archivo. El fondo debe llegar hasta aquí: son ${medidas.sangrado} mm extra por lado que se recortan. En imprenta se le llama sangrado.`,
   },
   {
     id: "corte",

@@ -62,7 +62,7 @@ Reglas que conviene saber:
 - Las fotos van a un almacenamiento privado, en `<empresa>/<empleado>.jpg`, ya recortadas a 600 × 800 en el navegador. Se muestran con ligas temporales.
 - Al importar, quien ya existe se actualiza: se reconoce por número de empleado o, si no tiene, por nombre.
 - Una foto se asigna por el archivo indicado en el Excel, luego por número de empleado y luego por nombre completo. Si hay duda, se queda sin asignar para acomodarla a mano.
-- Un diseño guarda sus elementos en milímetros, medidos desde la esquina superior izquierda del corte; lo que sale al sangrado lleva coordenadas negativas. El mismo dibujo (`GafeteSvg`) sirve para el editor, las miniaturas y la vista previa.
+- Un diseño guarda sus elementos en milímetros, medidos desde la esquina superior izquierda del corte; lo que sale al margen de corte (sangrado) lleva coordenadas negativas. El mismo dibujo (`GafeteSvg`) sirve para el editor, las miniaturas y la vista previa.
 - Si un texto no cabe en su caja, primero se parte en renglones, luego se reduce la letra hasta 55 % y al final se recorta con puntos suspensivos. El editor avisa cuando algo se recorta o se sale de la zona segura.
 - Los fondos, logos e imágenes de los diseños van al almacenamiento privado `disenos`, en `<empresa>/<archivo>`. Al guardar o borrar un diseño se eliminan los archivos de más de un día que ya no usa ningún diseño.
 - Todo diseño que llega del navegador pasa por `limpiarCara` antes de guardarse: solo admite tipos conocidos, medidas dentro del gafete y archivos de la propia empresa.
@@ -112,7 +112,7 @@ Los correos de acceso locales llegan a http://127.0.0.1:54324.
 | Nombre, URL, correo, tiempo de entrega, vigencia de la cotización | `src/lib/site.ts` |
 | Datos legales del aviso de privacidad y enlace de Figalo | `src/lib/site.ts` (`legal`, `figalo`) |
 | Precios por pieza (impreso y digital), frente y vuelta, IVA, paquetes prepagados | `src/lib/precios.ts` |
-| Materiales, grosores, extra por material y medidas del archivo (sangrado, zona segura) | `src/lib/materiales.ts` |
+| Materiales, grosores, extra por material y medidas del archivo (margen de corte, zona segura) | `src/lib/materiales.ts` |
 | Vista del diseño y zona de impresión | `src/components/VistaGafete.tsx`, `src/components/DiagramaGafete.tsx` |
 | Tarifa de envío y monto para envío gratis | `src/lib/precios.ts` (`envio`) |
 | Cotizador | `src/components/Cotizador.tsx` |
@@ -149,7 +149,7 @@ Al cambiar contenido, actualiza `actualizado` en `src/lib/site.ts` (alimenta `la
 ## Pendientes antes de lanzar
 
 - Confirmar precios, IVA, extra de frente y vuelta, tarifa de envío, monto de envío gratis y paquetes prepagados en `src/lib/precios.ts`.
-- Confirmar con el taller o la impresora los materiales, sus costos y las medidas de sangrado y zona segura en `src/lib/materiales.ts`.
+- Confirmar con el taller o la impresora los materiales, sus costos y las medidas de margen de corte y zona segura en `src/lib/materiales.ts`.
 - Cambiar las ilustraciones de materiales (`src/components/MuestraMaterial.tsx`) por fotos reales cuando haya muestras.
 - Los paquetes prepagados se anuncian, pero todavía no se pueden comprar: falta el cobro y el saldo de gafetes en la cuenta.
 - Confirmar el correo de contacto y el tiempo de entrega en `src/lib/site.ts`.

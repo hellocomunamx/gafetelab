@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { agregarCampo, borrarCampo, guardarCampos } from "@/app/cuenta/acciones";
+import { BotonPlantilla } from "@/components/cuenta/BotonPlantilla";
 import { Bloque, Entrada, Seleccion } from "@/components/cuenta/Entrada";
-import { Formulario } from "@/components/cuenta/Formulario";
+import { claseBoton, Formulario } from "@/components/cuenta/Formulario";
 import { camposDe } from "@/lib/cuenta/consultas";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
+import { claveDe } from "@/lib/cuenta/texto";
 
 export const metadata: Metadata = { title: "Campos" };
 
@@ -21,8 +23,30 @@ export default async function Campos() {
       <h1 className="text-3xl font-extrabold">Campos de tu gafete</h1>
       <p className="max-w-2xl text-gris">
         Elige qué datos lleva el gafete, en qué cara y en qué orden. Con estos mismos campos se arma
-        tu <Link href="/cuenta/equipo/importar" className="underline">plantilla de Excel</Link>.
+        tu plantilla de Excel.
       </p>
+
+      <section className="flex flex-col gap-4 rounded-tarjeta bg-tinta p-5 text-white sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <div>
+          <h2 className="text-xl font-extrabold">Personaliza tus campos y descarga tu plantilla de Excel</h2>
+          <p className="mt-1 max-w-xl text-sm text-white/75">
+            La plantilla trae una columna por cada campo guardado aquí. Llénala con tu equipo, una
+            persona por renglón, y súbela para dar de alta a todos de forma masiva.
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2">
+          <BotonPlantilla
+            campos={campos.map(({ clave, etiqueta, tipo }) => ({ clave, etiqueta, tipo }))}
+            empresa={claveDe(empresa.nombre).replace(/_/g, "-")}
+            className={claseBoton}
+          >
+            Descargar mi plantilla
+          </BotonPlantilla>
+          <Link href="/cuenta/equipo/importar" className="font-semibold underline underline-offset-4">
+            Subir mi Excel lleno
+          </Link>
+        </div>
+      </section>
 
       <div className="grid gap-5 lg:grid-cols-[1fr_18rem]">
         <Bloque className="min-w-0">

@@ -5,12 +5,13 @@ import { type ChangeEvent, useState } from "react";
 import { importarEmpleados } from "@/app/cuenta/acciones";
 import { COLUMNA_FOTO, type CampoExcel, columnasDe, type Lectura, leerFilas } from "@/lib/cuenta/excel";
 import { esColumnaSistema } from "@/lib/cuenta/tipos";
+import { BotonPlantilla } from "./BotonPlantilla";
 import { claseBoton, claseBotonSecundario } from "./Formulario";
 
 const MAXIMO = 2000;
 const numero = (n: number) => n.toLocaleString("es-MX");
 
-/** Descarga la plantilla, lee el Excel lleno, lo revisa y lo importa. */
+/** Los tres pasos del Excel: personalizar campos, descargar la plantilla y subirla llena. */
 export function ImportarExcel({ campos, empresa }: { campos: CampoExcel[]; empresa: string }) {
   const columnas = columnasDe(campos);
   const [lectura, setLectura] = useState<Lectura>();
@@ -18,35 +19,6 @@ export function ImportarExcel({ campos, empresa }: { campos: CampoExcel[]; empre
   const [error, setError] = useState("");
   const [ocupado, setOcupado] = useState(false);
   const [hecho, setHecho] = useState<{ nuevas: number; actualizadas: number }>();
-
-  async function descargar() {
-    const { default: escribir } = await import("write-excel-file/browser");
-    const titulos = [...columnas.map((c) => c.etiqueta), COLUMNA_FOTO];
-    const negrita = (value: string) => ({ value, fontWeight: "bold" as const });
-    await escribir(
-      [
-        {
-          sheet: "Equipo",
-          data: [titulos.map(negrita)],
-          columns: titulos.map((t) => ({ width: Math.max(18, t.length + 4) })),
-          stickyRowsCount: 1,
-        },
-        {
-          sheet: "Instrucciones",
-          data: [
-            [negrita("Cómo llenar esta plantilla")],
-            ["1. Una persona por renglón, en la hoja Equipo. No cambies los títulos de las columnas."],
-            ["2. El nombre es obligatorio. Lo demás puede ir vacío."],
-            ["3. Con número de empleado, si la persona ya existe se actualiza en lugar de duplicarse."],
-            [`4. En "${COLUMNA_FOTO}" puedes escribir el nombre del archivo de su foto (por ejemplo 0042.jpg) para asignarla sola al subir las fotos.`],
-            ["5. Las fechas van como AAAA-MM-DD o con formato de fecha de Excel."],
-            ["6. Guarda el archivo y súbelo en tu plataforma: Equipo, Importar Excel."],
-          ],
-          columns: [{ width: 110 }],
-        },
-      ],
-    ).toFile(`plantilla-${empresa}.xlsx`);
-  }
 
   async function leer(evento: ChangeEvent<HTMLInputElement>) {
     const elegido = evento.target.files?.[0];
@@ -84,26 +56,38 @@ export function ImportarExcel({ campos, empresa }: { campos: CampoExcel[]; empre
 
   return (
     <div className="space-y-5">
-      <ol className="grid gap-4 md:grid-cols-2">
+      <ol className="grid gap-4 lg:grid-cols-3">
         <li className="rounded-tarjeta border border-linea bg-white p-5">
-          <p className="font-titulos text-lg font-extrabold">1. Descarga tu plantilla</p>
+          <p className="font-titulos text-lg font-extrabold">1. Personaliza tus campos</p>
           <p className="mt-1 text-sm text-gris">
-            Trae una columna por cada campo de tu empresa: {columnas.map((c) => c.etiqueta).join(", ")} y{" "}
-            {COLUMNA_FOTO}.
+            Tu plantilla trae una columna por cada campo de tu empresa. Hoy son:
           </p>
-          <button type="button" onClick={descargar} className={`${claseBotonSecundario} mt-4`}>
-            Descargar plantilla de Excel
-          </button>
-          <p className="mt-3 text-xs text-gris">
-            ¿Te falta un dato? <Link href="/cuenta/campos" className="underline">Agrega el campo</Link> y vuelve a descargarla.
+          <ul className="mt-3 flex flex-wrap gap-1.5">
+            {[...columnas.map((c) => c.etiqueta), COLUMNA_FOTO].map((c) => (
+              <li key={c} className="rounded-full bg-papel px-2.5 py-1 text-xs font-semibold">
+                {c}
+              </li>
+            ))}
+          </ul>
+          <Link href="/cuenta/campos" className={`${claseBotonSecundario} mt-4`}>
+            Personalizar mis campos
+          </Link>
+        </li>
+        <li className="rounded-tarjeta border-2 border-tinta bg-white p-5">
+          <p className="font-titulos text-lg font-extrabold">2. Descarga tu plantilla</p>
+          <p className="mt-1 text-sm text-gris">
+            Se arma al momento con tus campos. Llénala con una persona por renglón: solo el nombre es obligatorio.
           </p>
+          <BotonPlantilla campos={campos} empresa={empresa} className={`${claseBoton} mt-4`}>
+            Descargar mi plantilla de Excel
+          </BotonPlantilla>
         </li>
         <li className="rounded-tarjeta border border-linea bg-white p-5">
-          <p className="font-titulos text-lg font-extrabold">2. Súbela llena</p>
+          <p className="font-titulos text-lg font-extrabold">3. Súbela llena</p>
           <p className="mt-1 text-sm text-gris">
             Primero te mostramos lo que leímos. Nada se guarda hasta que confirmes.
           </p>
-          <label className={`${claseBoton} mt-4 cursor-pointer`}>
+          <label className={`${claseBotonSecundario} mt-4 cursor-pointer`}>
             <input type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onChange={leer} className="sr-only" />
             Elegir archivo de Excel
           </label>

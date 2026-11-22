@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { BotonPlantilla } from "@/components/cuenta/BotonPlantilla";
 import { Bloque } from "@/components/cuenta/Entrada";
+import { camposDe } from "@/lib/cuenta/consultas";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
+import { claveDe } from "@/lib/cuenta/texto";
 
 export default async function Resumen() {
   const { supabase, empresa } = await requerirEmpresa();
@@ -9,7 +12,8 @@ export default async function Resumen() {
   const base = () =>
     supabase.from("empleados").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id);
 
-  const [activos, bajas, sinFoto, gafetes, direcciones, fiscales, disenos] = await Promise.all([
+  const [campos, activos, bajas, sinFoto, gafetes, direcciones, fiscales, disenos] = await Promise.all([
+    camposDe(supabase, empresa.id),
     contar((q) => q.eq("estatus", "activo")),
     contar((q) => q.eq("estatus", "baja")),
     contar((q) => q.neq("estatus", "baja").is("foto_path", null)),
@@ -43,6 +47,37 @@ export default async function Resumen() {
           </Link>
         ))}
       </dl>
+
+      <section className="grid gap-5 rounded-tarjeta bg-tinta p-5 text-white sm:p-6 lg:grid-cols-[1fr_auto] lg:items-center">
+        <div>
+          <h2 className="text-xl font-extrabold">Sube a tu equipo con tu plantilla de Excel</h2>
+          <p className="mt-1 max-w-xl text-sm text-white/75">
+            Personaliza los campos de tu gafete y descarga una plantilla hecha a tu medida. La llenas,
+            la subes y cada renglón se convierte en una persona de tu equipo.
+          </p>
+        </div>
+        <ol className="flex flex-wrap items-center gap-2 text-sm font-semibold">
+          <li>
+            <Link href="/cuenta/campos" className="inline-flex rounded-full border border-white/40 px-4 py-2 hover:bg-white/10">
+              1. Personalizar campos
+            </Link>
+          </li>
+          <li>
+            <BotonPlantilla
+              campos={campos.map(({ clave, etiqueta, tipo }) => ({ clave, etiqueta, tipo }))}
+              empresa={claveDe(empresa.nombre).replace(/_/g, "-")}
+              className="inline-flex rounded-full bg-rojo px-4 py-2 text-white hover:bg-rojo-oscuro"
+            >
+              2. Descargar plantilla
+            </BotonPlantilla>
+          </li>
+          <li>
+            <Link href="/cuenta/equipo/importar" className="inline-flex rounded-full border border-white/40 px-4 py-2 hover:bg-white/10">
+              3. Subirla llena
+            </Link>
+          </li>
+        </ol>
+      </section>
 
       <Bloque titulo="Deja lista tu plataforma">
         <ul className="divide-y divide-linea">

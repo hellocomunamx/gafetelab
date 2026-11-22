@@ -15,8 +15,8 @@ export default async function Importar() {
       <p className="text-sm"><Link href="/cuenta/equipo" className="underline">Equipo</Link> / Importar Excel</p>
       <h1 className="text-3xl font-extrabold">Sube a tu equipo con Excel</h1>
       <p className="max-w-2xl text-gris">
-        Tu plantilla se arma con los campos de tu empresa. Si vuelves a subir a alguien con el mismo
-        número de empleado, se actualiza en lugar de duplicarse.
+        Personaliza los campos de tu gafete y descarga una plantilla de Excel hecha a tu medida. Si
+        vuelves a subir a alguien con el mismo número de empleado, se actualiza en lugar de duplicarse.
       </p>
       <ImportarExcel
         campos={campos.map(({ clave, etiqueta, tipo }) => ({ clave, etiqueta, tipo }))}

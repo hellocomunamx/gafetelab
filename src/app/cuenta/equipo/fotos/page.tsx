@@ -28,7 +28,7 @@ export default async function Fotos() {
       <p className="text-sm"><Link href="/cuenta/equipo" className="underline">Equipo</Link> / Subir fotos</p>
       <h1 className="text-3xl font-extrabold">Sube las fotos de tu equipo</h1>
       <p className="max-w-2xl text-gris">
-        Súbelas todas de un jalón. Cada foto se asigna sola a su persona por el nombre del archivo, tú
+        Súbelas todas de forma masiva. Cada foto se asigna sola a su persona por el nombre del archivo, tú
         revisas antes de guardar y las que no reconozcamos las acomodas a mano.{" "}
         {personas.length
           ? sinFoto

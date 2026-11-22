@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { NavCuenta } from "@/components/cuenta/NavCuenta";
+import { SelectorEmpresa } from "@/components/cuenta/SelectorEmpresa";
 import { Contenedor } from "@/components/ui";
 import { COOKIE_EMPRESA, requerirUsuario } from "@/lib/cuenta/sesion";
 import { cookies } from "next/headers";
-import { elegirEmpresa } from "./acciones";
 
 export const metadata: Metadata = {
   title: { default: "Mi cuenta", template: "%s | Mi cuenta" },
@@ -24,20 +24,7 @@ export default async function CuentaLayout({ children }: { children: ReactNode }
         <Contenedor className="flex flex-col gap-3 py-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             {empresas && empresas.length > 1 ? (
-              <form action={elegirEmpresa} className="flex items-center gap-2">
-                <label className="sr-only" htmlFor="empresa">Empresa</label>
-                <select
-                  id="empresa"
-                  name="empresa"
-                  defaultValue={actual?.id}
-                  className="rounded-tarjeta-chica border border-linea bg-white px-3 py-2 font-titulos font-bold"
-                >
-                  {empresas.map((e) => (
-                    <option key={e.id} value={e.id}>{e.nombre}</option>
-                  ))}
-                </select>
-                <button type="submit" className="text-sm font-semibold underline">Cambiar</button>
-              </form>
+              <SelectorEmpresa empresas={empresas} actual={actual?.id} />
             ) : (
               <p className="font-titulos text-lg font-extrabold">{actual?.nombre ?? "Mi cuenta"}</p>
             )}

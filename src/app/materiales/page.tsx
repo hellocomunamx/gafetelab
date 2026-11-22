@@ -16,7 +16,7 @@ const archivo = zonas[0];
 
 export const metadata = metadatos({
   titulo: "Materiales, grosores y medidas de gafetes y credenciales",
-  descripcion: `Compara los materiales para gafetes y credenciales: ${disponibles.map((m) => `${m.nombre} de ${m.grosorMm} mm`).join(", ")}. Medidas del gafete CR80 (${medidas.ancho} × ${medidas.alto} mm), sangrado y zona segura para tu diseño.`,
+  descripcion: `Compara los materiales para gafetes y credenciales: ${disponibles.map((m) => `${m.nombre} de ${m.grosorMm} mm`).join(", ")}. Medidas del gafete CR80 (${medidas.ancho} × ${medidas.alto} mm), margen de corte y zona segura para tu diseño.`,
   ruta,
 });
 
@@ -32,11 +32,11 @@ const faqsMateriales: FaqItem[] = [
   },
   {
     pregunta: "¿De qué tamaño debe ser el archivo de mi gafete?",
-    respuesta: `De ${archivo.medida} (${archivo.pixeles} a ${medidas.resolucionDpi} dpi). El gafete terminado mide ${medidas.ancho} × ${medidas.alto} mm; los ${medidas.sangrado} mm extra por lado son el sangrado, que se recorta. Los textos, fotos y logos deben quedar a ${medidas.margenSeguro} mm o más del corte.`,
+    respuesta: `De ${archivo.medida} (${archivo.pixeles} a ${medidas.resolucionDpi} dpi). El gafete terminado mide ${medidas.ancho} × ${medidas.alto} mm; los ${medidas.sangrado} mm extra por lado son el margen de corte, que se recorta. Los textos, fotos y logos deben quedar a ${medidas.margenSeguro} mm o más del corte.`,
   },
   {
-    pregunta: "¿Qué es el sangrado y por qué lo necesito?",
-    respuesta: `Es la parte del fondo que sobresale del tamaño final. Como el corte puede variar unas décimas de milímetro, el fondo se extiende ${medidas.sangrado} mm por lado para que no queden filos blancos en la orilla del gafete.`,
+    pregunta: "¿Qué es el margen de corte y por qué lo necesito?",
+    respuesta: `Es la parte del fondo que sobresale del tamaño final; en imprenta se le llama sangrado. Como el corte puede variar unas décimas de milímetro, el fondo se extiende ${medidas.sangrado} mm por lado para que no queden filos blancos en la orilla del gafete.`,
   },
   {
     pregunta: "¿El gafete puede llevar perforación para el broche?",

@@ -514,7 +514,7 @@ export function EditorDiseno({
               </button>
             ) : (
               <p className="mt-2 text-xs text-gris">
-                ¿Ya tienes tu diseño hecho? Súbelo como fondo (1058 × 685 px con sangrado) y pon encima los campos.
+                ¿Ya tienes tu diseño hecho? Súbelo como fondo de 1058 × 685 px y pon encima los campos. Esa medida ya incluye el margen de corte: lleva tu fondo hasta la orilla.
               </p>
             )}
             {ocupado === "subiendo" ? <p className="mt-2 text-sm text-gris">Subiendo imagen…</p> : null}
@@ -619,7 +619,7 @@ export function EditorDiseno({
           </div>
           {guias ? (
             <p className="text-xs text-gris">
-              <span className="font-semibold text-rojo-oscuro">Rojo:</span> sangrado, se corta.{" "}
+              <span className="font-semibold text-rojo-oscuro">Rojo:</span> margen de corte. Esa orilla se recorta, así que tu fondo debe llegar hasta ahí.{" "}
               <span className="font-semibold text-tinta">Línea negra:</span> por donde pasa el corte.{" "}
               <span className="font-semibold text-[#0a7d4f]">Verde punteado:</span> zona segura para textos, foto y QR.
             </p>
