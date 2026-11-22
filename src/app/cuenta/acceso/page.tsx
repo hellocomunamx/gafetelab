@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { guardarContrasena, guardarPerfil } from "@/app/cuenta/usuarios/acciones";
 import { Bloque, Entrada } from "@/components/cuenta/Entrada";
 import { Formulario } from "@/components/cuenta/Formulario";
 import { LARGO_MINIMO_CONTRASENA } from "@/lib/cuenta/roles";
-import { proveedoresActivos, requerirUsuario } from "@/lib/cuenta/sesion";
+import { miAceptacion, proveedoresActivos, requerirUsuario } from "@/lib/cuenta/sesion";
 
 export const metadata: Metadata = { title: "Mi acceso" };
 
@@ -14,6 +15,7 @@ export default async function Acceso() {
   const { data: perfil } = await supabase.from("perfiles").select("nombre").eq("id", usuario.id).maybeSingle();
   const conContrasena = usuario.user_metadata?.con_contrasena === true;
   const proveedores = proveedoresActivos().map((p) => NOMBRES[p]);
+  const { aceptacion } = await miAceptacion();
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -93,6 +95,14 @@ export default async function Acceso() {
           ) : null}
         </ul>
       </Bloque>
+
+      <p className="text-sm text-gris">
+        {aceptacion
+          ? `Aceptaste los términos y condiciones (versión ${aceptacion.terminos_version}) y el aviso de privacidad (versión ${aceptacion.aviso_version}) el ${new Date(aceptacion.aceptado_en).toLocaleDateString("es-MX", { day: "numeric", month: "long", year: "numeric", timeZone: "America/Mexico_City" })}. `
+          : ""}
+        <Link href="/terminos" className="underline">Términos y condiciones</Link> ·{" "}
+        <Link href="/aviso-de-privacidad" className="underline">Aviso de privacidad</Link>
+      </p>
     </div>
   );
 }

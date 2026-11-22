@@ -42,7 +42,7 @@ export default async function Entrar({
           />
         </div>
         <p className="mt-4 text-sm text-gris">
-          Al entrar aceptas nuestros{" "}
+          La primera vez que entres te pediremos aceptar nuestros{" "}
           <Link href="/terminos" className="underline">
             términos y condiciones
           </Link>{" "}

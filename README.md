@@ -87,6 +87,12 @@ Cada empresa puede invitar a más personas a su plataforma desde `/cuenta/usuari
 - **Importante:** las invitaciones confían en que el correo de la sesión está verificado. En Supabase, deja activado "Confirm email" en Authentication, Sign In / Providers, Email (viene activado). Si se apaga, alguien podría registrarse con un correo ajeno y aceptar su invitación.
 - La contraseña es opcional y se crea en `/cuenta/acceso`. No hay pantalla de "olvidé mi contraseña": se entra con la liga o el código por correo y se crea otra.
 
+### Términos y aviso de privacidad
+
+Para usar la cuenta hay que aceptar los términos y condiciones (`/terminos`) y el aviso de privacidad. Quien entra sin haberlo hecho llega a `/aceptar`, con una casilla obligatoria; aplica igual a quien entra con liga, contraseña, Google o Microsoft, y a las cuentas que ya existían (una sola vez).
+
+Cada aceptación queda en la tabla `aceptaciones`: usuario, versión de los términos, versión del aviso y fecha. La fecha y el usuario los pone la base de datos, y los renglones no se pueden cambiar ni borrar desde la app. Las versiones salen de `legal` en `src/lib/site.ts`: al cambiar un documento, sube ahí su versión y su fecha. Hoy basta con haber aceptado una vez; si un cambio futuro debe volver a aceptarse, se ajusta `miAceptacion` en `src/lib/cuenta/sesion.ts`.
+
 ### Qué muestra tu QR
 
 Cada empresa decide en `/cuenta/campos#qr` qué lleva el código QR de sus gafetes (columnas `qr_*` de `empresas`). Solo lo cambia quien administra.

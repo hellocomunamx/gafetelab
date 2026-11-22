@@ -23,7 +23,21 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "campos": {
+            "aceptaciones": {
+                  Row: {
+                    "aceptado_en": string,"aviso_version": string,"id": string,"terminos_version": string,"usuario_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "aceptado_en"?: string,"aviso_version": string,"id"?: string,"terminos_version": string,"usuario_id"?: string
+                  }
+                  Update: {
+                    "aceptado_en"?: string,"aviso_version"?: string,"id"?: string,"terminos_version"?: string,"usuario_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"campos": {
                   Row: {
                     "actualizado_en": string,"cara": string,"clave": string,"creado_en": string,"de_sistema": boolean,"empresa_id": string,"en_gafete": boolean,"etiqueta": string,"id": string,"obligatorio": boolean,"orden": number,"tipo": string
                   }

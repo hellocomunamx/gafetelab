@@ -6,12 +6,37 @@ import { crearClienteServidor } from "@/lib/supabase/server";
 
 export const COOKIE_EMPRESA = "lg_empresa";
 
-/** Usuario con sesión iniciada; si no hay, manda a /entrar. */
-export const requerirUsuario = cache(async () => {
+/** Usuario con sesión iniciada; si no hay, manda a /entrar. No revisa si aceptó los términos. */
+export const usuarioDeSesion = cache(async () => {
   const supabase = await crearClienteServidor();
   const { data } = await supabase.auth.getUser();
   if (!data.user) redirect("/entrar");
   return { supabase, usuario: data.user };
+});
+
+/**
+ * La aceptación más reciente de los términos y del aviso de privacidad.
+ * `pendiente` es true solo cuando sabemos que la persona no ha aceptado: si la
+ * consulta falla no se le cierra la puerta a nadie.
+ */
+export const miAceptacion = cache(async () => {
+  const { supabase } = await usuarioDeSesion();
+  const { data, error } = await supabase
+    .from("aceptaciones")
+    .select("terminos_version, aviso_version, aceptado_en")
+    .order("aceptado_en", { ascending: false })
+    .limit(1);
+  return { aceptacion: data?.[0] ?? null, pendiente: !error && !data?.length };
+});
+
+/**
+ * Usuario con sesión iniciada que ya aceptó los términos y condiciones y el
+ * aviso de privacidad. A quien le falta se le manda a /aceptar.
+ */
+export const requerirUsuario = cache(async () => {
+  const sesion = await usuarioDeSesion();
+  if ((await miAceptacion()).pendiente) redirect("/aceptar");
+  return sesion;
 });
 
 export type Rol = "propietario" | "administrador" | "editor";
