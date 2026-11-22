@@ -5,13 +5,14 @@ import { HeroAnimado } from "@/components/HeroAnimado";
 import { JsonLd } from "@/components/JsonLd";
 import { Celular, GafeteHorizontal, VentanaPlataforma } from "@/components/Muestras";
 import { TablaPrecios } from "@/components/TablaPrecios";
+import { VideoPitch } from "@/components/VideoPitch";
 import { Boton, Cierre, Contenedor, CTA_TEXTO, Seccion } from "@/components/ui";
 import { faqsGenerales } from "@/lib/faqs";
 import { giros } from "@/lib/giros";
 import { formasDeEmpezar, pasos } from "@/lib/pasos";
 import { modalidadesDetalle } from "@/lib/plataforma";
 import { envio, notaIva, pesos, precioMinimo } from "@/lib/precios";
-import { paginaFaq, producto } from "@/lib/schema";
+import { paginaFaq, producto, video, videoPitch } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
 import { entregaTexto, site } from "@/lib/site";
 
@@ -76,6 +77,25 @@ export default function Inicio() {
               </div>
             ))}
           </dl>
+        </Contenedor>
+      </section>
+
+      <section id="video" className="scroll-mt-28">
+        <Contenedor className="py-12 sm:py-16">
+          <div className="mx-auto max-w-4xl">
+            <p className="text-center font-mano text-2xl text-rojo">Te lo contamos rapidito</p>
+            <h2 className="mt-1 text-center text-3xl font-extrabold">{videoPitch.titulo}</h2>
+            <p className="mx-auto mt-3 mb-8 max-w-2xl text-center text-lg text-gris">
+              De las fotos por chat y el Excel a los gafetes y credenciales de todo tu equipo, sin
+              mandar archivos por correo.
+            </p>
+            <VideoPitch
+              src={videoPitch.src}
+              portada={videoPitch.portada}
+              titulo={videoPitch.titulo}
+              duracion={videoPitch.duracion}
+            />
+          </div>
         </Contenedor>
       </section>
 
@@ -218,7 +238,7 @@ export default function Inicio() {
         titulo="¿Listo para decir “Hola, soy”?"
       />
 
-      <JsonLd data={[producto(), paginaFaq(faqsInicio)]} />
+      <JsonLd data={[producto(), paginaFaq(faqsInicio), video()]} />
     </>
   );
 }

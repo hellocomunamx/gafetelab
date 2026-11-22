@@ -118,6 +118,7 @@ Los correos de acceso locales llegan a http://127.0.0.1:54324.
 | Vista del diseño y zona de impresión | `src/components/VistaGafete.tsx`, `src/components/DiagramaGafete.tsx` |
 | Tarifa de envío y monto para envío gratis | `src/lib/precios.ts` (`envio`) |
 | Cotizador | `src/components/Cotizador.tsx` |
+| Video de la página de inicio (archivo, portada, título y datos estructurados) | `public/video/`, `videoPitch` en `src/lib/schema.ts`, `src/components/VideoPitch.tsx` |
 | Textos y PDF de la cotización | `src/lib/cotizacion.ts`, `src/lib/cotizacion-pdf.ts` |
 | Envío de la cotización por correo | `src/app/api/cotizacion/route.ts`, `src/lib/correo.ts` |
 | Modalidades, funciones de la plataforma (con la marca `pronto` de lo que aún no está disponible), formas de subir al equipo y lo que no cobra | `src/lib/plataforma.ts` |
