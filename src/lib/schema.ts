@@ -6,7 +6,7 @@
 import type { Faq } from "./faqs";
 import {
   envio,
-  extraDosCaras,
+  extraDosCarasMaximo,
   precioDigital,
   precioMaximo,
   precioMinimo,
@@ -87,7 +87,7 @@ export function producto() {
       "@type": "AggregateOffer",
       priceCurrency: site.moneda,
       lowPrice: precioMinimo,
-      highPrice: precioMaximo + extraDosCaras,
+      highPrice: precioMaximo + extraDosCarasMaximo,
       offerCount: tramos.length * 2,
       availability: "https://schema.org/InStock",
       seller: { "@id": ORG_ID },
@@ -181,7 +181,7 @@ export function servicio(opts: {
       "@type": "AggregateOffer",
       priceCurrency: site.moneda,
       lowPrice: precioMinimo,
-      highPrice: precioMaximo + extraDosCaras,
+      highPrice: precioMaximo + extraDosCarasMaximo,
     },
   };
 }

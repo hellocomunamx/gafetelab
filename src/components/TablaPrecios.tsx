@@ -30,7 +30,7 @@ export function TablaPrecios() {
               <tr key={t.desde}>
                 <th scope="row" className="px-5 py-3 font-medium">{rangoTexto(t)}</th>
                 <td className="px-5 py-3">{precio(t.precio)}</td>
-                <td className="px-5 py-3">{precio(t.precio + extraDosCaras)}</td>
+                <td className="px-5 py-3">{precio(t.precio + extraDosCaras(t.desde))}</td>
               </tr>
             ))}
           </tbody>

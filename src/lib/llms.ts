@@ -9,6 +9,8 @@ import { pasos } from "./pasos";
 import {
   envio,
   extraDosCaras,
+  extraDosCarasDetalle,
+  extraDosCarasRango,
   notaIva,
   paqueteVigenciaMeses,
   paquetes,
@@ -39,7 +41,7 @@ const funciones = (pronto: boolean) =>
 const datosClave = () =>
   [
     `- Producto: gafetes y credenciales para empleados en tres modalidades: impreso (PVC rígido tamaño CR80, 8.6 × 5.4 cm, a una cara o por frente y vuelta), digital (en el celular, con código QR verificable) o impreso + digital.`,
-    `- Precio impreso: de ${pesos(precioMinimo)} a ${pesos(precioMaximo)} MXN por pieza a una cara, ${notaIva}, según la cantidad. Frente y vuelta: ${pesos(extraDosCaras)} más por pieza.`,
+    `- Precio impreso: de ${pesos(precioMinimo)} a ${pesos(precioMaximo)} MXN por pieza a una cara, ${notaIva}, según la cantidad. Frente y vuelta: ${extraDosCarasRango} MXN más por pieza, según la cantidad (${extraDosCarasDetalle}).`,
     `- Precio digital: ${pesos(precioDigital)} MXN por pieza, ${notaIva}, en cualquier cantidad, solo o sumado a un gafete impreso.`,
     `- Materiales: ${materiales.filter((m) => m.disponible).map((m) => `${m.nombre} de ${grosorTexto(m)}${m.extra ? `, ${pesos(m.extra)} más por pieza` : ""}`).join("; ")}.`,
     `- Paquetes prepagados: ${paquetes.map((p) => `${p.piezas} gafetes por ${pesos(p.piezas * p.porPieza)} MXN con ${p.envios} envíos incluidos`).join("; ")}. Vigencia de ${paqueteVigenciaMeses} meses.`,
@@ -92,7 +94,7 @@ export function llmsFullTxt(): string {
     "| --- | --- | --- |",
     ...tramos.map(
       (t) =>
-        `| ${rangoTexto(t)} | ${pesos(t.precio)} MXN | ${pesos(t.precio + extraDosCaras)} MXN |`,
+        `| ${rangoTexto(t)} | ${pesos(t.precio)} MXN | ${pesos(t.precio + extraDosCaras(t.desde))} MXN |`,
     ),
   ].join("\n");
 

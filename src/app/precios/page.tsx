@@ -9,7 +9,8 @@ import { modalidadesDetalle } from "@/lib/plataforma";
 import {
   cotizar,
   envio,
-  extraDosCaras,
+  extraDosCarasDetalle,
+  extraDosCarasRango,
   notaIva,
   paqueteVigenciaMeses,
   paquetes,
@@ -26,6 +27,8 @@ import { entregaTexto } from "@/lib/site";
 
 const ruta = "/precios";
 const rutaMigas = [{ nombre: "Precios", ruta }];
+
+const mayuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
 export const metadata = metadatos({
   titulo: "Precios de gafetes y credenciales para empleados",
@@ -44,7 +47,7 @@ const faqsPrecios: FaqItem[] = [
   },
   {
     pregunta: "¿Cuánto cuesta imprimir por frente y vuelta?",
-    respuesta: `${pesos(extraDosCaras)} pesos adicionales por pieza. Por ejemplo, ${ejemplo150.piezas} gafetes por frente y vuelta cuestan ${pesos(ejemplo150.porPieza)} cada uno, ${pesos(ejemplo150.subtotal)} en total ${notaIva}.`,
+    respuesta: `${mayuscula(extraDosCarasRango)} pesos adicionales por pieza, según la cantidad: ${extraDosCarasDetalle}. Por ejemplo, ${ejemplo150.piezas} gafetes por frente y vuelta cuestan ${pesos(ejemplo150.porPieza)} cada uno, ${pesos(ejemplo150.subtotal)} en total ${notaIva}.`,
   },
   {
     pregunta: "¿Cuánto cuesta el gafete digital?",
@@ -97,7 +100,7 @@ export default function Precios() {
         <TablaPrecios />
         <ul className="mt-5 list-disc space-y-1 pl-5 text-gris">
           <li>Precios en pesos mexicanos, {notaIva}.</li>
-          <li>Frente y vuelta: {pesos(extraDosCaras)} más por pieza.</li>
+          <li>Frente y vuelta: {extraDosCarasRango} más por pieza, según la cantidad ({extraDosCarasDetalle}).</li>
           <li>
             Envío a todo México: {pesos(envio.tarifa)}; gratis en pedidos desde{" "}
             {pesos(envio.gratisDesde)} antes de IVA.
