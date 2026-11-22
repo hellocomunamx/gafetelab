@@ -251,3 +251,9 @@ export const giros: Giro[] = [
 export function giroPorSlug(slug: string): Giro | undefined {
   return giros.find((g) => g.slug === slug);
 }
+
+/** Nombres cortos de los giros, para elegir uno con chips ("Restaurantes", "Limpieza"). */
+export const opcionesGiro = giros.map((g) => {
+  const corto = g.nombre.replace(/^empresas de /, "");
+  return corto.charAt(0).toUpperCase() + corto.slice(1);
+});

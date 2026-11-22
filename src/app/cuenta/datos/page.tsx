@@ -11,7 +11,9 @@ import {
 import { Confirmar } from "@/components/cuenta/Confirmar";
 import { Bloque, Entrada, Seleccion } from "@/components/cuenta/Entrada";
 import { Formulario } from "@/components/cuenta/Formulario";
+import { GiroChips } from "@/components/cuenta/GiroChips";
 import { estadosMexico, regimenesFiscales, usosCfdi } from "@/lib/cuenta/catalogos";
+import { opcionesGiro } from "@/lib/giros";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
 import { site } from "@/lib/site";
 
@@ -44,9 +46,9 @@ export default async function Datos({
 
       <Bloque titulo="Tu empresa">
         <Formulario accion={guardarEmpresa} boton="Guardar">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Entrada etiqueta="Nombre de la empresa" name="nombre" required maxLength={120} defaultValue={empresa.nombre} />
-            <Entrada etiqueta="Giro" name="giro" maxLength={80} defaultValue={empresa.giro ?? ""} ayuda="Por ejemplo: restaurante, clínica o constructora." />
+          <div className="space-y-5">
+            <Entrada etiqueta="Nombre de la empresa" name="nombre" required maxLength={120} defaultValue={empresa.nombre} className="max-w-md" />
+            <GiroChips opciones={opcionesGiro} inicial={empresa.giro ?? ""} />
           </div>
         </Formulario>
       </Bloque>
