@@ -9,7 +9,10 @@ import { FormularioEmpleado } from "@/components/cuenta/FormularioEmpleado";
 import { FotoEmpleado } from "@/components/cuenta/FotoEmpleado";
 import { estadosGafete, motivosGafete } from "@/lib/cuenta/catalogos";
 import { camposDe, sugerenciasDe } from "@/lib/cuenta/consultas";
+import { QrSvg } from "@/components/QrSvg";
 import { ligasDeFotos } from "@/lib/cuenta/fotos";
+import { contenidoQr, rutaVerificacion } from "@/lib/cuenta/qr";
+import { datosDePersona } from "@/lib/diseno/datos";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
 
 export const metadata: Metadata = { title: "Persona" };
@@ -43,6 +46,7 @@ export default async function Persona({ params }: { params: Promise<{ id: string
     ligasDeFotos(supabase, [persona.foto_path]),
   ]);
   const deBaja = persona.estatus === "baja";
+  const qr = contenidoQr(empresa, { codigo: persona.codigo, valores: datosDePersona(persona, campos) });
 
   return (
     <div className="space-y-5">
@@ -105,6 +109,27 @@ export default async function Persona({ params }: { params: Promise<{ id: string
                 </form>
               ) : null}
             </FotoEmpleado>
+          </Bloque>
+
+          <Bloque titulo="Código QR">
+            {qr ? (
+              <>
+                <QrSvg texto={qr} titulo={`Código QR de ${persona.nombre}`} className="w-32 rounded border border-linea" />
+                <p className="mt-3 text-sm break-all text-gris">{qr}</p>
+              </>
+            ) : (
+              <p className="text-sm text-gris">
+                A esta persona le falta el dato que lleva tu código QR. Complétalo en sus datos.
+              </p>
+            )}
+            <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+              {empresa.qr_modo === "verificacion" ? (
+                <a href={rutaVerificacion(persona.codigo)} target="_blank" rel="noopener" className="font-semibold underline underline-offset-4">
+                  Ver su página de verificación
+                </a>
+              ) : null}
+              <Link href="/cuenta/campos#qr" className="underline underline-offset-4">Qué muestra tu QR</Link>
+            </p>
           </Bloque>
 
           <Bloque titulo="Estatus">

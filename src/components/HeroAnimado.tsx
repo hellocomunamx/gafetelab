@@ -3,7 +3,7 @@ import { Celular, GafeteHorizontal, GafeteVertical, VentanaPlataforma } from "./
 const escenas = [
   "Horizontal, por frente y vuelta",
   "Vertical, con tus datos y código QR",
-  "Digital: vigente o expirado al escanear",
+  "Vigente o expirado al escanear su QR",
   "Tu plataforma, sin costo extra",
 ];
 
@@ -18,7 +18,7 @@ export function HeroAnimado() {
   return (
     <div
       role="img"
-      aria-label="Ejemplos de gafetes y credenciales: horizontal y vertical, por frente y vuelta con código QR, gafete digital en el celular con sello de vigente o expirado, y la plataforma para administrar al equipo."
+      aria-label="Ejemplos de gafetes y credenciales: horizontal y vertical, por frente y vuelta con código QR, el gafete en el celular con sello de vigente o expirado al escanear su código QR, y la plataforma para administrar al equipo."
       className="heroe-animado mx-auto w-full max-w-sm"
     >
       <div aria-hidden className="relative h-[350px]">

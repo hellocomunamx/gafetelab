@@ -37,7 +37,12 @@ export const faqsGenerales: Faq[] = [
   },
   {
     pregunta: "¿Qué es un gafete digital?",
-    respuesta: `Es la versión del gafete que cada persona lleva en su celular, con un código QR que cualquiera puede escanear para comprobar que esa persona sigue vigente en tu empresa. Tú decides qué información muestra: nombre, puesto, fotografía, número de empleado, área o vigencia. Cuesta ${pesos(precioDigital)} por pieza, lo pidas solo o junto con el gafete impreso.`,
+    respuesta: `Es la versión del gafete que cada persona lleva en su celular, para mostrarla sin traer la tarjeta. Lleva el mismo código QR de verificación que el impreso. Cuesta ${pesos(precioDigital)} por pieza, lo pidas solo o junto con el gafete impreso.`,
+  },
+  {
+    pregunta: "¿Qué pasa cuando alguien escanea el código QR de un gafete?",
+    respuesta:
+      "Tú lo decides en tu plataforma, en «Qué muestra tu QR». Por omisión abre una página de verificación que dice si el gafete está vigente o expirado, con los datos que elijas mostrar: nombre, puesto, número de empleado, departamento, fotografía y el nombre de tu empresa. Si das de baja a la persona, su página deja de mostrar sus datos. También puedes hacer que el código lleve a una liga tuya o que contenga solo un dato, como el número de empleado. Va incluido en todos los gafetes, impresos y digitales, sin costo extra.",
   },
   {
     pregunta: "¿Hay pedido mínimo?",

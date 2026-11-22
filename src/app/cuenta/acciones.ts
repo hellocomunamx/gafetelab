@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { estadosMexico, regimenesFiscales, usosCfdi } from "@/lib/cuenta/catalogos";
+import { datosVerificables, modosQr } from "@/lib/cuenta/qr";
 import { recordarEmpresa, requerirEmpresa, requerirUsuario } from "@/lib/cuenta/sesion";
 import { claveDe, normalizar } from "@/lib/cuenta/texto";
 import type { FilaImportada, Resultado } from "@/lib/cuenta/tipos";
@@ -432,6 +433,53 @@ export async function guardarCampos(_: Resultado, d: FormData): Promise<Resultad
   );
   refrescar();
   return fallas.some(Boolean) ? { error: ERROR_GENERAL } : { ok: "Campos guardados." };
+}
+
+/** Guarda a dónde lleva el código QR de los gafetes de la empresa. */
+export async function guardarQr(_: Resultado, d: FormData): Promise<Resultado> {
+  const { supabase, empresa, administra } = await requerirEmpresa();
+  if (!administra) return { error: "Solo quien administra la empresa puede cambiar qué muestra el QR." };
+  const modo = modosQr.find((m) => m.id === d.get("qr_modo"))?.id;
+  if (!modo) return { error: "Elige qué muestra tu QR." };
+  const { data: campos } = await supabase.from("campos").select("clave, tipo").eq("empresa_id", empresa.id);
+  const claves = (tipos: string[]) => (campos ?? []).filter((c) => tipos.includes(c.tipo)).map((c) => c.clave);
+
+  const cambios: {
+    qr_modo: string;
+    qr_mostrar?: string[];
+    qr_vigencia?: string | null;
+    qr_liga?: string;
+    qr_dato?: string;
+  } = { qr_modo: modo };
+  if (modo === "verificacion") {
+    const mostrar = datosVerificables.map((v) => v.clave).filter((clave) => d.get(`mostrar_${clave}`) === "on");
+    if (!mostrar.some((clave) => clave !== "empresa")) {
+      return { error: "Elige al menos un dato de la persona para mostrar." };
+    }
+    cambios.qr_mostrar = mostrar;
+    const vigencia = texto(d, "qr_vigencia", 40);
+    cambios.qr_vigencia = claves(["fecha"]).includes(vigencia) ? vigencia : null;
+  } else if (modo === "liga") {
+    const liga = texto(d, "qr_liga", 300);
+    let valida = false;
+    try {
+      valida = new URL(liga.replaceAll("{numero}", "1").replaceAll("{codigo}", "1")).protocol === "https:";
+    } catch {
+      valida = false;
+    }
+    if (!valida || /\s/.test(liga)) return { error: "Escribe una liga completa que empiece con https://" };
+    cambios.qr_liga = liga;
+  } else {
+    const dato = texto(d, "qr_dato", 40);
+    if (!claves(["texto", "fecha"]).includes(dato)) return { error: "Elige qué dato lleva el código." };
+    cambios.qr_dato = dato;
+  }
+
+  const { data, error } = await supabase.from("empresas").update(cambios).eq("id", empresa.id).select("id");
+  if (error) return { error: ERROR_GENERAL };
+  if (!data.length) return { error: SOLO_ADMIN };
+  refrescar();
+  return { ok: "Guardado. Tus gafetes ya usan este código QR." };
 }
 
 export async function borrarCampo(d: FormData) {

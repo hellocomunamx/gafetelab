@@ -1,6 +1,7 @@
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
+import { COLUMNAS_QR } from "@/lib/cuenta/qr";
 import { crearClienteServidor } from "@/lib/supabase/server";
 
 export const COOKIE_EMPRESA = "lg_empresa";
@@ -29,7 +30,7 @@ export const misInvitaciones = cache(async () => {
 export const requerirEmpresa = cache(async () => {
   const { supabase, usuario } = await requerirUsuario();
   const [{ data: empresas }, { data: membresias }] = await Promise.all([
-    supabase.from("empresas").select("id, nombre, giro").order("creado_en"),
+    supabase.from("empresas").select(`id, nombre, giro, ${COLUMNAS_QR}`).order("creado_en"),
     supabase.from("miembros").select("empresa_id, rol").eq("usuario_id", usuario.id),
   ]);
   if (!empresas?.length) {

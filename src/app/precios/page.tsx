@@ -76,7 +76,7 @@ const faqsPrecios: FaqItem[] = [
   },
   {
     pregunta: "¿Qué incluye el precio por pieza?",
-    respuesta: `En el impreso, la tarjeta de PVC tamaño CR80 a color, personalizada con los datos de cada empleado y entregada en ${entregaTexto}. En el digital, el gafete en el celular con su código QR verificable. En ambos casos, el acceso a tu plataforma.`,
+    respuesta: `En el impreso, la tarjeta de PVC tamaño CR80 a color, personalizada con los datos de cada empleado y entregada en ${entregaTexto}. En el digital, el gafete en el celular. En ambos casos, el código QR con su página de verificación y el acceso a tu plataforma.`,
   },
 ];
 

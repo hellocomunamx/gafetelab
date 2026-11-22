@@ -4,8 +4,9 @@ import { type PointerEvent, type ReactNode, type Ref, type SVGProps, useId, useS
 import { acomodar, INTERLINEA, medidor } from "@/lib/diseno/texto";
 import { type Cara, type Elemento, type ElementoTexto, fuenteCss, type Orientacion, tamano } from "@/lib/diseno/tipos";
 import { medidas } from "@/lib/materiales";
+import { codigoQr } from "@/lib/qr";
 
-/** Patrón fijo que imita un código QR (ilustrativo: el real se genera al emitir el gafete). */
+/** Patrón fijo que imita un código QR, para cuando todavía no hay nada que codificar. */
 const QR = ["1110111", "1010101", "1110011", "0011010", "1101110", "1010001", "1110111"];
 
 /** El texto que imprime un elemento con los datos de una persona. */
@@ -24,6 +25,7 @@ function Pieza({
   datos,
   etiquetas,
   foto,
+  qr,
   imagenes,
   id,
   enEdicion,
@@ -32,6 +34,7 @@ function Pieza({
   datos: Record<string, string>;
   etiquetas: Record<string, string>;
   foto?: string | null;
+  qr?: string;
   imagenes: Record<string, string>;
   id: string;
   enEdicion: boolean;
@@ -56,6 +59,16 @@ function Pieza({
     );
   }
   if (e.tipo === "qr") {
+    const real = qr ? codigoQr(qr) : null;
+    if (real) {
+      const escala = e.w / real.lado;
+      return (
+        <g>
+          <rect x={e.x} y={e.y} width={e.w} height={e.w} fill="#fff" />
+          <path d={real.trazo} fill="#000" transform={`translate(${e.x} ${e.y}) scale(${escala})`} shapeRendering="crispEdges" />
+        </g>
+      );
+    }
     const celda = e.w / QR.length;
     return (
       <g>
@@ -133,6 +146,7 @@ export function GafeteSvg({
   datos,
   etiquetas,
   foto,
+  qr,
   imagenes,
   modo = "corte",
   titulo,
@@ -148,6 +162,8 @@ export function GafeteSvg({
   /** Nombre visible de cada campo, por clave. */
   etiquetas: Record<string, string>;
   foto?: string | null;
+  /** Lo que lleva escrito el código QR de esta persona. Sin él se dibuja un patrón de relleno. */
+  qr?: string;
   /** Liga temporal de cada archivo del diseño, por ruta. */
   imagenes: Record<string, string>;
   modo?: "corte" | "completo";
@@ -198,7 +214,7 @@ export function GafeteSvg({
             onPointerDown={alTocar ? (evento) => alTocar(e.id, evento) : undefined}
             style={alTocar ? { cursor: "move" } : undefined}
           >
-            <Pieza e={e} datos={datos} etiquetas={etiquetas} foto={foto} imagenes={imagenes} id={id} enEdicion={Boolean(alTocar)} />
+            <Pieza e={e} datos={datos} etiquetas={etiquetas} foto={foto} qr={qr} imagenes={imagenes} id={id} enEdicion={Boolean(alTocar)} />
             {/* Zona de agarre: toda la caja, aunque el texto sea corto. */}
             {alTocar ? <rect x={e.x} y={e.y} width={e.w} height={e.h} fill="transparent" /> : null}
           </g>

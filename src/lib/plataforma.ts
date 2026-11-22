@@ -14,7 +14,7 @@ export const accionesPlataforma = [
   },
   {
     titulo: "Desactivaciones",
-    texto: "Desactiva un gafete digital al momento: su código QR deja de mostrarlo como vigente.",
+    texto: "Desactiva un gafete al momento: quien escanee su código QR ya no lo ve como vigente.",
   },
   {
     titulo: "Reactivaciones",
@@ -56,12 +56,12 @@ export const modalidadesDetalle = [
   {
     titulo: "Digital",
     texto:
-      "El gafete en el celular de cada persona, con un código QR que cualquiera puede escanear para comprobar que sigue vigente.",
+      "El mismo gafete en el celular de cada persona, para mostrarlo sin traer la tarjeta, con su código QR de verificación.",
   },
   {
     titulo: "Impreso + digital",
     texto:
-      "Las dos versiones del mismo gafete: la tarjeta para portar y la digital para verificar.",
+      "Las dos versiones del mismo gafete: la tarjeta para portar y la digital para llevar en el celular.",
   },
 ];
 
@@ -139,6 +139,11 @@ export const funcionesPlataforma: { grupo: string; resumen: string; funciones: F
       {
         titulo: "Campos a tu medida",
         texto: "Tú decides qué lleva tu gafete: puesto, área, tipo de sangre, vigencia o lo que tu empresa necesite.",
+      },
+      {
+        titulo: "Tú decides qué muestra tu QR",
+        texto:
+          "Una página de verificación que dice si el gafete está vigente o expirado, una liga tuya o un dato. Va incluida en todos los gafetes, sin costo extra.",
       },
       {
         titulo: "Vista previa de cada gafete",

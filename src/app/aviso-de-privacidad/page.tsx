@@ -121,8 +121,8 @@ export default function AvisoDePrivacidad() {
               <li>Responder los mensajes que nos envíes desde el formulario de contacto.</li>
               <li>Diseñar, producir, imprimir y entregar tus gafetes y credenciales.</li>
               <li>
-                Generar los gafetes digitales y mostrar, a quien escanee su código QR, la información
-                que tu empresa haya decidido incluir y si el gafete está vigente.
+                Generar los gafetes, impresos y digitales, y mostrar, a quien escanee su código QR,
+                la información que tu empresa haya decidido incluir y si el gafete está vigente.
               </li>
               <li>
                 Crear y administrar tu cuenta y tu plataforma: altas, bajas, reposiciones,

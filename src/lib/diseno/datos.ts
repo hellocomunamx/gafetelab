@@ -81,11 +81,14 @@ export function faltantes(
   datos: Record<string, string>,
   tieneFoto: boolean,
   campos: CampoBasico[],
+  /** Lo que lleva escrito su código QR; vacío si no hay nada que codificar. */
+  qr = "sin revisar",
 ): string[] {
   const faltan = new Set<string>();
   for (const cara of [diseno.frente, diseno.vuelta]) {
     for (const e of cara?.elementos ?? []) {
       if (e.tipo === "foto" && !tieneFoto) faltan.add("Fotografía");
+      if (e.tipo === "qr" && !qr) faltan.add("El dato de su código QR");
       if (e.tipo === "texto" && e.campo && !datos[e.campo]?.trim()) {
         faltan.add(campos.find((c) => c.clave === e.campo)?.etiqueta ?? e.campo);
       }

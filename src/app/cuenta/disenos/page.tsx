@@ -5,6 +5,7 @@ import { claseBoton } from "@/components/cuenta/Formulario";
 import { GafeteSvg } from "@/components/diseno/GafeteSvg";
 import { camposDe } from "@/lib/cuenta/consultas";
 import { ligasDe } from "@/lib/cuenta/fotos";
+import { CODIGO_MUESTRA, contenidoQr } from "@/lib/cuenta/qr";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
 import { datosDeMuestra, disenoDeFila } from "@/lib/diseno/datos";
 import { rutasDe } from "@/lib/diseno/limpiar";
@@ -29,6 +30,7 @@ export default async function Disenos() {
   const ligas = await ligasDe(supabase, "disenos", disenos.flatMap((d) => rutasDe(d.frente)));
   const imagenes = Object.fromEntries(ligas);
   const datos = datosDeMuestra(campos);
+  const qr = contenidoQr(empresa, { codigo: CODIGO_MUESTRA, valores: datos });
   const etiquetas = Object.fromEntries(campos.map((c) => [c.clave, c.etiqueta]));
 
   return (
@@ -52,6 +54,7 @@ export default async function Disenos() {
                   orientacion={d.orientacion}
                   datos={datos}
                   etiquetas={etiquetas}
+                  qr={qr}
                   imagenes={imagenes}
                   titulo={`Frente de ${d.nombre}`}
                   className="max-h-full max-w-full drop-shadow-md"

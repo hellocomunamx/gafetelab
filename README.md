@@ -20,6 +20,7 @@ Secretos en Cloudflare:
 npx wrangler login
 npx wrangler secret put RESEND_API_KEY
 npx wrangler secret put RESEND_FROM      # opcional: "LaGafetería <hola@tudominio>"
+npx wrangler secret put SUPABASE_SECRET_KEY   # opcional: fotografía en la página de verificación del QR
 ```
 
 Sin `RESEND_API_KEY`, el cotizador sigue funcionando y descargando el PDF; solo el envío por correo responde que todavía no está activo.
@@ -86,6 +87,20 @@ Cada empresa puede invitar a más personas a su plataforma desde `/cuenta/usuari
 - **Importante:** las invitaciones confían en que el correo de la sesión está verificado. En Supabase, deja activado "Confirm email" en Authentication, Sign In / Providers, Email (viene activado). Si se apaga, alguien podría registrarse con un correo ajeno y aceptar su invitación.
 - La contraseña es opcional y se crea en `/cuenta/acceso`. No hay pantalla de "olvidé mi contraseña": se entra con la liga o el código por correo y se crea otra.
 
+### Qué muestra tu QR
+
+Cada empresa decide en `/cuenta/campos#qr` qué lleva el código QR de sus gafetes (columnas `qr_*` de `empresas`). Solo lo cambia quien administra.
+
+- **Página de verificación** (por omisión, incluida en todos los gafetes sin costo extra). El código lleva a `/v/<código>`, una página pública y sin indexar que dice Vigente, Expirado, No válido (baja) o Aún no activo (pendiente), con los datos que la empresa eligió: su nombre, nombre de la persona, puesto, número de empleado, departamento y fotografía. De alguien de baja o pendiente no muestra ningún dato personal. Si la empresa elige un campo de tipo Fecha como vigencia, pasada esa fecha dice Expirado.
+- **Una liga tuya.** Debe empezar con `https://`. Acepta `{numero}` (número de empleado) y `{codigo}` (código único del gafete).
+- **Un dato.** El código contiene solo el valor de un campo, por ejemplo el número de empleado.
+
+Cada persona tiene un código público de 12 caracteres (`empleados.codigo`) que pone la base de datos y nunca cambia. La página consulta la función `verificar_gafete`, la única puerta abierta sin sesión: devuelve solo lo que la empresa eligió mostrar. El código QR se genera en `src/lib/qr.ts` y se dibuja como vector en el gafete, en la vista previa y en la página de cada persona.
+
+La fotografía vive en almacenamiento privado, así que la página de verificación la pide con la llave secreta del proyecto (`SUPABASE_SECRET_KEY`, en Project Settings, API Keys) y una liga que dura 5 minutos. Sin esa llave, la opción «Fotografía» no se ofrece y todo lo demás funciona igual.
+
+Hoy la verificación responde por cualquier persona activa del equipo. Cuando existan los pedidos se ligará a los gafetes emitidos, para poder desactivar un gafete sin dar de baja a la persona.
+
 ### Configurar Supabase (una vez)
 
 Las tablas ya están aplicadas en el proyecto `lagafeteria`. Falta esto en el panel de Supabase:
@@ -134,6 +149,7 @@ Los correos de acceso locales llegan a http://127.0.0.1:54324.
 | Vista del diseño y zona de impresión | `src/components/VistaGafete.tsx`, `src/components/DiagramaGafete.tsx` |
 | Tarifa de envío y monto para envío gratis | `src/lib/precios.ts` (`envio`) |
 | Cotizador | `src/components/Cotizador.tsx` |
+| Qué muestra el QR, generador del código y página de verificación | `src/lib/cuenta/qr.ts`, `src/lib/qr.ts`, `src/app/v/[codigo]/page.tsx` |
 | Textos y PDF de la cotización | `src/lib/cotizacion.ts`, `src/lib/cotizacion-pdf.ts` |
 | Envío de la cotización por correo | `src/app/api/cotizacion/route.ts`, `src/lib/correo.ts` |
 | Modalidades, funciones de la plataforma (con la marca `pronto` de lo que aún no está disponible), formas de subir al equipo y lo que no cobra | `src/lib/plataforma.ts` |
