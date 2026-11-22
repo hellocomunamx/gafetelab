@@ -2,7 +2,8 @@ import { materiales } from "./materiales";
 import { entregaTexto, site } from "./site";
 import {
   envio,
-  extraDosCaras,
+  extraDosCarasDetalle,
+  extraDosCarasRango,
   notaIva,
   paqueteVigenciaMeses,
   paquetes,
@@ -28,7 +29,7 @@ export const faqsGenerales: Faq[] = [
   },
   {
     pregunta: "¿Cuánto cuesta un gafete o credencial para empleado?",
-    respuesta: `Un gafete impreso cuesta entre ${pesos(precioMinimo)} y ${pesos(precioMaximo)} pesos por pieza a una cara (${notaIva}), según la cantidad. Por ejemplo, de ${tramoVolumen.desde} a ${tramoVolumen.hasta} piezas cuestan ${pesos(tramoVolumen.precio)} cada una. La impresión por frente y vuelta suma ${pesos(extraDosCaras)} por pieza. Un gafete digital cuesta ${pesos(precioDigital)} por pieza, solo o sumado al impreso. La plataforma para diseñar, cargar datos y administrar a tu equipo no tiene costo.`,
+    respuesta: `Un gafete impreso cuesta entre ${pesos(precioMinimo)} y ${pesos(precioMaximo)} pesos por pieza a una cara (${notaIva}), según la cantidad. Por ejemplo, de ${tramoVolumen.desde} a ${tramoVolumen.hasta} piezas cuestan ${pesos(tramoVolumen.precio)} cada una. La impresión por frente y vuelta suma ${extraDosCarasRango} por pieza, también según la cantidad. Un gafete digital cuesta ${pesos(precioDigital)} por pieza, solo o sumado al impreso. La plataforma para diseñar, cargar datos y administrar a tu equipo no tiene costo.`,
   },
   {
     pregunta: "¿Hay que pagar una suscripción o mensualidad?",
@@ -111,7 +112,7 @@ export const faqsGenerales: Faq[] = [
   },
   {
     pregunta: "¿Imprimen por un lado o por los dos?",
-    respuesta: `Las dos opciones. A una cara es lo más común y económico; frente y vuelta suma ${pesos(extraDosCaras)} por pieza y sirve para poner datos de emergencia, reglamento o un código QR al reverso.`,
+    respuesta: `Las dos opciones. A una cara es lo más común y económico; frente y vuelta suma ${extraDosCarasRango} por pieza según la cantidad (${extraDosCarasDetalle}) y sirve para poner datos de emergencia, reglamento o un código QR al reverso.`,
   },
   {
     pregunta: "¿Dan factura?",
