@@ -140,7 +140,30 @@ export function Cotizador() {
 
         {c.llevaEnvio ? (
           <fieldset className="min-w-0">
-            <legend className="font-semibold">3. Material</legend>
+            <legend className="font-semibold">3. Impresión</legend>
+            <div className="mt-3 grid max-w-md grid-cols-2 gap-2">
+              {[
+                { valor: false, texto: "Una cara" },
+                { valor: true, texto: "Frente y vuelta" },
+              ].map((o) => (
+                <label key={o.texto} className={`${opcion(dosCaras === o.valor)} text-center font-medium`}>
+                  <input
+                    type="radio"
+                    name="caras"
+                    className="sr-only"
+                    checked={dosCaras === o.valor}
+                    onChange={() => setDosCaras(o.valor)}
+                  />
+                  {o.texto}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        ) : null}
+
+        {c.llevaEnvio ? (
+          <fieldset className="min-w-0">
+            <legend className="font-semibold">4. Material</legend>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {materiales.map((m) => {
                 const activo = material === m.id;
@@ -187,29 +210,6 @@ export function Cotizador() {
                 Comparar materiales
               </Link>
             </p>
-          </fieldset>
-        ) : null}
-
-        {c.llevaEnvio ? (
-          <fieldset className="min-w-0">
-            <legend className="font-semibold">4. Impresión</legend>
-            <div className="mt-3 grid max-w-md grid-cols-2 gap-2">
-              {[
-                { valor: false, texto: "Una cara" },
-                { valor: true, texto: "Frente y vuelta" },
-              ].map((o) => (
-                <label key={o.texto} className={`${opcion(dosCaras === o.valor)} text-center font-medium`}>
-                  <input
-                    type="radio"
-                    name="caras"
-                    className="sr-only"
-                    checked={dosCaras === o.valor}
-                    onChange={() => setDosCaras(o.valor)}
-                  />
-                  {o.texto}
-                </label>
-              ))}
-            </div>
           </fieldset>
         ) : null}
 
