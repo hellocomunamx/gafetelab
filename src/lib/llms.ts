@@ -44,7 +44,7 @@ const datosClave = () =>
   [
     `- Producto: gafetes y credenciales para empleados en tres modalidades: impreso (PVC rígido tamaño CR80, 8.6 × 5.4 cm, a una cara o por frente y vuelta), digital (en el celular, con código QR verificable) o impreso + digital.`,
     `- Precio impreso: de ${pesos(precioMinimo)} a ${pesos(precioMaximo)} MXN por pieza a una cara, ${notaIva}, según la cantidad. Frente y vuelta: ${extraDosCarasRango} MXN más por pieza, según la cantidad (${extraDosCarasDetalle}).`,
-    `- Precio digital: ${pesos(precioDigital)} MXN por pieza, ${notaIva}, en cualquier cantidad, solo o sumado a un gafete impreso.`,
+    `- Precio digital: ${pesos(precioDigital)} MXN por pieza, ${notaIva}, en cualquier cantidad, solo o sumado a un gafete impreso. Es un pago único por gafete, no un cobro recurrente.`,
     `- Materiales: ${materiales.filter((m) => m.disponible).map((m) => `${m.nombre} de ${grosorTexto(m)}${m.extra ? `, ${pesos(m.extra)} más por pieza` : ""}`).join("; ")}.`,
     `- Paquetes prepagados: ${paquetes.map((p) => `${p.piezas} gafetes por ${pesos(p.piezas * p.porPieza)} MXN con ${p.envios} envíos incluidos`).join("; ")}. Vigencia de ${paqueteVigenciaMeses} meses.`,
     `- Archivo de diseño: gafete de ${medidas.ancho} × ${medidas.alto} mm; archivo con margen de corte (sangrado) de ${zonas[0].medida} a ${medidas.resolucionDpi} dpi; textos a ${medidas.margenSeguro} mm o más del corte.`,
@@ -128,7 +128,7 @@ ${datosClave()}
 
 ${tabla}
 
-Gafete digital: ${pesos(precioDigital)} MXN por pieza, solo o sumado al impreso. La plataforma para diseñar, cargar datos, revisar la vista previa y administrar al equipo no tiene costo. Envío: ${pesos(envio.tarifa)} MXN a todo México, gratis en pedidos desde ${pesos(envio.gratisDesde)} MXN antes de IVA.
+Gafete digital: ${pesos(precioDigital)} MXN por pieza, solo o sumado al impreso, en un pago único y no recurrente. La plataforma para diseñar, cargar datos, revisar la vista previa y administrar al equipo no tiene costo. Envío: ${pesos(envio.tarifa)} MXN a todo México, gratis en pedidos desde ${pesos(envio.gratisDesde)} MXN antes de IVA.
 
 ## Cómo se pide
 

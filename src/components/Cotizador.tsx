@@ -307,7 +307,7 @@ export function Cotizador() {
             {c.llevaEnvio
               ? `Entrega en ${entregaTexto} a cualquier parte de México, a partir del pago y de que apruebes la vista previa.`
               : "Los gafetes digitales no llevan envío: se activan en tu plataforma."}{" "}
-            Pago único, sin suscripción.
+            {c.modalidad === "impreso" ? "Pago único, sin suscripción." : "Pago único, sin suscripción: el gafete digital se paga una sola vez, no cada mes."}
           </p>
         </div>
 

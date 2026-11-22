@@ -56,7 +56,7 @@ export const modalidadesDetalle = [
   {
     titulo: "Digital",
     texto:
-      "El gafete en el celular de cada persona, con un código QR que cualquiera puede escanear para comprobar que sigue vigente.",
+      "El gafete en el celular de cada persona, con un código QR que cualquiera puede escanear para comprobar que sigue vigente. Se paga una sola vez por gafete.",
   },
   {
     titulo: "Impreso + digital",
