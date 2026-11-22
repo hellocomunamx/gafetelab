@@ -148,13 +148,18 @@ Sin esas dos llaves (o sin `SUPABASE_SECRET_KEY`), la plataforma dice que los pe
 
 ### Administración (solo quien opera LaGafetería)
 
-`/8admins` es el panel interno (la ruta está en `src/lib/admin/ruta.ts`; no es `/admin` a propósito, y no se anuncia en `robots.txt` ni en el sitemap). No aparece en ningún menú de las empresas y, a quien no es administradora o no ha iniciado sesión, le responde «no existe». Trae cuatro cosas:
+`/8admins` es el panel interno (la ruta está en `src/lib/admin/ruta.ts`; no es `/admin` a propósito, y no se anuncia en `robots.txt` ni en el sitemap). No aparece en ningún menú de las empresas y, a quien no es administradora o no ha iniciado sesión, le responde «no existe». Trae seis cosas:
 
 - **Constancias por revisar**: abre el archivo, lo compara con el RFC y la razón social que la empresa capturó, y aprueba o rechaza.
 - **Empresas**: todas las cuentas con el estado de su constancia, sus personas activas, diseños y gafetes listos, y un aviso de «Revisar» cuando el nombre de la empresa o los textos de sus diseños mencionan autoridades, dependencias o identificaciones oficiales (INE, gobierno, policía, SAT, IMSS y parecidas; la lista está en `src/lib/admin/alertas.ts`). El aviso no bloquea nada: pide que una persona lo vea antes de producir.
 - **PDF de impresión** (`/8admins/imprimir/<empresa>`): una página por cara, de 85.6 × 54 mm exactos y de orilla a orilla, para mandarlo tal cual a la impresora de credenciales. Sale de un diseño con los datos de cada persona o de los gafetes que la empresa subió ya terminados. Se elige el orden de las páginas (frente y vuelta seguidos, o frentes y vueltas en archivos aparte), si la vuelta va girada 180° y a quién incluir. Se arma en el navegador, en archivos de hasta 50 gafetes, y no se guarda en ningún lado. Las empresas no tienen ninguna salida a tamaño real.
 
 - **Pedidos** (`/8admins/pedidos`): el historial con estado, fechas, piezas, total y forma de pago, con filtros (por atender, en producción, enviados, sin pagar, cerrados) y búsqueda por folio o empresa. El detalle de cada pedido dice qué sigue (revisar, producir, enviar con guía, entregar), abre el PDF de impresión desde la copia guardada en el pedido, y junta la evidencia para una disputa: quién aprobó, cuándo, desde qué IP y navegador, con qué versión de los términos, y la bitácora completa.
+
+- **Clientes** (`/8admins/clientes`): la base de clientes, una fila por empresa, con su contacto (quien es dueño de la cuenta), RFC, constancia, personas activas, pedidos pagados, cuánto ha pagado y su último pedido. Se filtra por quién ya compró y se busca por empresa, contacto, correo o RFC. La ficha de cada cliente junta sus pedidos, sus usuarios (con rol, último acceso y si aceptan publicidad), sus datos de facturación y sus direcciones.
+- **Finanzas** (`/8admins/finanzas`): lo cobrado en el periodo (este mes, mes pasado, últimos 90 días, este año o todo), antes de IVA, pedido promedio, devuelto, cancelados (y cuántos fueron en los minutos de gracia), lo que está por cobrar, el reparto por forma de pago, las disputas, los últimos 12 meses y quién más compró. Los meses se cortan con la hora de Sonora. Las cifras son lo que pagaron los clientes: no descuentan la comisión de Stripe. Los cálculos están en `src/lib/admin/finanzas.ts`.
+
+Clientes y Finanzas se descargan en Excel (`src/lib/admin/xlsx.ts` arma el `.xlsx` sin dependencias nuevas).
 
 Necesita `SUPABASE_SECRET_KEY` en el servidor, porque lee los datos de todas las empresas. Esa llave solo se usa después de comprobar que la sesión es de una administradora.
 

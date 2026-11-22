@@ -8,7 +8,7 @@ import { fechaLarga } from "@/lib/cuenta/constancia";
 import { ligasDe } from "@/lib/cuenta/fotos";
 import { revisarConstancia } from "./acciones";
 
-export const metadata: Metadata = { title: "Empresas" };
+export const metadata: Metadata = { title: "Revisión de empresas" };
 
 const fecha = (iso: string) =>
   new Date(iso).toLocaleDateString("es-MX", { day: "numeric", month: "short", year: "numeric", timeZone: "America/Hermosillo" });
@@ -52,7 +52,7 @@ export default async function Admin() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-3xl font-extrabold">Empresas</h1>
+      <h1 className="text-3xl font-extrabold">Revisión de empresas</h1>
       {servicio ? null : (
         <p role="alert" className="rounded-tarjeta border border-rojo/30 bg-white p-4 text-sm">
           Falta configurar <code>SUPABASE_SECRET_KEY</code> en el servidor. Sin esa llave no se pueden revisar
@@ -142,7 +142,9 @@ export default async function Admin() {
               {filas.map((e) => (
                 <tr key={e.id}>
                   <th scope="row" className="px-4 py-3 font-semibold">
-                    {e.nombre}
+                    <Link href={`${RUTA_ADMIN}/clientes/${e.id}`} className="underline underline-offset-4">
+                      {e.nombre}
+                    </Link>
                     {e.alertas.length ? (
                       <span className="mt-1 block w-fit rounded-full bg-resaltador/40 px-2.5 py-0.5 text-xs font-semibold">
                         Revisar: menciona {e.alertas.join(", ")}

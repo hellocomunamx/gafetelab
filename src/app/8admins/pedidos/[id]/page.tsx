@@ -89,7 +89,14 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
         <EstadoPedido valor={pedido.estado} />
       </div>
       <p className="text-gris">
-        {empresa?.nombre ?? "Empresa"} · {pedido.piezas.toLocaleString("es-MX")} {pedido.piezas === 1 ? "gafete" : "gafetes"} ·{" "}
+        {empresa ? (
+          <Link href={`${RUTA_ADMIN}/clientes/${empresa.id}`} className="underline underline-offset-4">
+            {empresa.nombre}
+          </Link>
+        ) : (
+          "Empresa"
+        )}{" "}
+        · {pedido.piezas.toLocaleString("es-MX")} {pedido.piezas === 1 ? "gafete" : "gafetes"} ·{" "}
         {pesos(Number(pedido.total))} con IVA
       </p>
 
