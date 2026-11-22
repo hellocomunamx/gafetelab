@@ -18,6 +18,10 @@ export function Pie() {
             desde {site.estadoBase}.
           </p>
           <p className="mt-3 text-sm">
+            <Link href="/contacto" className="underline hover:text-rojo-claro">
+              Escríbenos
+            </Link>
+            <span aria-hidden className="mx-2 text-white/40">·</span>
             <a href={`mailto:${site.correo}`} className="underline hover:text-rojo-claro">
               {site.correo}
             </a>
@@ -32,9 +36,10 @@ export function Pie() {
             <li><Link href="/como-funciona" className="hover:text-rojo-claro">Cómo funciona</Link></li>
             <li><Link href="/precios" className="hover:text-rojo-claro">Precios</Link></li>
             <li><Link href="/materiales" className="hover:text-rojo-claro">Materiales y medidas</Link></li>
-            <li><Link href="/cotizar" className="hover:text-rojo-claro">Cotizar</Link></li>
+            <li><Link href="/cotizar" className="hover:text-rojo-claro">Cotizador en línea</Link></li>
             <li><Link href="/gafetes-en" className="hover:text-rojo-claro">Envíos a todo México</Link></li>
             <li><Link href="/preguntas-frecuentes" className="hover:text-rojo-claro">Preguntas frecuentes</Link></li>
+            <li><Link href="/contacto" className="hover:text-rojo-claro">Contacto</Link></li>
             <li><Link href="/aviso-de-privacidad" className="hover:text-rojo-claro">Aviso de privacidad</Link></li>
           </ul>
         </nav>

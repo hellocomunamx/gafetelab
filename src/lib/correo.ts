@@ -18,13 +18,15 @@ export async function enviarCorreo(opts: {
   texto: string;
   /** Copia oculta, por ejemplo al buzón de ventas. */
   copiaOculta?: string;
+  /** A quién llega la respuesta. Por omisión, al correo del sitio. */
+  responderA?: string;
 }) {
   const resend = new Resend(process.env.RESEND_API_KEY);
   return resend.emails.send({
     from: process.env.RESEND_FROM ?? `${site.nombre} <${site.correo}>`,
     to: opts.para,
     bcc: opts.copiaOculta,
-    replyTo: site.correo,
+    replyTo: opts.responderA ?? site.correo,
     subject: opts.asunto,
     html: opts.html,
     text: opts.texto,

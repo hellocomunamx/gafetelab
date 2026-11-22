@@ -3,15 +3,7 @@ import { condiciones, fechaLarga, nuevoFolio, renglones, totales } from "@/lib/c
 import { materialPara } from "@/lib/materiales";
 import { cotizar, type Modalidad, modalidades } from "@/lib/precios";
 import { site, urlAbsoluta } from "@/lib/site";
-
-const CORREO_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
-const escapar = (t: string) =>
-  t.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
-
-function error(mensaje: string, estado: number) {
-  return Response.json({ ok: false, mensaje }, { status: estado });
-}
+import { CORREO_VALIDO, error, esBot, escapar, leerCuerpo, mismoOrigen } from "@/lib/solicitudes";
 
 /**
  * Envía la cotización al correo de quien la pide, con copia oculta a ventas.
@@ -19,29 +11,11 @@ function error(mensaje: string, estado: number) {
  * cantidad y las opciones, nunca precios.
  */
 export async function POST(solicitud: Request) {
-  // Solo se aceptan envíos hechos desde el propio sitio.
-  const origen = solicitud.headers.get("origin");
-  if (origen) {
-    let host = "";
-    try {
-      host = new URL(origen).host;
-    } catch {
-      // Origen malformado: se rechaza abajo.
-    }
-    if (host !== new URL(solicitud.url).host) return error("Origen no permitido.", 403);
-  }
+  if (!mismoOrigen(solicitud)) return error("Origen no permitido.", 403);
 
-  let cuerpo: Record<string, unknown>;
-  try {
-    cuerpo = await solicitud.json();
-  } catch {
-    return error("Solicitud inválida.", 400);
-  }
-
-  // Campo trampa: las personas no lo ven; los bots lo llenan.
-  if (typeof cuerpo.sitioWeb === "string" && cuerpo.sitioWeb.length > 0) {
-    return Response.json({ ok: true });
-  }
+  const cuerpo = await leerCuerpo(solicitud);
+  if (!cuerpo) return error("Solicitud inválida.", 400);
+  if (esBot(cuerpo)) return Response.json({ ok: true });
 
   const correo = String(cuerpo.correo ?? "").trim().toLowerCase();
   if (correo.length > 254 || !CORREO_VALIDO.test(correo)) {

@@ -71,6 +71,11 @@ export default function AvisoDePrivacidad() {
                 descargar el PDF no requiere ningún dato.
               </li>
               <li>
+                <strong>De quien nos escribe desde el formulario de contacto:</strong> nombre,
+                correo electrónico, el mensaje y, si los indicas, el nombre de tu empresa y tu
+                teléfono.
+              </li>
+              <li>
                 <strong>De quien compra o crea una cuenta:</strong> nombre, correo electrónico,
                 teléfono, empresa, domicilio de entrega y datos de facturación (RFC, nombre o razón
                 social, régimen fiscal, código postal y uso del comprobante).
@@ -113,6 +118,7 @@ export default function AvisoDePrivacidad() {
           <Apartado numero={4} titulo="Para qué usamos los datos (finalidades primarias)">
             <ul>
               <li>Elaborar y enviarte la cotización que solicites y darle seguimiento.</li>
+              <li>Responder los mensajes que nos envíes desde el formulario de contacto.</li>
               <li>Diseñar, producir, imprimir y entregar tus gafetes y credenciales.</li>
               <li>
                 Generar los gafetes digitales y mostrar, a quien escanee su código QR, la información
@@ -150,7 +156,8 @@ export default function AvisoDePrivacidad() {
                 archivos de la plataforma.
               </li>
               <li>
-                <strong>Resend</strong> (Estados Unidos): envío de cotizaciones y correos de servicio.
+                <strong>Resend</strong> (Estados Unidos): envío de cotizaciones, de los mensajes del
+                formulario de contacto y de correos de servicio.
               </li>
               <li>
                 <strong>Talleres de impresión:</strong> reciben los diseños y los datos que van en

@@ -49,6 +49,7 @@ export function organizacion() {
       "@type": "ContactPoint",
       contactType: "ventas",
       email: site.correo,
+      url: urlAbsoluta("/contacto"),
       availableLanguage: "es",
       areaServed: site.pais,
     },
@@ -215,5 +216,17 @@ export function plataforma() {
     provider: { "@id": ORG_ID },
     offers: { "@type": "Offer", price: 0, priceCurrency: site.moneda },
     featureList: funcionesPlataforma.flatMap((g) => g.funciones.filter((f) => !f.pronto).map((f) => f.titulo)),
+  };
+}
+
+/** Página de contacto: enlaza el formulario con la organización. */
+export function paginaContacto() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    name: `Contacto de ${site.nombre}`,
+    url: urlAbsoluta("/contacto"),
+    inLanguage: site.idioma,
+    mainEntity: { "@id": ORG_ID },
   };
 }

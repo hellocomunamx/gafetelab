@@ -140,7 +140,6 @@ export default async function PaginaCiudad({ params }: PageProps<"/gafetes-en/[c
 
       <Cierre
         titulo={`Gafetes ${ciudad.enTexto}, sin vueltas`}
-        texto="Dinos cuántos necesitas y tu código postal, y te decimos el precio con envío."
       />
 
       <JsonLd

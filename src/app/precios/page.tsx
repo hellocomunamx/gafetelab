@@ -135,7 +135,7 @@ export default function Precios() {
 
       <Cierre
         titulo="El precio completo, desde el principio"
-        texto="Envío, IVA, total y tiempo de entrega a la vista, sin dejar tus datos."
+        texto="El cotizador en línea te da el envío, el IVA, el total y el tiempo de entrega al momento, sin dejar tus datos ni esperar un correo."
       />
 
       <JsonLd data={[producto(), productoDigital(), paginaFaq(faqsPrecios), migas(rutaMigas)]} />

@@ -42,7 +42,7 @@ export function Encabezado() {
             Mi cuenta
           </Link>
           <Boton href="/cotizar" className="px-5 py-2 text-sm">
-            Cotizar
+            Cotizar<span className="hidden sm:inline">&nbsp;en línea</span>
           </Boton>
           <details className="relative lg:hidden">
             <summary

@@ -28,7 +28,7 @@ export const site = {
   /** Días después del pedido en los que todavía se puede pedir la factura. */
   plazoFacturaDias: 60,
   /** Fecha de la última revisión de contenido (se muestra y va al sitemap). */
-  actualizado: "2026-11-21",
+  actualizado: "2026-11-22",
   /** Pon NEXT_PUBLIC_NOINDEX=true para que ningún buscador indexe (por ejemplo, en pruebas). */
   indexable: process.env.NEXT_PUBLIC_NOINDEX !== "true",
 } as const;
@@ -48,8 +48,8 @@ export const legal = {
   domicilio: "Cajeme, Sonora, México",
   correo: "hola@figalo.mx",
   horario: "lunes a viernes de 09:00 a 15:00 horas (hora del centro de México)",
-  avisoVersion: "1.0",
-  avisoFecha: "2026-11-21",
+  avisoVersion: "1.1",
+  avisoFecha: "2026-11-22",
 } as const;
 
 /** Convierte una ruta ("/precios") en URL absoluta canónica. */

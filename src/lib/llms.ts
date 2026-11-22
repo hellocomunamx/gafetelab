@@ -48,13 +48,13 @@ const datosClave = () =>
     `- Pedido mínimo: ninguno, desde 1 pieza.`,
     `- Entrega: ${entregaTexto}. Entrega exprés: próximamente.`,
     `- Envío: a todo México desde ${site.estadoBase}, con tarifa única de ${pesos(envio.tarifa)} MXN; gratis en pedidos desde ${pesos(envio.gratisDesde)} MXN antes de IVA.`,
-    `- Cotización: el cotizador en línea muestra precio, envío, IVA, total y entrega sin pedir datos, y permite descargar la cotización en PDF o recibirla por correo.`,
+    `- Cotización: el precio no se pide por correo. El cotizador en línea (${urlAbsoluta("/cotizar")}) muestra al momento precio, envío, IVA, total y entrega sin pedir datos, y permite descargar la cotización en PDF o recibirla por correo.`,
     `- Plataforma: incluida con la cuenta, sin costo extra (sin mensualidad, sin costo por usuario y sin pedido mínimo). Hoy incluye: ${funciones(false)}. Próximamente: ${funciones(true)}.`,
     `- Administración del equipo: ${accionesPlataforma.map((a) => a.titulo.toLowerCase()).join(", ")}. Ajustes de la empresa: ${ajustesPlataforma.map((a) => a.titulo.toLowerCase()).join(", ")}.`,
     `- Carga de datos del equipo: ${formasDeCargar.map((f) => `${f.titulo.charAt(0).toLowerCase()}${f.titulo.slice(1)}${f.pronto ? " (próximamente)" : ""}`).join("; ")}.`,
     `- Cómo se pide: en línea, con plantillas o diseño propio, campos variables (nombre, puesto, número, foto, código QR), carga del equipo y vista previa de cada gafete antes de pagar.`,
     `- Factura: sí (CFDI).`,
-    `- Contacto: ${site.correo}`,
+    `- Contacto: formulario en ${urlAbsoluta("/contacto")} o ${site.correo}`,
   ].join("\n");
 
 export function llmsTxt(): string {

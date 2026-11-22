@@ -2,7 +2,12 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Miga } from "@/lib/schema";
 
-export const CTA_TEXTO = "Cotiza con envío incluido";
+/** Texto del botón principal: deja claro que el precio sale en línea y al momento. */
+export const CTA_TEXTO = "Cotiza en línea al momento";
+
+/** Texto por omisión de los bloques de cierre: nadie tiene que escribirnos para saber el precio. */
+export const CIERRE_TEXTO =
+  "Elige cuántos gafetes necesitas en el cotizador en línea y ve tu total con envío e IVA al momento, sin dejar tus datos ni esperar un correo.";
 
 export function Contenedor({
   children,
@@ -114,7 +119,7 @@ export function Seccion({
 }
 
 /** Bloque de cierre con el botón principal. */
-export function Cierre({ titulo, texto }: { titulo: string; texto: string }) {
+export function Cierre({ titulo, texto = CIERRE_TEXTO }: { titulo: string; texto?: string }) {
   return (
     <section className="bg-tinta text-white">
       <Contenedor className="flex flex-col items-start gap-6 py-14 sm:flex-row sm:items-center sm:justify-between">

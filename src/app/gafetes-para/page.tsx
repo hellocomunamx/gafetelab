@@ -42,7 +42,7 @@ export default function PorGiro() {
       </Seccion>
       <Cierre
         titulo="¿Tu giro no está en la lista?"
-        texto="También te atendemos. Dinos cuántos gafetes necesitas y te decimos el precio con envío."
+        texto="También es para ti. El precio es el mismo para cualquier giro: solo cambia según cuántos gafetes pides. Míralo al momento en el cotizador en línea, sin esperar un correo."
       />
       <JsonLd data={migas(rutaMigas)} />
     </>

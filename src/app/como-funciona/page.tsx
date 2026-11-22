@@ -152,7 +152,6 @@ export default function ComoFunciona() {
 
       <Cierre
         titulo="Empieza con tu lista de personal"
-        texto="Cuéntanos cuántos gafetes necesitas y te decimos el precio con envío."
       />
 
       <JsonLd data={[comoHacerlo(pasos), migas(rutaMigas)]} />

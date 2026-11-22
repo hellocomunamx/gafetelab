@@ -24,6 +24,8 @@ npx wrangler secret put RESEND_FROM      # opcional: "LaGafetería <hola@tudomin
 
 Sin `RESEND_API_KEY`, el cotizador sigue funcionando y descargando el PDF; solo el envío por correo responde que todavía no está activo.
 
+El formulario de contacto (`/contacto`) usa el mismo secreto: manda cada mensaje a `site.correo` con Resend y pone como «responder a» el correo de quien escribió. Sin `RESEND_API_KEY` avisa que todavía no está activo y muestra el correo de contacto.
+
 ### Publicar
 
 `npm run deploy` compila con los valores de `.env.production` (URL del sitio y Supabase, todos públicos) y publica el Worker en `lagafeteria.com` y `www.lagafeteria.com`. Esos valores mandan sobre `.env.local`, así que lo que tengas para desarrollo no se cuela al sitio publicado.

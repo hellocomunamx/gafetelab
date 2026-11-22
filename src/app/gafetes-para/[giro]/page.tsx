@@ -124,7 +124,7 @@ export default async function PaginaGiro({ params }: PageProps<"/gafetes-para/[g
 
       <Cierre
         titulo={`Gafetes para ${giro.nombre}, sin vueltas`}
-        texto="Dinos cuántos necesitas y te decimos el precio con envío."
+        texto="El precio es el mismo para cualquier giro. Elige cuántos necesitas en el cotizador en línea y ve tu total con envío e IVA al momento, sin esperar un correo."
       />
 
       <JsonLd

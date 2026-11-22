@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Cotizador } from "@/components/Cotizador";
 import { JsonLd } from "@/components/JsonLd";
 import { TablaPrecios } from "@/components/TablaPrecios";
@@ -8,10 +9,10 @@ import { metadatos } from "@/lib/seo";
 import { entregaTexto } from "@/lib/site";
 
 const ruta = "/cotizar";
-const rutaMigas = [{ nombre: "Cotizar", ruta }];
+const rutaMigas = [{ nombre: "Cotizador en línea", ruta }];
 
 export const metadata = metadatos({
-  titulo: "Cotiza gafetes y credenciales con envío incluido",
+  titulo: "Cotizador en línea de gafetes y credenciales, con envío incluido",
   descripcion: `Cotizador de gafetes y credenciales para empleados: elige material, mira tu diseño con su zona de impresión y ve precio por pieza, envío, IVA, total y tiempo de entrega al momento, sin dejar tus datos. Descarga tu cotización en PDF o recíbela por correo.`,
   ruta,
 });
@@ -19,7 +20,7 @@ export const metadata = metadatos({
 export default function Cotizar() {
   return (
     <>
-      <Portada migas={rutaMigas} titulo="Cotiza tus gafetes y credenciales">
+      <Portada migas={rutaMigas} titulo="Cotiza en línea tus gafetes y credenciales">
         <p>
           Elige la modalidad, la cantidad y el material, y ve al momento el precio por pieza, el
           envío, el IVA y el total. Sin dejar tus datos y sin esperar un correo. Entrega en {entregaTexto} a todo
@@ -37,6 +38,13 @@ export default function Cotizar() {
           {pesos(envio.gratisDesde)}.
         </p>
         <TablaPrecios />
+        <p className="mt-6 text-gris">
+          ¿Tu pedido es especial o tienes una duda que el cotizador no resuelve?{" "}
+          <Link href="/contacto" className="font-semibold text-rojo underline underline-offset-4">
+            Escríbenos desde el formulario de contacto
+          </Link>
+          .
+        </p>
       </Seccion>
 
       <JsonLd data={migas(rutaMigas)} />

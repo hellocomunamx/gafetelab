@@ -65,7 +65,7 @@ export default function Cobertura() {
       </Seccion>
       <Cierre
         titulo="¿Tu ciudad no aparece?"
-        texto="También llegamos. El envío cuesta lo mismo a cualquier parte de México."
+        texto="También llegamos. El envío cuesta lo mismo a cualquier parte de México, y el cotizador en línea te da tu total al momento."
       />
       <JsonLd data={migas(rutaMigas)} />
     </>

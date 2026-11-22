@@ -172,7 +172,7 @@ export default function Materiales() {
 
       <Cierre
         titulo="Mira tu diseño sobre el gafete"
-        texto="En el cotizador eliges material, cargas tu diseño y ves el precio con envío."
+        texto="En el cotizador en línea eliges material, cargas tu diseño y ves tu precio con envío al momento."
       />
 
       <JsonLd data={[paginaFaq(faqsMateriales), migas(rutaMigas)]} />

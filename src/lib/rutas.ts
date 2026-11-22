@@ -9,9 +9,10 @@ export const rutasPrincipales = [
   { ruta: "/plataforma", titulo: "Plataforma", prioridad: 0.9, resumen: "Qué incluye la plataforma para administrar los gafetes del equipo (altas, bajas, carga de datos, editor de diseño, vista previa) y por qué no tiene costo extra." },
   { ruta: "/como-funciona", titulo: "Cómo funciona", prioridad: 0.8, resumen: "Los cinco pasos para pedir: diseño, campos variables, carga del equipo (Excel, una por una o fotos juntas), vista previa y pago." },
   { ruta: "/preguntas-frecuentes", titulo: "Preguntas frecuentes", prioridad: 0.8, resumen: "Respuestas sobre precios, pedido mínimo, entrega, envíos, materiales, factura y datos." },
-  { ruta: "/cotizar", titulo: "Cotizar", prioridad: 0.9, resumen: "Cotizador por modalidad, cantidad y material, con envío, IVA, total y entrega al momento; vista del diseño con zona de impresión; descarga en PDF o envío por correo." },
+  { ruta: "/cotizar", titulo: "Cotizador en línea", prioridad: 0.9, resumen: "Cotizador por modalidad, cantidad y material, con envío, IVA, total y entrega al momento; vista del diseño con zona de impresión; descarga en PDF o envío por correo." },
   { ruta: "/gafetes-para", titulo: "Gafetes y credenciales por giro", prioridad: 0.7, resumen: "Índice de páginas por giro de empresa." },
   { ruta: "/gafetes-en", titulo: "Envíos a todo México", prioridad: 0.7, resumen: "Cobertura, costo y tiempo de envío, con las ciudades a las que más enviamos." },
+  { ruta: "/contacto", titulo: "Contacto", prioridad: 0.5, resumen: "Formulario de contacto para dudas, pedidos especiales y seguimiento. Para saber el precio no hace falta escribir: el cotizador en línea lo da al momento." },
   { ruta: "/aviso-de-privacidad", titulo: "Aviso de privacidad", prioridad: 0.3, resumen: "Quién es responsable de los datos, qué datos se tratan y cómo ejercer los derechos ARCO." },
 ];
 

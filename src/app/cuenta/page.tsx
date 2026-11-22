@@ -98,7 +98,8 @@ export default async function Resumen() {
         </ul>
         <p className="mt-4 text-sm text-gris">
           Los pedidos desde tu plataforma se activan pronto. Mientras, puedes{" "}
-          <Link href="/cotizar" className="underline">cotizar aquí</Link>.
+          ver tu precio al momento en el{" "}
+          <Link href="/cotizar" className="underline">cotizador en línea</Link>.
         </p>
       </Bloque>
     </div>

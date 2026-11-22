@@ -177,7 +177,7 @@ export default function Inicio() {
         <TablaPrecios />
         <p className="mt-5">
           <Link href="/cotizar" className="font-semibold text-rojo underline underline-offset-4">
-            Cotizar mi pedido con envío e IVA
+            Cotizar en línea, con envío e IVA al momento
           </Link>
           <span className="text-gris"> · ¿Solo unos cuantos? </span>
           <Link href="/precios#paquetes" className="font-semibold text-rojo underline underline-offset-4">
@@ -216,7 +216,6 @@ export default function Inicio() {
 
       <Cierre
         titulo="¿Listo para decir “Hola, soy”?"
-        texto="Dinos cuántos gafetes necesitas y te decimos el precio con envío."
       />
 
       <JsonLd data={[producto(), paginaFaq(faqsInicio)]} />

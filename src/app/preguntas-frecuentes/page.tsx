@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Faq } from "@/components/Faq";
 import { JsonLd } from "@/components/JsonLd";
 import { Cierre, Portada, Seccion } from "@/components/ui";
@@ -27,11 +28,10 @@ export default function PreguntasFrecuentes() {
     <>
       <Portada migas={rutaMigas} titulo="Preguntas frecuentes sobre gafetes y credenciales">
         <p>
-          Lo que más nos preguntan antes de pedir, con la respuesta corta primero. Si falta la tuya,
-          escríbenos a{" "}
-          <a href={`mailto:${site.correo}`} className="text-tinta underline">
-            {site.correo}
-          </a>
+          Lo que más nos preguntan antes de pedir, con la respuesta corta primero. Si falta la tuya,{" "}
+          <Link href="/contacto" className="text-tinta underline">
+            escríbenos desde el formulario de contacto
+          </Link>
           .
         </p>
       </Portada>
@@ -46,8 +46,7 @@ export default function PreguntasFrecuentes() {
       </Seccion>
 
       <Cierre
-        titulo="¿Quedó claro? Cotiza tu pedido"
-        texto="Dinos cuántos gafetes necesitas y te decimos el precio con envío."
+        titulo="¿Quedó claro? Cotiza en línea"
       />
 
       <JsonLd data={[paginaFaq(faqsGenerales), migas(rutaMigas)]} />
