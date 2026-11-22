@@ -108,7 +108,7 @@ export function productoDigital() {
     "@id": `${site.url}/#producto-digital`,
     name: "Gafetes y credenciales digitales para empleados",
     description:
-      "Gafete o credencial digital para el celular de cada empleado, con el mismo código QR de verificación que el impreso: al escanearlo se ve si el gafete está vigente. La empresa decide qué información muestra.",
+      "Gafete o credencial digital para el celular de cada empleado, con el mismo código QR de verificación que el impreso: al escanearlo se ve si el gafete está vigente. La empresa decide qué información muestra. Se paga una sola vez por gafete, sin cobros recurrentes.",
     category: "Gafetes y credenciales de identificación",
     image: urlAbsoluta("/marca/og-image.png"),
     brand: { "@type": "Brand", name: site.nombre },

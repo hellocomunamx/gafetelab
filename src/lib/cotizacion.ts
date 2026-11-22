@@ -87,7 +87,7 @@ export function condiciones(d: DatosCotizacion): string[] {
   } else {
     lista.push("Los gafetes digitales se activan en tu plataforma; no llevan envío.");
   }
-  lista.push("Pago único por gafete, sin suscripción ni mensualidades.");
+  lista.push("Pago único por gafete, impreso o digital: no hay suscripción, mensualidades ni cobros recurrentes.");
   lista.push(
     `Precios en pesos mexicanos. La factura (CFDI) se pide dentro de los ${site.plazoFacturaDias} días posteriores al pedido y no se puede modificar una vez emitida.`,
   );

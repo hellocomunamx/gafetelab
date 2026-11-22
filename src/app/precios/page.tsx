@@ -33,7 +33,7 @@ const mayuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
 export const metadata = metadatos({
   titulo: "Precios de gafetes y credenciales para empleados",
-  descripcion: `Gafetes y credenciales impresos en PVC desde ${pesos(precioMinimo)} por pieza y digitales a ${pesos(precioDigital)} (${notaIva}). Sin suscripción ni pedido mínimo. Envío a todo México por ${pesos(envio.tarifa)}, gratis desde ${pesos(envio.gratisDesde)}.`,
+  descripcion: `Gafetes y credenciales impresos en PVC desde ${pesos(precioMinimo)} por pieza y digitales a ${pesos(precioDigital)} en un solo pago (${notaIva}). Sin suscripción ni pedido mínimo. Envío a todo México por ${pesos(envio.tarifa)}, gratis desde ${pesos(envio.gratisDesde)}.`,
   ruta,
 });
 
@@ -52,7 +52,7 @@ const faqsPrecios: FaqItem[] = [
   },
   {
     pregunta: "¿Cuánto cuesta el gafete digital?",
-    respuesta: `${pesos(precioDigital)} por pieza en cualquier cantidad, lo pidas solo o junto con el gafete impreso. Por ejemplo, ${ejemploAmbos.piezas} gafetes impresos con su versión digital cuestan ${pesos(ejemploAmbos.porPieza)} cada uno.`,
+    respuesta: `${pesos(precioDigital)} por pieza, que se pagan una sola vez: no es un pago recurrente ni hay que renovarlo. El precio es el mismo en cualquier cantidad, lo pidas solo o junto con el gafete impreso. Por ejemplo, ${ejemploAmbos.piezas} gafetes impresos con su versión digital cuestan ${pesos(ejemploAmbos.porPieza)} cada uno.`,
   },
   {
     pregunta: "¿Hay suscripción, mensualidad o costo por usar la plataforma?",
@@ -93,7 +93,8 @@ export default function Precios() {
           <strong className="text-tinta">
             {pesos(precioMinimo)} y {pesos(precioMaximo)} pesos por pieza
           </strong>{" "}
-          a una cara, según la cantidad, y uno digital {pesos(precioDigital)}, {notaIva}. Se paga una sola vez: no hay suscripción ni pedido mínimo.
+          a una cara, según la cantidad, y uno digital {pesos(precioDigital)}, {notaIva}. Los dos se pagan una sola vez: el digital
+          tampoco es un cobro recurrente, y no hay suscripción ni pedido mínimo.
         </p>
       </Portada>
 
