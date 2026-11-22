@@ -36,16 +36,16 @@ export const faqsGenerales: Faq[] = [
   },
   {
     pregunta: "¿Cuánto cuesta un gafete o credencial para empleado?",
-    respuesta: `Entre ${pesos(precioMinimo)} y ${pesos(precioMaximo)} pesos por pieza a una cara (${notaIva}), según cuántos pidas: ${tramosDetalle}. Por frente y vuelta se suman ${extraDosCarasDetalle}. El PVC estándar ya está incluido; ${materialesConExtra}. El gafete digital cuesta ${pesos(precioDigital)} por pieza en cualquier cantidad, solo o sumado al impreso. El envío cuesta ${pesos(envio.tarifa)} a todo México y es gratis en pedidos desde ${pesos(envio.gratisDesde)} antes de IVA. Por ejemplo, ${ejemplo.piezas} gafetes a una cara cuestan ${pesos(ejemplo.subtotal)} ${notaIva}, ${ejemplo.envioGratis ? "con envío gratis" : `más ${pesos(ejemplo.envio)} de envío`}. No hay suscripción ni pedido mínimo, y la plataforma para diseñar, cargar datos y administrar a tu equipo no tiene costo. Si vas a pedir de a poquitos, te conviene un paquete prepagado.`,
+    respuesta: `Entre ${pesos(precioMinimo)} y ${pesos(precioMaximo)} pesos por pieza a una cara (${notaIva}), según cuántos pidas: ${tramosDetalle}. Por frente y vuelta se suman ${extraDosCarasDetalle}. El PVC estándar ya está incluido; ${materialesConExtra}. El gafete digital cuesta ${pesos(precioDigital)} por pieza, que se pagan una sola vez y no de forma recurrente, en cualquier cantidad, solo o sumado al impreso. El envío cuesta ${pesos(envio.tarifa)} a todo México y es gratis en pedidos desde ${pesos(envio.gratisDesde)} antes de IVA. Por ejemplo, ${ejemplo.piezas} gafetes a una cara cuestan ${pesos(ejemplo.subtotal)} ${notaIva}, ${ejemplo.envioGratis ? "con envío gratis" : `más ${pesos(ejemplo.envio)} de envío`}. No hay suscripción ni pedido mínimo, y la plataforma para diseñar, cargar datos y administrar a tu equipo no tiene costo. Si vas a pedir de a poquitos, te conviene un paquete prepagado.`,
   },
   {
     pregunta: "¿Hay que pagar una suscripción o mensualidad?",
     respuesta:
-      "No. Pagas una sola vez por cada gafete, sea impreso, digital o los dos. No hay mensualidades, anualidades ni costo por usuario, y tu plataforma para administrar altas, bajas y reposiciones viene incluida.",
+      "No. Pagas una sola vez por cada gafete, sea impreso, digital o los dos. El gafete digital tampoco es un cobro recurrente: se paga una vez y ya. No hay mensualidades, anualidades ni costo por usuario, y tu plataforma para administrar altas, bajas y reposiciones viene incluida.",
   },
   {
     pregunta: "¿Qué es un gafete digital?",
-    respuesta: `Es la versión del gafete que cada persona lleva en su celular, con un código QR que cualquiera puede escanear para comprobar que esa persona sigue vigente en tu empresa. Tú decides qué información muestra: nombre, puesto, fotografía, número de empleado, área o vigencia. Cuesta ${pesos(precioDigital)} por pieza, lo pidas solo o junto con el gafete impreso.`,
+    respuesta: `Es la versión del gafete que cada persona lleva en su celular, con un código QR que cualquiera puede escanear para comprobar que esa persona sigue vigente en tu empresa. Tú decides qué información muestra: nombre, puesto, fotografía, número de empleado, área o vigencia. Cuesta ${pesos(precioDigital)} por pieza, lo pidas solo o junto con el gafete impreso, y se paga una sola vez: no es un cobro mensual ni anual.`,
   },
   {
     pregunta: "¿Hay pedido mínimo?",
