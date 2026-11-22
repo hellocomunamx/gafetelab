@@ -51,6 +51,12 @@ export const figalo = {
   url: "https://figalo.mx",
 } as const;
 
+/**
+ * Negocios afiliados: de ellos puede llegar publicidad a quien la haya aceptado.
+ * Con `url` y `texto`, el afiliado aparece con una mención discreta en la landing.
+ */
+export const afiliados: { nombre: string; url?: string; texto?: string }[] = [{ nombre: "Talentu" }];
+
 /** Responsable legal del tratamiento de datos (aviso de privacidad). */
 export const legal = {
   responsable: "Gloria Inés Higuera Ley",
