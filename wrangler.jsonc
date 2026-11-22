@@ -14,10 +14,11 @@
       "service": "lagafeteria"
     }
   ],
-  "observability": { "enabled": true }
-  // Al lanzar, quita el comentario para servir el sitio en el dominio:
-  // ,"routes": [
-  //   { "pattern": "lagafeteria.com", "custom_domain": true },
-  //   { "pattern": "www.lagafeteria.com", "custom_domain": true }
-  // ]
+  "observability": { "enabled": true },
+  // El dominio debe estar en la misma cuenta de Cloudflare. Los registros de
+  // correo (MX, SPF, DKIM) no se tocan: esto solo agrega el sitio.
+  "routes": [
+    { "pattern": "lagafeteria.com", "custom_domain": true },
+    { "pattern": "www.lagafeteria.com", "custom_domain": true }
+  ]
 }

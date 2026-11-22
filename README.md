@@ -24,7 +24,18 @@ npx wrangler secret put RESEND_FROM      # opcional: "LaGafetería <hola@tudomin
 
 Sin `RESEND_API_KEY`, el cotizador sigue funcionando y descargando el PDF; solo el envío por correo responde que todavía no está activo.
 
-Para servir en `lagafeteria.com`, quita el comentario de `routes` en `wrangler.jsonc` y corre `npm run deploy`.
+### Publicar
+
+`npm run deploy` compila con los valores de `.env.production` (URL del sitio y Supabase, todos públicos) y publica el Worker en `lagafeteria.com` y `www.lagafeteria.com`. Esos valores mandan sobre `.env.local`, así que lo que tengas para desarrollo no se cuela al sitio publicado.
+
+Antes de la primera vez:
+
+1. El dominio debe estar en la misma cuenta de Cloudflare que el Worker.
+2. `npx wrangler login`.
+3. Después del primer `npm run deploy`, carga los secretos de arriba.
+4. En Supabase, pon `https://lagafeteria.com` como Site URL y agrega `https://lagafeteria.com/auth/confirmar` a las Redirect URLs. Sin eso, la liga del correo de acceso no regresa al sitio.
+
+`routes` en `wrangler.jsonc` solo agrega el sitio al dominio; no toca los registros de correo (MX, SPF, DKIM).
 
 ## Plataforma (cuenta, empresa y equipo)
 
@@ -136,7 +147,6 @@ Al cambiar contenido, actualiza `actualizado` en `src/lib/site.ts` (alimenta `la
 
 ## Pendientes antes de lanzar
 
-- Dominio definitivo: hoy es provisional (`lagafeteria.com`). Se cambia en una línea de `src/lib/site.ts`, más `routes` en `wrangler.jsonc` y `.env.example`.
 - Confirmar precios, IVA, extra de frente y vuelta, tarifa de envío, monto de envío gratis y paquetes prepagados en `src/lib/precios.ts`.
 - Confirmar con el taller o la impresora los materiales, sus costos y las medidas de sangrado y zona segura en `src/lib/materiales.ts`.
 - Cambiar las ilustraciones de materiales (`src/components/MuestraMaterial.tsx`) por fotos reales cuando haya muestras.
