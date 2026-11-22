@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { Formulario } from "@/components/cuenta/Formulario";
 import { Contenedor } from "@/components/ui";
 import { miAceptacion, usuarioDeSesion } from "@/lib/cuenta/sesion";
-import { site } from "@/lib/site";
+import { afiliados, site } from "@/lib/site";
 import { aceptarTerminos } from "./acciones";
 
 export const metadata: Metadata = {
@@ -40,6 +40,14 @@ export default async function Aceptar() {
                   aviso de privacidad
                 </Link>
                 .
+              </span>
+            </label>
+            <label className="mt-4 flex cursor-pointer items-start gap-3 border-t border-linea pt-4">
+              <input type="checkbox" name="publicidad" className="mt-1 size-5 shrink-0 accent-tinta" />
+              <span>
+                Quiero recibir novedades y promociones de {site.nombre} y de sus negocios afiliados
+                {afiliados.length ? `, como ${afiliados.map((a) => a.nombre).join(" y ")}` : ""}.{" "}
+                <span className="text-gris">Es opcional y lo puedes cambiar cuando quieras.</span>
               </span>
             </label>
           </Formulario>

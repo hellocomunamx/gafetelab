@@ -59,7 +59,8 @@ export default function Terminos() {
             </p>
             <p>
               Guardamos la versión de los términos y del aviso que aceptaste y la fecha en que lo
-              hiciste.
+              hiciste. Recibir novedades y promociones es opcional: tiene su propia casilla, aparte
+              de esta aceptación, y puedes cambiarla cuando quieras.
             </p>
           </Apartado>
 

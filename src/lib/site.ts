@@ -51,6 +51,12 @@ export const figalo = {
   url: "https://figalo.mx",
 } as const;
 
+/**
+ * Negocios afiliados: de ellos puede llegar publicidad a quien la haya aceptado.
+ * Con `url` y `texto`, el afiliado aparece con una mención discreta en la landing.
+ */
+export const afiliados: { nombre: string; url?: string; texto?: string }[] = [{ nombre: "Talentu" }];
+
 /** Responsable legal del tratamiento de datos (aviso de privacidad). */
 export const legal = {
   responsable: "Gloria Inés Higuera Ley",
@@ -58,7 +64,7 @@ export const legal = {
   domicilio: "Cajeme, Sonora, México",
   correo: "hola@figalo.mx",
   horario: "lunes a viernes de 09:00 a 15:00 horas (hora del centro de México)",
-  avisoVersion: "1.2",
+  avisoVersion: "1.3",
   avisoFecha: "2026-11-22",
   terminosVersion: "1.0",
   terminosFecha: "2026-11-22",

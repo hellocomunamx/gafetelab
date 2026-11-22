@@ -251,14 +251,14 @@ isOneToOne: false
                   ]
                 },"perfiles": {
                   Row: {
-                    "actualizado_en": string,"creado_en": string,"id": string,"nombre": string | null,"telefono": string | null
+                    "actualizado_en": string,"creado_en": string,"id": string,"nombre": string | null,"publicidad": boolean,"publicidad_en": string | null,"telefono": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "actualizado_en"?: string,"creado_en"?: string,"id": string,"nombre"?: string | null,"telefono"?: string | null
+                    "actualizado_en"?: string,"creado_en"?: string,"id": string,"nombre"?: string | null,"publicidad"?: boolean,"publicidad_en"?: string | null,"telefono"?: string | null
                   }
                   Update: {
-                    "actualizado_en"?: string,"creado_en"?: string,"id"?: string,"nombre"?: string | null,"telefono"?: string | null
+                    "actualizado_en"?: string,"creado_en"?: string,"id"?: string,"nombre"?: string | null,"publicidad"?: boolean,"publicidad_en"?: string | null,"telefono"?: string | null
                   }
                   Relationships: [
                     

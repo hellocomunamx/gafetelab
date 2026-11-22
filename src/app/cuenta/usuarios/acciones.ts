@@ -128,6 +128,16 @@ export async function guardarPerfil(_: Resultado, d: FormData): Promise<Resultad
   return { ok: "Guardado." };
 }
 
+/** Enciende o apaga las novedades y promociones. Es de cada persona, no de la empresa. */
+export async function guardarPublicidad(_: Resultado, d: FormData): Promise<Resultado> {
+  const { supabase, usuario } = await requerirUsuario();
+  const quiere = d.get("publicidad") === "on";
+  const { error } = await supabase.from("perfiles").upsert({ id: usuario.id, publicidad: quiere });
+  if (error) return { error: ERROR_GENERAL };
+  refrescar();
+  return { ok: quiere ? "Listo. Te mandaremos novedades y promociones." : "Listo. Ya no te mandaremos promociones." };
+}
+
 /** Crea o cambia la contraseña de la cuenta. La liga y el código por correo siguen funcionando. */
 export async function guardarContrasena(_: Resultado, d: FormData): Promise<Resultado> {
   const { supabase } = await requerirUsuario();

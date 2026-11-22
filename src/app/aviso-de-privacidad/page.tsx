@@ -3,7 +3,7 @@ import { Apartado, fechaLegal } from "@/components/Legal";
 import { Contenedor, Portada } from "@/components/ui";
 import { migas } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
-import { figalo, legal, site } from "@/lib/site";
+import { afiliados, figalo, legal, site } from "@/lib/site";
 
 const ruta = "/aviso-de-privacidad";
 const rutaMigas = [{ nombre: "Aviso de privacidad", ruta }];
@@ -118,10 +118,20 @@ export default function AvisoDePrivacidad() {
 
           <Apartado numero={5} titulo="Finalidades secundarias">
             <p>
-              No usamos tus datos para finalidades secundarias: no te suscribimos a boletines, no
-              hacemos publicidad con tus datos ni con los de tu personal, y no los usamos con fines
-              distintos a los descritos. Si esto llegara a cambiar, actualizaríamos este aviso y te
-              daríamos la opción de negarte escribiendo a <Correo />.
+              Solo hay una, y es opcional: si al crear tu cuenta marcas la casilla de novedades y
+              promociones, usamos tu nombre y tu correo para enviarte noticias y ofertas de{" "}
+              {site.nombre} y de sus negocios afiliados
+              {afiliados.length ? ` (por ejemplo, ${afiliados.map((a) => a.nombre).join(" y ")})` : ""}. Esa casilla va
+              aparte de la de los términos y nace sin marcar: decir que no, no cambia en nada tu
+              cuenta ni tus pedidos.
+            </p>
+            <p>
+              Los mensajes te los enviamos nosotros: no entregamos tu correo a los negocios afiliados.
+              Puedes retirar tu consentimiento cuando quieras, sin costo, desde «Mi acceso» en tu
+              cuenta o escribiendo a <Correo />.
+            </p>
+            <p>
+              Los datos de tu personal (nombres, puestos, fotografías) nunca se usan para publicidad.
             </p>
           </Apartado>
 

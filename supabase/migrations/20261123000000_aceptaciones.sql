@@ -21,3 +21,35 @@ create policy "aceptaciones: ver las mías" on public.aceptaciones
   for select to authenticated using (usuario_id = (select auth.uid()));
 create policy "aceptaciones: registrar la mía" on public.aceptaciones
   for insert to authenticated with check (usuario_id = (select auth.uid()));
+
+-- ---------------------------------------------------------------------------
+-- Publicidad: opcional y aparte de aceptar los términos.
+-- ---------------------------------------------------------------------------
+
+-- La persona decide si quiere recibir novedades y promociones de LaGafetería y
+-- de sus negocios afiliados. Nace apagado y se cambia cuando quiera en su cuenta.
+alter table public.perfiles
+  add column publicidad boolean not null default false,
+  -- Cuándo dijo que sí o que no por última vez. La pone la base de datos.
+  add column publicidad_en timestamptz;
+
+create function privado.fechar_publicidad()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if tg_op = 'INSERT' then
+    new.publicidad_en := case when new.publicidad then now() end;
+  elsif new.publicidad is distinct from old.publicidad then
+    new.publicidad_en := now();
+  else
+    new.publicidad_en := old.publicidad_en;
+  end if;
+  return new;
+end;
+$$;
+revoke all on function privado.fechar_publicidad() from public;
+
+create trigger fechar_publicidad before insert or update on public.perfiles
+  for each row execute function privado.fechar_publicidad();
