@@ -57,6 +57,16 @@ export function VistaGafete({ material }: { material?: Material | null }) {
         </div>
       </div>
 
+      {imagen ? null : (
+        <p className="mt-3 text-sm">
+          <strong>Es solo un ejemplo.</strong>{" "}
+          <span className="text-gris">
+            El diseño de tu gafete es totalmente personalizable: tus colores, tu logo y los datos que tú
+            elijas.
+          </span>
+        </p>
+      )}
+
       <DiagramaGafete
         modo={modo}
         vertical={vertical}
@@ -79,7 +89,7 @@ export function VistaGafete({ material }: { material?: Material | null }) {
         </ul>
       ) : (
         <p className="mt-3 text-center text-sm text-gris">
-          {mat.nombre}, {grosorTexto(mat)}. {imagen ? "Tu diseño" : "Diseño de muestra"} ya recortado.
+          {mat.nombre}, {grosorTexto(mat)}. {imagen ? "Tu diseño" : "Diseño de ejemplo"} ya recortado.
         </p>
       )}
 
