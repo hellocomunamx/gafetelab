@@ -41,7 +41,7 @@ export const faqsGenerales: Faq[] = [
   {
     pregunta: "¿Hay que pagar una suscripción o mensualidad?",
     respuesta:
-      "No. Pagas una sola vez por cada gafete, sea impreso, digital o los dos. El gafete digital tampoco es un cobro recurrente: se paga una vez y ya. No hay mensualidades, anualidades ni costo por usuario, y tu plataforma para administrar altas, bajas y reposiciones viene incluida.",
+      "No. Pagas una sola vez por cada gafete, sea impreso, digital o los dos. El gafete digital tampoco es un cobro recurrente: se paga una vez y sigue activo mientras tu cuenta esté activa y tú no lo desactives. No hay mensualidades, anualidades ni costo por usuario, y tu plataforma para administrar altas, bajas y reposiciones viene incluida.",
   },
   {
     pregunta: "¿Qué es un gafete digital?",

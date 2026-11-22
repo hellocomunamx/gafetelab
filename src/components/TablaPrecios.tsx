@@ -40,7 +40,7 @@ export function TablaPrecios() {
         <li>
           <strong className="text-tinta">Gafete digital: {pesos(precioDigital)} por pieza</strong>, solo
           o sumado al impreso, en cualquier cantidad. Es un pago único: no se cobra cada mes ni
-          cada año.
+          cada año, y sigue activo mientras tu cuenta esté activa.
         </li>
         <li>
           Precios en PVC estándar.{" "}
