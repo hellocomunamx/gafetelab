@@ -90,7 +90,6 @@ export const formasDeCargar: Funcion[] = [
     titulo: "Con una liga para cada persona",
     texto:
       "Mandas una liga por correo o WhatsApp y cada quien sube sus datos y su foto, sin crear cuenta. Tú apruebas o rechazas antes de imprimir.",
-    pronto: true,
   },
 ];
 
@@ -110,7 +109,7 @@ export const funcionesPlataforma: { grupo: string; resumen: string; funciones: F
       },
       {
         titulo: "Carga como te acomode",
-        texto: "Con Excel, una persona a la vez o las fotos de todos juntas. Nadie se captura dos veces.",
+        texto: "Con Excel, una persona a la vez, las fotos de todos juntas o una liga para cada persona. Nadie se captura dos veces.",
       },
       {
         titulo: "Historial de cada persona",
@@ -123,7 +122,6 @@ export const funcionesPlataforma: { grupo: string; resumen: string; funciones: F
       {
         titulo: "Liga para cada persona",
         texto: "Cada quien sube sus datos y su foto desde su celular, y tú apruebas o rechazas.",
-        pronto: true,
       },
     ],
   },

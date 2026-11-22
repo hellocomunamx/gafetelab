@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { type FormEvent, useState } from "react";
-import { limitesContacto, type MotivoContacto, motivosContacto } from "@/lib/contacto";
+import { type FormEvent, useEffect, useRef, useState } from "react";
+import { limitesContacto, MOTIVO_IDEA, type MotivoContacto, motivosContacto } from "@/lib/contacto";
 
 type Estado =
   | { tipo: "inactivo" | "enviando" }
@@ -15,7 +15,7 @@ const entrada = "mt-2 w-full rounded-tarjeta-chica border border-linea bg-white 
  * Formulario de contacto. Envía a /api/contacto, que lo manda por correo al
  * buzón del sitio. El precio no se pide aquí: para eso está el cotizador.
  */
-export function FormularioContacto({ correoSitio }: { correoSitio: string }) {
+export function FormularioContacto({ correoSitio, nombreSitio }: { correoSitio: string; nombreSitio: string }) {
   const [motivo, setMotivo] = useState<MotivoContacto>(motivosContacto[0]);
   const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
@@ -24,6 +24,25 @@ export function FormularioContacto({ correoSitio }: { correoSitio: string }) {
   const [mensaje, setMensaje] = useState("");
   const [sitioWeb, setSitioWeb] = useState("");
   const [estado, setEstado] = useState<Estado>({ tipo: "inactivo" });
+  const cajaMensaje = useRef<HTMLTextAreaElement>(null);
+  const esIdea = motivo === MOTIVO_IDEA;
+
+  // La página puede llegar con el motivo y el mensaje ya puestos: /contacto?motivo=…&mensaje=…
+  // (un paquete armado en precios) o /contacto#idea (proponer algo nuevo).
+  useEffect(() => {
+    const leer = () => {
+      const parametros = new URLSearchParams(window.location.search);
+      const pedido = window.location.hash === "#idea" ? MOTIVO_IDEA : parametros.get("motivo");
+      const encontrado = motivosContacto.find((m) => m === pedido);
+      if (encontrado) setMotivo(encontrado);
+      const texto = parametros.get("mensaje");
+      if (texto) setMensaje(texto.slice(0, limitesContacto.mensaje));
+      if (window.location.hash === "#idea") cajaMensaje.current?.focus();
+    };
+    leer();
+    window.addEventListener("hashchange", leer);
+    return () => window.removeEventListener("hashchange", leer);
+  }, []);
 
   async function enviar(evento: FormEvent) {
     evento.preventDefault();
@@ -80,7 +99,7 @@ export function FormularioContacto({ correoSitio }: { correoSitio: string }) {
   }
 
   return (
-    <form onSubmit={enviar} className="rounded-tarjeta border border-linea p-6 sm:p-8">
+    <form id="formulario" onSubmit={enviar} className="scroll-mt-28 rounded-tarjeta border border-linea p-6 sm:p-8">
       <fieldset>
         <legend className="text-sm font-semibold">¿Sobre qué nos escribes?</legend>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -155,15 +174,28 @@ export function FormularioContacto({ correoSitio }: { correoSitio: string }) {
       </div>
 
       <label className="mt-4 block">
-        <span className="text-sm font-semibold">Tu mensaje</span>
+        <span className="text-sm font-semibold">
+          {esIdea ? `¿Qué te gustaría que existiera en ${nombreSitio}?` : "Tu mensaje"}
+        </span>
+        {esIdea ? (
+          <span className="mt-1 block text-sm text-gris">
+            Un producto, una función o algo que te quite trabajo al credencializar a tu equipo. Leemos todas
+            las ideas y con ellas decidimos qué sigue.
+          </span>
+        ) : null}
         <textarea
+          ref={cajaMensaje}
           required
           minLength={10}
           maxLength={limitesContacto.mensaje}
           rows={6}
           value={mensaje}
           onChange={(e) => setMensaje(e.target.value)}
-          placeholder="Cuéntanos qué necesitas."
+          placeholder={
+            esIdea
+              ? "Por ejemplo: portagafetes y cordones con mi logo, gafetes para visitantes o conectar con mi sistema de nómina."
+              : "Cuéntanos qué necesitas."
+          }
           className={entrada}
         />
       </label>
@@ -186,7 +218,7 @@ export function FormularioContacto({ correoSitio }: { correoSitio: string }) {
           disabled={estado.tipo === "enviando"}
           className="inline-flex shrink-0 items-center justify-center rounded-full bg-rojo px-7 py-3 font-semibold text-white transition-colors hover:bg-rojo-oscuro disabled:opacity-60"
         >
-          {estado.tipo === "enviando" ? "Enviando…" : "Enviar mensaje"}
+          {estado.tipo === "enviando" ? "Enviando…" : esIdea ? "Enviar mi idea" : "Enviar mensaje"}
         </button>
         <p
           role="status"
