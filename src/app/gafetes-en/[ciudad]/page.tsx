@@ -57,7 +57,7 @@ export default async function PaginaCiudad({ params }: PageProps<"/gafetes-en/[c
     },
     {
       pregunta: `¿Cuánto tardan en llegar los gafetes a ${ciudad.nombre}?`,
-      respuesta: `En ${entregaTexto}, contadas desde que confirmas el pago y apruebas la vista previa de tus gafetes. Los gafetes digitales se activan en tu plataforma, sin envío.`,
+      respuesta: `En ${entregaTexto}, contados desde que confirmas el pago y apruebas la vista previa de tus gafetes. Los gafetes digitales se activan en tu plataforma, sin envío.`,
     },
     {
       pregunta: `¿Cuánto cuestan los gafetes y credenciales ${ciudad.enTexto}?`,

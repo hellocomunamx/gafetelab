@@ -12,6 +12,7 @@ import {
   extraDosCarasDetalle,
   extraDosCarasRango,
   notaIva,
+  paqueteMinimoPiezas,
   paqueteVigenciaMeses,
   paquetes,
   pesos,
@@ -24,7 +25,8 @@ import {
 import { grosorTexto, materiales, medidas, zonas } from "./materiales";
 import { accionesPlataforma, ajustesPlataforma, formasDeCargar, funcionesPlataforma } from "./plataforma";
 import { rutasCiudades, rutasGiros, rutasPrincipales } from "./rutas";
-import { entregaTexto, site, urlAbsoluta } from "./site";
+import { adicionalesPendientes } from "./contacto";
+import { constancia, entregaTexto, legal, site, urlAbsoluta } from "./site";
 
 type Enlace = { ruta: string; titulo: string; resumen: string };
 
@@ -55,6 +57,10 @@ const datosClave = () =>
     `- Administración del equipo: ${accionesPlataforma.map((a) => a.titulo.toLowerCase()).join(", ")}. Ajustes de la empresa: ${ajustesPlataforma.map((a) => a.titulo.toLowerCase()).join(", ")}.`,
     `- Carga de datos del equipo: ${formasDeCargar.map((f) => `${f.titulo.charAt(0).toLowerCase()}${f.titulo.slice(1)}${f.pronto ? " (próximamente)" : ""}`).join("; ")}.`,
     `- Cómo se pide: en línea, con plantillas o diseño propio, campos variables (nombre, puesto, número, foto, código QR), carga del equipo y vista previa de cada gafete antes de pagar.`,
+    `- Paquete a la medida: desde ${paqueteMinimoPiezas} gafetes, combinando cantidades, una cara o frente y vuelta, y materiales; el precio base por pieza es el del paquete de lista que corresponde al total.`,
+    `- Requisito para abrir la cuenta de una empresa: su ${constancia.nombre} con no más de ${site.constanciaMeses} meses de antigüedad. El RFC y la razón social deben coincidir con la empresa que aparece en los gafetes y con la factura.`,
+    `- Devoluciones: los gafetes son personalizados y no se devuelven por cambio de opinión. Se puede cancelar sin costo antes de producción. Los defectos de impresión o de material se reportan dentro de ${legal.plazoDefectosDias} días naturales desde la entrega y se reponen sin costo.`,
+    `- Adicionales: todavía no se venden ${adicionalesPendientes}.`,
     `- Factura: sí (CFDI).`,
     `- Contacto: formulario en ${urlAbsoluta("/contacto")} o ${site.correo}`,
   ].join("\n");
@@ -62,7 +68,7 @@ const datosClave = () =>
 export function llmsTxt(): string {
   return `# ${site.nombre}
 
-> ${site.nombre} es una tienda en línea mexicana dedicada exclusivamente a gafetes y credenciales para empleados. Los hace impresos en PVC o digitales. El pedido es guiado: plantilla o diseño propio, carga del equipo con Excel, una por una o con las fotos de todos juntas, vista previa de cada gafete y precio con envío desde el primer paso. Incluye, sin costo extra, una plataforma para administrar los gafetes del equipo. Envía a todo México.
+> ${site.nombre} es una tienda en línea mexicana dedicada a la administración e impresión de gafetes y credenciales para empleados o asistentes a eventos. Los hace impresos en PVC o digitales. El pedido es guiado: plantilla o diseño propio, carga del equipo con Excel, una por una, con las fotos de todos juntas o con una liga para que cada persona suba sus datos y su foto, vista previa de cada gafete y precio con envío desde el primer paso. Incluye, sin costo extra, una plataforma para administrar los gafetes del equipo. Envía a todo México.
 
 Nota de vocabulario: en México, "gafete" y "credencial" se usan para la tarjeta de identificación del empleado. El "portagafete" es la funda o broche donde se coloca. ${site.nombre} hace la tarjeta, impresa o digital.
 
