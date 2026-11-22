@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
 import { JsonLd } from "@/components/JsonLd";
+import { Apartado, fechaLegal } from "@/components/Legal";
 import { Contenedor, Portada } from "@/components/ui";
 import { migas } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
@@ -14,24 +14,7 @@ export const metadata = metadatos({
   ruta,
 });
 
-const fecha = new Date(`${legal.avisoFecha}T12:00:00`).toLocaleDateString("es-MX", {
-  day: "numeric",
-  month: "long",
-  year: "numeric",
-});
-
-function Apartado({ numero, titulo, children }: { numero: number; titulo: string; children: ReactNode }) {
-  return (
-    <section className="mt-10">
-      <h2 className="text-2xl font-extrabold">
-        {numero}. {titulo}
-      </h2>
-      <div className="mt-3 space-y-3 text-gris [&_li]:ml-5 [&_li]:list-disc [&_strong]:text-tinta [&_ul]:space-y-1.5">
-        {children}
-      </div>
-    </section>
-  );
-}
+const fecha = fechaLegal(legal.avisoFecha);
 
 const Correo = () => (
   <a href={`mailto:${legal.correo}`} className="text-tinta underline">
