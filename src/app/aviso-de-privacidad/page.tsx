@@ -183,6 +183,12 @@ export default function AvisoDePrivacidad() {
               iniciar sesión en tu cuenta se usan cookies estrictamente necesarias para mantener tu
               sesión.
             </p>
+            <p>
+              Para saber cuántas visitas recibe el sitio llevamos un conteo propio y anónimo de
+              páginas vistas. No usa cookies, no guarda tu dirección IP y no permite identificarte:
+              solo registra la página, el sitio desde el que llegaste, el tipo de dispositivo y el
+              país y estado aproximados. Si tu navegador pide no ser rastreado, no te contamos.
+            </p>
           </Apartado>
 
           <Apartado numero={8} titulo="Cuánto tiempo conservamos los datos">

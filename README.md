@@ -148,7 +148,7 @@ Sin esas dos llaves (o sin `SUPABASE_SECRET_KEY`), la plataforma dice que los pe
 
 ### Administración (solo quien opera LaGafetería)
 
-`/8admins` es el panel interno (la ruta está en `src/lib/admin/ruta.ts`; no es `/admin` a propósito, y no se anuncia en `robots.txt` ni en el sitemap). No aparece en ningún menú de las empresas y, a quien no es administradora o no ha iniciado sesión, le responde «no existe». Trae seis cosas:
+`/8admins` es el panel interno (la ruta está en `src/lib/admin/ruta.ts`; no es `/admin` a propósito, y no se anuncia en `robots.txt` ni en el sitemap). No aparece en ningún menú de las empresas y, a quien no es administradora o no ha iniciado sesión, le responde «no existe». Trae ocho cosas:
 
 - **Constancias por revisar**: abre el archivo, lo compara con el RFC y la razón social que la empresa capturó, y aprueba o rechaza.
 - **Empresas**: todas las cuentas con el estado de su constancia, sus personas activas, diseños y gafetes listos, y un aviso de «Revisar» cuando el nombre de la empresa o los textos de sus diseños mencionan autoridades, dependencias o identificaciones oficiales (INE, gobierno, policía, SAT, IMSS y parecidas; la lista está en `src/lib/admin/alertas.ts`). El aviso no bloquea nada: pide que una persona lo vea antes de producir.
@@ -158,6 +158,9 @@ Sin esas dos llaves (o sin `SUPABASE_SECRET_KEY`), la plataforma dice que los pe
 
 - **Clientes** (`/8admins/clientes`): la base de clientes, una fila por empresa, con su contacto (quien es dueño de la cuenta), RFC, constancia, personas activas, pedidos pagados, cuánto ha pagado y su último pedido. Se filtra por quién ya compró y se busca por empresa, contacto, correo o RFC. La ficha de cada cliente junta sus pedidos, sus usuarios (con rol, último acceso y si aceptan publicidad), sus datos de facturación y sus direcciones.
 - **Finanzas** (`/8admins/finanzas`): lo cobrado en el periodo (este mes, mes pasado, últimos 90 días, este año o todo), antes de IVA, pedido promedio, devuelto, cancelados (y cuántos fueron en los minutos de gracia), lo que está por cobrar, el reparto por forma de pago, las disputas, los últimos 12 meses y quién más compró. Los meses se cortan con la hora de Sonora. Las cifras son lo que pagaron los clientes: no descuentan la comisión de Stripe. Los cálculos están en `src/lib/admin/finanzas.ts`.
+
+- **Visitas** (`/8admins/visitas`): visitas, páginas vistas y escaneos de QR por periodo (hoy, 7, 30 o 90 días), la gráfica por día, de dónde llegan (Google, ChatGPT, directo y demás), las páginas más vistas, con qué dispositivo y desde qué estado, y el camino de la visita a la compra (visitas, cuentas nuevas, empresas, pedidos hechos y pagados).
+- **Abandonos** (`/8admins/abandonos`): los pedidos sin pagar, las empresas que se quedaron a medio camino (con el paso que les falta) y las cuentas que nunca registraron su empresa, cada una con su correo para escribirle.
 
 Clientes y Finanzas se descargan en Excel (`src/lib/admin/xlsx.ts` arma el `.xlsx` sin dependencias nuevas).
 
@@ -171,6 +174,16 @@ select id from auth.users where email = 'correo-de-la-administradora';
 ```
 
 Y para quitarla: `delete from privado.administradores where usuario_id = '<id>';`
+
+### Conteo de visitas
+
+Las visitas se cuentan en casa, sin servicios externos y sin cookies: el componente `Visita` (en el layout) avisa de cada página vista a `/api/visita`, que guarda un renglón en la tabla `visitas` (migración `20261123050000_visitas.sql`) con la página, si es la primera de la visita, de dónde llegó (el sitio que la mandó o `utm_source`), el tipo de dispositivo y el país y estado que informa Cloudflare. No se guarda la dirección IP ni el navegador. Las reglas están en `src/lib/visitas.ts`:
+
+- Una **visita** empieza cuando alguien llega de fuera o entra directo; recargar o navegar dentro del sitio suma páginas vistas, no visitas.
+- No se cuentan `/cuenta`, el panel, `/api` ni los rastreadores y navegadores automáticos, ni a quien tiene activado Do Not Track o Global Privacy Control.
+- Las verificaciones de QR (`/v/<código>`) se guardan todas como `/v`, sin el código de la persona, y se muestran aparte como «escaneos de QR».
+
+Necesita `SUPABASE_SECRET_KEY`; sin ella no se cuenta nada y el sitio funciona igual. El aviso de privacidad (versión 1.5) lo explica en el apartado de cookies.
 
 ### Configurar Supabase (una vez)
 

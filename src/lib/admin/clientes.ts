@@ -4,7 +4,7 @@ import { todas } from "./paginas";
 
 type Servicio = SupabaseClient<Database>;
 
-export type Persona = { id: string; correo: string; ultimoAcceso: string | null };
+export type Persona = { id: string; correo: string; creada: string; ultimoAcceso: string | null };
 
 /** Correo y último acceso de cada cuenta. Solo con la llave secreta. */
 export async function cuentas(servicio: Servicio): Promise<Map<string, Persona>> {
@@ -13,7 +13,7 @@ export async function cuentas(servicio: Servicio): Promise<Map<string, Persona>>
   for (let pagina = 1; pagina <= 20; pagina++) {
     const { data, error } = await servicio.auth.admin.listUsers({ page: pagina, perPage: porPagina });
     if (error || !data) break;
-    for (const u of data.users) mapa.set(u.id, { id: u.id, correo: u.email ?? "", ultimoAcceso: u.last_sign_in_at ?? null });
+    for (const u of data.users) mapa.set(u.id, { id: u.id, correo: u.email ?? "", creada: u.created_at, ultimoAcceso: u.last_sign_in_at ?? null });
     if (data.users.length < porPagina) break;
   }
   return mapa;
@@ -38,6 +38,9 @@ export type Cliente = {
   ciudad: string | null;
   constancia: string;
   activos: number;
+  disenos: number;
+  listos: number;
+  ultimoAcceso: string | null;
   pedidos: number;
   pagados: number;
   gafetes: number;
@@ -80,7 +83,7 @@ export async function cargarClientes(servicio: Servicio, sesion: Servicio): Prom
   const direccionDe = primero(direcciones.data);
   const constanciaDe = primero(docs.data);
 
-  const activos = new Map((conteos.data ?? []).map((c) => [c.id, Number(c.activos)]));
+  const conteoDe = new Map((conteos.data ?? []).map((c) => [c.id, c]));
 
   const miembrosDe = new Map<string, NonNullable<typeof miembros.data>>();
   for (const m of miembros.data ?? []) miembrosDe.set(m.empresa_id, [...(miembrosDe.get(m.empresa_id) ?? []), m]);
@@ -119,7 +122,10 @@ export async function cargarClientes(servicio: Servicio, sesion: Servicio): Prom
       razonSocial: fiscalDe.get(e.id)?.razon_social ?? null,
       ciudad: direccion ? `${direccion.ciudad}, ${direccion.estado}` : null,
       constancia: nombreConstancia(constanciaDe.get(e.id)?.estado),
-      activos: activos.get(e.id) ?? 0,
+      activos: Number(conteoDe.get(e.id)?.activos ?? 0),
+      disenos: Number(conteoDe.get(e.id)?.disenos ?? 0),
+      listos: Number(conteoDe.get(e.id)?.listos ?? 0),
+      ultimoAcceso: cuenta?.ultimoAcceso ?? null,
       pedidos: c?.pedidos ?? 0,
       pagados: c?.pagados ?? 0,
       gafetes: c?.gafetes ?? 0,
@@ -131,3 +137,25 @@ export async function cargarClientes(servicio: Servicio, sesion: Servicio): Prom
 
 export const fechaCorta = (iso: string) =>
   new Date(iso).toLocaleDateString("es-MX", { day: "numeric", month: "short", year: "numeric", timeZone: "America/Hermosillo" });
+
+/** "hace 3 horas", "hace 2 días": cuánto lleva algo sin moverse. */
+export function haceCuanto(iso: string, ahora = Date.now()): string {
+  const minutos = Math.max(0, Math.round((ahora - new Date(iso).getTime()) / 60000));
+  if (minutos < 60) return minutos <= 1 ? "hace un momento" : `hace ${minutos} minutos`;
+  const horas = Math.round(minutos / 60);
+  if (horas < 24) return horas === 1 ? "hace 1 hora" : `hace ${horas} horas`;
+  const dias = Math.round(horas / 24);
+  return dias === 1 ? "hace 1 día" : `hace ${dias} días`;
+}
+
+/** En qué paso se quedó una empresa que todavía no paga un pedido. Null si ya compró. */
+export function pasoPendiente(c: Cliente): { orden: number; falta: string } | null {
+  if (c.pagados > 0) return null;
+  if (c.pedidos > 0) return { orden: 1, falta: "Hizo un pedido y no lo ha pagado" };
+  if (c.constancia === "Por revisar") return { orden: 2, falta: "Su constancia espera tu revisión" };
+  if (c.activos === 0) return { orden: 6, falta: "No ha cargado a su equipo" };
+  if (c.disenos + c.listos === 0) return { orden: 5, falta: "No ha hecho su diseño" };
+  if (c.constancia === "Rechazada") return { orden: 4, falta: "Su constancia se rechazó y no ha subido otra" };
+  if (c.constancia === "Sin subir") return { orden: 4, falta: "No ha subido su constancia" };
+  return { orden: 3, falta: "Tiene todo listo y no ha pedido" };
+}

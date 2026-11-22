@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { Encabezado } from "@/components/Encabezado";
 import { JsonLd } from "@/components/JsonLd";
 import { Pie } from "@/components/Pie";
+import { Visita } from "@/components/Visita";
 import { organizacion, sitioWeb } from "@/lib/schema";
 import { site } from "@/lib/site";
 import "./globals.css";
@@ -103,6 +104,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           Saltar al contenido
         </a>
+        <Visita />
         <Encabezado />
         <main id="contenido" className="flex-1">
           {children}

@@ -369,6 +369,20 @@ isOneToOne: true
                   Relationships: [
                     
                   ]
+                },"visitas": {
+                  Row: {
+                    "dispositivo": string,"en": string,"entrada": boolean,"id": number,"origen": string | null,"pais": string | null,"region": string | null,"ruta": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "dispositivo": string,"en"?: string,"entrada"?: boolean,"id"?: never,"origen"?: string | null,"pais"?: string | null,"region"?: string | null,"ruta": string
+                  }
+                  Update: {
+                    "dispositivo"?: string,"en"?: string,"entrada"?: boolean,"id"?: never,"origen"?: string | null,"pais"?: string | null,"region"?: string | null,"ruta"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 }
           }
           Views: {
@@ -402,6 +416,9 @@ isOneToOne: true
                            },
 "quitar_usuario":
 { Args: { "p_empresa": string,"p_usuario": string }; Returns: undefined
+                           },
+"resumen_visitas":
+{ Args: { "p_desde": string,"p_hasta": string }; Returns: Json
                            },
 "usuarios_de":
 { Args: { "p_empresa": string }; Returns: {
