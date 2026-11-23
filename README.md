@@ -19,7 +19,6 @@ Secretos en Cloudflare:
 ```bash
 npx wrangler login
 npx wrangler secret put RESEND_API_KEY
-npx wrangler secret put RESEND_FROM      # opcional: "LaGafetería <hola@tudominio>"
 npx wrangler secret put SUPABASE_SECRET_KEY   # fotografía en la verificación del QR, panel de administración y pedidos
 npx wrangler secret put STRIPE_SECRET_KEY     # cobro de pedidos (llave restringida rk_...)
 npx wrangler secret put STRIPE_WEBHOOK_SECRET # firma de los avisos de Stripe (whsec_...)
@@ -327,7 +326,7 @@ Al cambiar contenido, actualiza `actualizado` en `src/lib/site.ts` (alimenta `la
 - Cambiar las ilustraciones de materiales (`src/components/MuestraMaterial.tsx`) por fotos reales cuando haya muestras.
 - Los paquetes prepagados se anuncian, pero todavía no se pueden comprar: falta el cobro y el saldo de gafetes en la cuenta.
 - Confirmar el correo de contacto y el tiempo de entrega en `src/lib/site.ts`.
-- Correo de cotizaciones: verificar el dominio en Resend y cargar `RESEND_API_KEY` (y `RESEND_FROM` si aplica).
+- Correo de cotizaciones: verificar el dominio en Resend y cargar `RESEND_API_KEY`. Todos los correos automáticos salen de `no-reply@` (`site.correoAutomatico`) con respuesta a `hola@`.
 - Proteger `/api/cotizacion` contra abuso antes de lanzar (regla de rate limiting en Cloudflare o Turnstile). Hoy valida origen, formato y un campo trampa.
 - Revisión del aviso de privacidad por una persona abogada. Está adaptado del aviso de Figalo y nombra proveedores (pagos, facturación, talleres, paquetería) que aún no están contratados.
 - Terminar de configurar Supabase para la plataforma (ver "Configurar Supabase").

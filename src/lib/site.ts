@@ -16,6 +16,8 @@ export const site = {
   descripcionCorta:
     "Tienda en línea para administrar e imprimir gafetes y credenciales de empleados o de asistentes a eventos, impresos y digitales, con envíos a todo México.",
   correo: `hola@${dominio}`,
+  /** Remitente de los correos automáticos. Las respuestas llegan a `correo`. */
+  correoAutomatico: `no-reply@${dominio}`,
   idioma: "es-MX",
   locale: "es_MX",
   pais: "MX",

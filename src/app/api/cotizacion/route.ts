@@ -70,7 +70,7 @@ ${notas.map((n) => `<li>${escapar(n)}</li>`).join("")}
 </ul>
 <p style="margin:24px 0 0;"><a href="${urlAbsoluta("/cotizar")}" style="display:inline-block;background:#E63B2E;color:#fff;text-decoration:none;font-weight:bold;padding:12px 22px;border-radius:999px;font-size:14px;">Ajustar mi cotización</a></p>
 </div></div>
-<p style="font-size:12px;color:#5C6178;text-align:center;margin:16px 0 0;">Recibes este correo porque pediste tu cotización en ${site.dominio}. Si tienes dudas, responde a este mensaje.</p>
+<p style="font-size:12px;color:#5C6178;text-align:center;margin:16px 0 0;">Recibes este correo porque pediste tu cotización en ${site.dominio}. Si tienes dudas, escríbenos a ${site.correo}.</p>
 </div></body></html>`;
 
   const texto = [

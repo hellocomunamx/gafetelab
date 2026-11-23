@@ -5,10 +5,10 @@ import { escapar } from "@/lib/solicitudes";
 /** Una línea extra según el motivo, para que el acuse no suene a robot. */
 const extraPorMotivo: Partial<Record<MotivoContacto, string>> = {
   "Tengo una idea": "Nos encanta que nos propongan cosas: leemos cada idea con calma.",
-  "Pedido especial": "Si tienes un diseño, una lista o una foto de referencia, responde a este correo y adjúntala.",
+  "Pedido especial": `Si tienes un diseño, una lista o una foto de referencia, mándala a ${site.correo}.`,
   "Paquete prepagado": "Te mandamos la propuesta del paquete en cuanto la revisemos.",
-  "Ya hice un pedido": "Si no lo pusiste en tu mensaje, responde con el número de tu pedido para encontrarlo más rápido.",
-  Factura: "Si no lo pusiste en tu mensaje, responde con el número de tu pedido y tu RFC.",
+  "Ya hice un pedido": `Si no lo pusiste en tu mensaje, escríbenos a ${site.correo} con el número de tu pedido para encontrarlo más rápido.`,
+  Factura: `Si no lo pusiste en tu mensaje, escríbenos a ${site.correo} con el número de tu pedido y tu RFC.`,
 };
 
 /**
@@ -35,7 +35,7 @@ function conCampana(url: string) {
 export function correoAcuse(opts: { nombre: string; motivo: MotivoContacto }) {
   const nombre = primerNombre(opts.nombre);
   const saludo = nombre ? `¡Hola, ${nombre}!` : "¡Hola!";
-  const cuerpo = `Gracias por escribirnos. Ya tenemos tu mensaje («${opts.motivo}») y te responderemos lo antes posible a este mismo correo.`;
+  const cuerpo = `Gracias por escribirnos. Ya tenemos tu mensaje («${opts.motivo}») y te responderemos lo antes posible al correo que nos dejaste.`;
   const extra = extraPorMotivo[opts.motivo];
   const mientras = "Mientras tanto, si quieres saber cuánto cuestan tus gafetes y credenciales, el cotizador en línea te da el precio al momento.";
   const cotizar = `${site.url}/cotizar`;
