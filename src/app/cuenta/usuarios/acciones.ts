@@ -61,9 +61,26 @@ export async function invitarUsuario(_: Resultado, d: FormData): Promise<Resulta
 
   const nombres = invitadas.map((i) => i.empresa).join(", ");
   const pendientes = fallas.length ? ` No se pudo en ${fallas.join(" ")}` : "";
+  const envio = await mandarCorreoInvitacion(supabase, usuario, correo, invitadas);
+  const aviso = `Mándale esta liga para que cree su cuenta o entre: ${envio.liga}`;
+  if (envio.estado === "apagado") return { ok: `Invitación guardada para ${correo} (${nombres}). ${aviso}${pendientes}` };
+  if (envio.estado === "fallo") {
+    return { ok: `Invitación guardada para ${correo}, pero no pudimos enviarle el correo. ${aviso}${pendientes}` };
+  }
+  return { ok: `Invitación enviada a ${correo} (${nombres}).${pendientes}` };
+}
+
+type Invitada = { id: string; empresa: string; rol: "administrador" | "editor" };
+
+/** Manda el correo de invitación con la liga a la pantalla de la primera invitación. */
+async function mandarCorreoInvitacion(
+  supabase: Awaited<ReturnType<typeof requerirEmpresa>>["supabase"],
+  usuario: { id: string; email?: string },
+  correo: string,
+  invitadas: Invitada[],
+): Promise<{ liga: string; estado: "enviado" | "apagado" | "fallo" }> {
   const liga = `${await origenSolicitud()}/invitacion/${invitadas[0].id}`;
-  const aviso = `Mándale esta liga para que cree su cuenta o entre: ${liga}`;
-  if (!correoActivo()) return { ok: `Invitación guardada para ${correo} (${nombres}). ${aviso}${pendientes}` };
+  if (!correoActivo()) return { liga, estado: "apagado" };
   const { data: perfil } = await supabase.from("perfiles").select("nombre").eq("id", usuario.id).maybeSingle();
   const mensaje = correoInvitacion({
     empresas: invitadas.map(({ empresa: nombre, rol }) => ({ nombre, rol })),
@@ -73,9 +90,34 @@ export async function invitarUsuario(_: Resultado, d: FormData): Promise<Resulta
   const envio = await enviarCorreo({ para: correo, ...mensaje });
   if (envio.error) {
     console.error("No se pudo enviar la invitación:", envio.error);
-    return { ok: `Invitación guardada para ${correo}, pero no pudimos enviarle el correo. ${aviso}${pendientes}` };
+    return { liga, estado: "fallo" };
   }
-  return { ok: `Invitación enviada a ${correo} (${nombres}).${pendientes}` };
+  return { liga, estado: "enviado" };
+}
+
+/** Vuelve a mandar el correo de una invitación pendiente de la empresa activa. */
+export async function reenviarInvitacion(_: Resultado, d: FormData): Promise<Resultado> {
+  const { supabase, usuario, empresa, administra } = await requerirEmpresa();
+  const invitacion = id(d);
+  if (!invitacion || !administra) return { error: "No tienes permiso para reenviar invitaciones." };
+  const { data: inv } = await supabase
+    .from("invitaciones")
+    .select("correo, rol, creado_en")
+    .eq("id", invitacion)
+    .eq("empresa_id", empresa.id)
+    .maybeSingle();
+  if (!inv) return { error: "Esa invitación ya no está pendiente." };
+  if (Date.now() - new Date(inv.creado_en).getTime() < 60_000) {
+    return { error: "Acabas de enviarla. Espera un minuto para reenviarla." };
+  }
+  const rol = inv.rol === "administrador" ? "administrador" : "editor";
+  // Renueva la fecha de envío; la invitación conserva su id y su liga.
+  const { data, error } = await supabase.rpc("invitar_usuario", { p_empresa: empresa.id, p_correo: inv.correo, p_rol: rol });
+  if (error || !data) return { error: error && CON_MENSAJE.includes(error.code) ? error.message : ERROR_GENERAL };
+  refrescar();
+  const envio = await mandarCorreoInvitacion(supabase, usuario, inv.correo, [{ id: data, empresa: empresa.nombre, rol }]);
+  if (envio.estado === "enviado") return { ok: "Reenviada." };
+  return { error: `No pudimos enviar el correo. Mándale esta liga: ${envio.liga}` };
 }
 
 export async function cancelarInvitacion(d: FormData) {
