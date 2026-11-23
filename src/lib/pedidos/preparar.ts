@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { camposDe } from "@/lib/cuenta/consultas";
 import { type AjusteQr, contenidoQr } from "@/lib/cuenta/qr";
 import { datosDePersona, disenoDeFila, faltantes } from "@/lib/diseno/datos";
+import { disenoPorReglas, type ReglaDiseno } from "@/lib/diseno/reglas";
 import type { Diseno } from "@/lib/diseno/tipos";
 import type { Database } from "@/lib/supabase/tipos";
 import { type GafeteCopiado, pedidoMaximoPiezas } from "./reglas";
@@ -14,6 +15,7 @@ import { type GafeteCopiado, pedidoMaximoPiezas } from "./reglas";
  */
 
 export const FUENTE_LISTOS = "listos";
+export const FUENTE_REGLAS = "reglas";
 
 type FilaDiseno = Pick<Database["public"]["Tables"]["disenos"]["Row"], "id" | "nombre" | "orientacion" | "frente" | "vuelta">;
 
@@ -28,20 +30,25 @@ export type PersonaDePedido = {
 
 export type FuenteDePedido = {
   id: string;
-  tipo: "diseno" | "listos";
+  tipo: "diseno" | "listos" | "reglas";
   nombre: string;
   /** Solo con un diseño. */
   fila?: FilaDiseno;
   diseno?: Diseno;
-  /** Por persona: lo que le falta a su gafete y la copia que se guardaría en el pedido. */
-  gafetes: Map<string, { faltan: string[]; copia: GafeteCopiado }>;
+  /**
+   * Por persona: lo que le falta a su gafete y la copia que se guardaría en el
+   * pedido. Con reglas, también el diseño que le toca.
+   */
+  gafetes: Map<string, { faltan: string[]; copia: GafeteCopiado; disenoId?: string }>;
+  /** Solo con reglas: los diseños que pueden tocar, por id. */
+  disenos?: Map<string, { fila: FilaDiseno; diseno: Diseno }>;
 };
 
 export async function prepararPedido(
   supabase: SupabaseClient<Database>,
   empresa: { id: string } & AjusteQr,
 ): Promise<{ personas: PersonaDePedido[]; fuentes: FuenteDePedido[]; etiquetas: Record<string, string> }> {
-  const [campos, { data: disenos }, { data: equipo }, { data: listos }] = await Promise.all([
+  const [campos, { data: disenos }, { data: equipo }, { data: listos }, { data: reglas }] = await Promise.all([
     camposDe(supabase, empresa.id),
     supabase
       .from("disenos")
@@ -57,6 +64,7 @@ export async function prepararPedido(
       .order("nombre")
       .limit(pedidoMaximoPiezas),
     supabase.from("gafetes_listos").select("*").eq("empresa_id", empresa.id),
+    supabase.from("reglas_diseno").select("id, campo, valor, diseno_id, orden").eq("empresa_id", empresa.id),
   ]);
   const activos = equipo ?? [];
 
@@ -73,6 +81,26 @@ export async function prepararPedido(
     }
     return { id: fila.id, tipo: "diseno", nombre: fila.nombre, fila, diseno, gafetes };
   });
+
+  // Con reglas, cada persona lleva el gafete del diseño que le toca. Va primero.
+  if (reglas?.length && fuentes.length) {
+    const porId = new Map(fuentes.map((f) => [f.id, f]));
+    const validas = (reglas as ReglaDiseno[]).filter((r) => porId.has(r.diseno_id));
+    if (validas.length) {
+      const gafetes: FuenteDePedido["gafetes"] = new Map();
+      const usados: NonNullable<FuenteDePedido["disenos"]> = new Map();
+      for (const p of activos) {
+        const valores = datosDePersona(p, campos);
+        const id = disenoPorReglas(valores, validas, fuentes[0].id) ?? fuentes[0].id;
+        const f = porId.get(id)!;
+        const g = f.gafetes.get(p.id);
+        if (!g) continue;
+        gafetes.set(p.id, { ...g, disenoId: id });
+        usados.set(id, { fila: f.fila!, diseno: f.diseno! });
+      }
+      fuentes.unshift({ id: FUENTE_REGLAS, tipo: "reglas", nombre: "Cada quien con su diseño", gafetes, disenos: usados });
+    }
+  }
 
   if (listos?.length) {
     const porPersona = new Map(listos.map((g) => [g.empleado_id, g]));
@@ -104,8 +132,17 @@ export async function prepararPedido(
   };
 }
 
-/** ¿El pedido va impreso por frente y vuelta? Con un diseño, si tiene vuelta; con gafetes listos, si alguno la trae. */
+/**
+ * ¿El pedido va impreso por frente y vuelta? Con un diseño, si tiene vuelta;
+ * con reglas o con gafetes listos, si alguno de los elegidos la lleva.
+ */
 export function llevaVuelta(fuente: FuenteDePedido, personas: string[]): boolean {
   if (fuente.tipo === "diseno") return Boolean(fuente.diseno?.vuelta);
+  if (fuente.tipo === "reglas") {
+    return personas.some((id) => {
+      const d = fuente.gafetes.get(id)?.disenoId;
+      return Boolean(d && fuente.disenos?.get(d)?.diseno.vuelta);
+    });
+  }
   return personas.some((id) => Boolean(fuente.gafetes.get(id)?.copia.vuelta));
 }

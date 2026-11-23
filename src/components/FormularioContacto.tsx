@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { type FormEvent, useEffect, useRef, useState } from "react";
+import { CampoTelefono, telefonoCompleto } from "@/components/CampoTelefono";
 import { limitesContacto, MOTIVO_IDEA, type MotivoContacto, motivosContacto } from "@/lib/contacto";
+import { PAIS_PREDETERMINADO } from "@/lib/paises";
 
 type Estado =
   | { tipo: "inactivo" | "enviando" }
@@ -21,6 +23,7 @@ export function FormularioContacto({ correoSitio, nombreSitio }: { correoSitio: 
   const [correo, setCorreo] = useState("");
   const [empresa, setEmpresa] = useState("");
   const [telefono, setTelefono] = useState("");
+  const [pais, setPais] = useState(PAIS_PREDETERMINADO);
   const [mensaje, setMensaje] = useState("");
   const [sitioWeb, setSitioWeb] = useState("");
   const [estado, setEstado] = useState<Estado>({ tipo: "inactivo" });
@@ -51,7 +54,15 @@ export function FormularioContacto({ correoSitio, nombreSitio }: { correoSitio: 
       const respuesta = await fetch("/api/contacto", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ motivo, nombre, correo, empresa, telefono, mensaje, sitioWeb }),
+        body: JSON.stringify({
+          motivo,
+          nombre,
+          correo,
+          empresa,
+          telefono: telefonoCompleto(pais, telefono),
+          mensaje,
+          sitioWeb,
+        }),
       });
       const datos = await respuesta.json().catch(() => ({}));
       setEstado(
@@ -158,19 +169,19 @@ export function FormularioContacto({ correoSitio, nombreSitio }: { correoSitio: 
             className={entrada}
           />
         </label>
-        <label className="block">
-          <span className="text-sm font-semibold">
+        <div>
+          <span id="etiqueta-telefono" className="text-sm font-semibold">
             Teléfono o WhatsApp <span className="font-normal text-gris">(opcional)</span>
           </span>
-          <input
-            type="tel"
-            maxLength={limitesContacto.telefono}
-            value={telefono}
-            onChange={(e) => setTelefono(e.target.value)}
-            autoComplete="tel"
-            className={entrada}
+          <CampoTelefono
+            etiquetaId="etiqueta-telefono"
+            numero={telefono}
+            onNumero={setTelefono}
+            pais={pais}
+            onPais={setPais}
+            maxLength={limitesContacto.telefono - 5}
           />
-        </label>
+        </div>
       </div>
 
       <label className="mt-4 block">

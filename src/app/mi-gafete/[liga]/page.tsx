@@ -2,17 +2,30 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { type CampoDeLiga, FormularioLiga } from "@/components/FormularioLiga";
+import { GafeteDigitalVista } from "@/components/GafeteDigitalVista";
 import { Contenedor } from "@/components/ui";
+import { gafeteDigitalDe } from "@/lib/cuenta/gafete-digital";
 import { personaDeLiga } from "@/lib/cuenta/liga-publica";
-import { datosPropuestos, valorDe } from "@/lib/cuenta/ligas";
+import { datosPropuestos, FORMATO_LIGA, RUTA_LIGA, valorDe } from "@/lib/cuenta/ligas";
 import { site } from "@/lib/site";
+import { verificarGafete } from "@/lib/verificacion";
 
-export const metadata: Metadata = {
-  title: "Mi gafete",
-  description: "Llena tus datos y sube tu foto para tu gafete.",
-  robots: { index: false, follow: false },
-  referrer: "no-referrer",
-};
+export async function generateMetadata({ params }: { params: Promise<{ liga: string }> }): Promise<Metadata> {
+  const { liga } = await params;
+  return {
+    title: "Mi gafete",
+    description: "Tu gafete de la empresa: tus datos, tu foto y tu gafete digital.",
+    robots: { index: false, follow: false },
+    referrer: "no-referrer",
+    // Para guardarlo en la pantalla de inicio del celular y abrirlo como una app.
+    ...(FORMATO_LIGA.test(liga)
+      ? {
+          manifest: `${RUTA_LIGA}/${liga}/manifest.webmanifest`,
+          appleWebApp: { capable: true, title: "Mi gafete", statusBarStyle: "default" as const },
+        }
+      : {}),
+  };
+}
 
 // Cada visita lee la base de datos: lo que la persona mandó puede cambiar en cualquier momento.
 export const dynamic = "force-dynamic";
@@ -40,6 +53,9 @@ export default async function MiGafete({ params }: { params: Promise<{ liga: str
       : undefined;
   const primerNombre = persona.nombre.trim().split(/\s+/)[0];
   const nadaQuePedir = !lista.length && !empresa.liga_foto;
+  // Si ya tiene su gafete digital activo, la liga lo muestra primero.
+  const digital = await gafeteDigitalDe(servicio, persona);
+  const verificado = digital?.verificable ? await verificarGafete(persona.codigo) : null;
 
   const aviso =
     propuesta?.estado === "pendiente"
@@ -67,21 +83,49 @@ export default async function MiGafete({ params }: { params: Promise<{ liga: str
       <div className="mx-auto max-w-md">
         <p className="text-sm font-semibold text-gris">{empresa.nombre}</p>
         <h1 className="mt-1 text-3xl font-extrabold">Hola, {primerNombre}</h1>
-        <p className="mt-2 text-gris">
-          {empresa.nombre} está preparando tu gafete.{" "}
-          {nadaQuePedir
-            ? "Por ahora no necesita nada de ti."
-            : `${lista.length ? "Revisa que tus datos estén bien escritos" : "Sube tu foto"}${lista.length && empresa.liga_foto ? " y sube tu foto" : ""}. Toma un minuto.`}
-        </p>
+        {digital ? (
+          <>
+            <p className="mt-2 text-gris">Este es tu gafete digital. Muéstralo cuando te lo pidan.</p>
+            <div className="mt-5">
+              <GafeteDigitalVista gafete={digital} estado={verificado?.estado ?? null} />
+            </div>
+            <details className="mt-5 rounded-tarjeta border border-linea bg-white p-5 text-sm">
+              <summary className="cursor-pointer font-semibold">Guárdalo en tu pantalla de inicio</summary>
+              <ul className="mt-3 list-disc space-y-2 pl-5 text-gris">
+                <li>
+                  <strong className="text-tinta">iPhone (Safari):</strong> toca Compartir y luego «Agregar a inicio».
+                </li>
+                <li>
+                  <strong className="text-tinta">Android (Chrome):</strong> toca el menú ⋮ y luego «Agregar a la pantalla principal».
+                </li>
+              </ul>
+              <p className="mt-3 text-gris">Así lo abres con un toque, como una app. Si cambian tus datos, tu gafete se actualiza solo.</p>
+            </details>
+          </>
+        ) : (
+          <p className="mt-2 text-gris">
+            {empresa.nombre} está preparando tu gafete.{" "}
+            {nadaQuePedir
+              ? "Por ahora no necesita nada de ti."
+              : `${lista.length ? "Revisa que tus datos estén bien escritos" : "Sube tu foto"}${lista.length && empresa.liga_foto ? " y sube tu foto" : ""}. Toma un minuto.`}
+          </p>
+        )}
 
-        {aviso ? (
+        {aviso && !(digital && propuesta?.estado === "aprobada") ? (
           <div role="status" className={`mt-5 rounded-tarjeta border p-4 ${aviso.clase}`}>
             <p className="font-titulos text-lg font-extrabold">{aviso.titulo}</p>
             <p className="mt-1 text-sm">{aviso.texto}</p>
           </div>
         ) : null}
 
-        {nadaQuePedir ? null : (
+        {nadaQuePedir ? null : digital ? (
+          <details className="mt-5 rounded-tarjeta border border-linea bg-white p-5 sm:p-6" open={propuesta?.estado === "rechazada"}>
+            <summary className="cursor-pointer text-sm font-semibold">¿Cambió algún dato? Mándale una corrección a {empresa.nombre}</summary>
+            <div className="mt-4">
+              <FormularioLiga liga={liga} campos={lista} conFoto={empresa.liga_foto} fotoActual={fotoActual} boton={`Enviar a ${empresa.nombre}`} />
+            </div>
+          </details>
+        ) : (
           <div className="mt-5 rounded-tarjeta border border-linea bg-white p-5 sm:p-6">
             <FormularioLiga
               liga={liga}

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Bloque, Entrada } from "@/components/cuenta/Entrada";
-import { Formulario, claseBotonSecundario, claseEntrada } from "@/components/cuenta/Formulario";
+import { Formulario } from "@/components/cuenta/Formulario";
+import { claseBotonSecundario, claseEntrada } from "@/components/cuenta/clases";
 import { AccionesLiga, BotonConfirmado } from "@/components/cuenta/Ligas";
 import { correoActivo } from "@/lib/correo";
 import { constanciaDe, puedePedir } from "@/lib/cuenta/constancia";
@@ -266,8 +267,8 @@ export default async function Ligas({ searchParams }: { searchParams: Promise<{ 
                           "El envío por correo todavía no está activo. Mientras, copia las ligas o mándalas por WhatsApp."
                         ) : (
                           <>
-                            Para mandar correos desde la plataforma necesitas tu constancia aprobada.{" "}
-                            <Link href="/cuenta/constancia" className="font-semibold underline">Ver mi constancia</Link>.
+                            Para mandar correos desde la plataforma necesitas tu empresa verificada.{" "}
+                            <Link href="/cuenta/verificacion" className="font-semibold underline">Verificar mi empresa</Link>.
                             Mientras, copia las ligas o mándalas por WhatsApp.
                           </>
                         )}

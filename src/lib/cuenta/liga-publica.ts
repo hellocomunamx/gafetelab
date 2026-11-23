@@ -12,7 +12,7 @@ export async function personaDeLiga(liga: string) {
   if (!servicio) return null;
   const { data: persona } = await servicio
     .from("empleados")
-    .select("id, empresa_id, nombre, numero_empleado, puesto, departamento, tipo_contrato, datos, foto_path, estatus")
+    .select("id, empresa_id, codigo, nombre, numero_empleado, puesto, departamento, tipo_contrato, datos, foto_path, estatus")
     .eq("liga", liga)
     .maybeSingle();
   if (!persona || persona.estatus === "baja") return null;

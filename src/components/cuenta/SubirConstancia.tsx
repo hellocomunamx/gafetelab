@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { type ChangeEvent, type FormEvent, useState } from "react";
 import { guardarConstancia } from "@/app/cuenta/acciones";
-import { guardarFiscalesDeConstancia } from "@/app/cuenta/constancia/acciones";
+import { guardarFiscalesDeConstancia } from "@/app/cuenta/verificacion/acciones";
+import { CartaResponsabilidad } from "@/components/cuenta/CartaResponsabilidad";
 import { claseBoton, claseEntrada } from "@/components/cuenta/Formulario";
 import { regimenesFiscales } from "@/lib/cuenta/catalogos";
 import { PESO_MAXIMO_CONSTANCIA, rutaConstancia, TIPOS_CONSTANCIA, type TipoConstancia } from "@/lib/cuenta/constancia";
@@ -43,6 +44,7 @@ export function SubirConstancia({
   const [regimen, setRegimen] = useState("");
   const [cp, setCp] = useState("");
   const [paraFacturar, setParaFacturar] = useState(true);
+  const [cartaAceptada, setCartaAceptada] = useState(false);
 
   async function alElegir(evento: ChangeEvent<HTMLInputElement>) {
     const archivo = evento.target.files?.[0];
@@ -73,6 +75,7 @@ export function SubirConstancia({
     if (fecha < desde) {
       return setError(`Tu constancia tiene más de ${meses} meses. Descarga una nueva en el portal del SAT y súbela.`);
     }
+    if (!cartaAceptada) return setError("Acepta la carta de responsabilidad.");
     const conFiscales = lectura === "leida" && paraFacturar;
     const fiscales = { rfc: rfc.toUpperCase().replace(/[\s-]/g, ""), razonSocial: razonSocial.trim(), regimen, cp: cp.trim() };
     if (conFiscales) {
@@ -88,11 +91,11 @@ export function SubirConstancia({
         .storage.from("constancias")
         .upload(ruta, archivo, { contentType: archivo.type });
       if (falla) throw new Error("No pudimos subir el archivo. Intenta de nuevo.");
-      const resultado = await guardarConstancia({ ruta, fecha });
+      const resultado = await guardarConstancia({ ruta, fecha, carta: true });
       if (resultado.error) throw new Error(resultado.error);
       // La constancia ya quedó; si los datos de facturación no se guardan, se capturan después.
       if (conFiscales) await guardarFiscalesDeConstancia(fiscales).catch(() => null);
-      router.push("/cuenta/constancia");
+      router.push("/cuenta/verificacion");
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "No pudimos subir el archivo. Intenta de nuevo.");
@@ -188,6 +191,7 @@ export function SubirConstancia({
           className={claseEntrada}
         />
       </label>
+      <CartaResponsabilidad aceptada={cartaAceptada} alCambiar={setCartaAceptada} deshabilitada={subiendo} />
       {error ? <p role="alert" className="rounded-tarjeta-chica bg-rojo/10 p-3 text-sm font-medium text-rojo-oscuro">{error}</p> : null}
       <button type="submit" disabled={subiendo || lectura === "leyendo"} className={claseBoton}>
         {subiendo ? "Subiendo…" : lectura === "leida" ? "Confirmar y subir constancia" : boton}

@@ -1,6 +1,6 @@
 import { centavos, stripe } from "@/lib/stripe";
 import type { MetodoPago } from "./reglas";
-import { anotar, avisarDisputa, marcarAutorizado, marcarPagado, type Pedido, type Servicio, soltarAutorizacion } from "./servidor";
+import { anotar, anularSaldos, avisarDisputa, marcarAutorizado, marcarPagado, type Pedido, type Servicio, soltarAutorizacion } from "./servidor";
 
 /**
  * Qué hace cada aviso (webhook) de Stripe con su pedido. El aviso ya llegó con
@@ -152,8 +152,11 @@ export async function procesarAviso(servicio: Servicio, aviso: AvisoStripe): Pro
       if (total) {
         const { error } = await servicio.from("pedidos").update({ estado: "reembolsado" }).eq("id", pedido.id);
         if (error) throw new Error(error.message);
+        if (pedido.tipo === "prepago") await anularSaldos(servicio, pedido.id);
         // Lo que no se alcanzó a entregar deja de contar como gafete emitido.
         await servicio.from("gafetes").update({ estado: "cancelado" }).eq("pedido_id", pedido.id).in("estado", ["en_pedido", "en_produccion"]);
+        // Los gafetes digitales que ya estaban en el celular dejan de mostrarse.
+        await servicio.from("gafetes").update({ estado: "desactivado" }).eq("pedido_id", pedido.id).eq("tipo", "digital").eq("estado", "activo");
       }
       await anotar(servicio, pedido.id, total ? "reembolsado" : "reembolso_parcial", { devuelto: Number(o.amount_refunded) || 0 });
       return total ? "reembolsado" : "reembolso_parcial";

@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
+import { etiquetaMotivo } from "@/lib/pedidos/predeterminados";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Confirmar } from "@/components/cuenta/Confirmar";
 import { Bloque } from "@/components/cuenta/Entrada";
 import { EstadoPedido } from "@/components/cuenta/EstadoPedido";
-import { claseBoton, claseBotonSecundario, claseEntrada } from "@/components/cuenta/Formulario";
+import { claseBoton, claseBotonSecundario, claseEntrada } from "@/components/cuenta/clases";
 import { FacturaAdmin } from "@/components/admin/FacturaAdmin";
 import { RUTA_ADMIN } from "@/lib/admin/ruta";
 import { requerirAdmin } from "@/lib/admin/sesion";
+import { nombreMetodo } from "@/lib/cuenta/constancia";
 import { eventosFactura } from "@/lib/facturas";
 import { materialPara } from "@/lib/materiales";
 import {
@@ -21,8 +23,8 @@ import {
   requiereRevision,
   sigueEnGracia,
 } from "@/lib/pedidos/reglas";
-import { aprobacionDe, cobrarAutorizados } from "@/lib/pedidos/servidor";
-import { pesos } from "@/lib/precios";
+import { aprobacionDe, cobrarAutorizados, articulosDe, conceptosDe } from "@/lib/pedidos/servidor";
+import { type Modalidad, nombreModalidad, pesos } from "@/lib/precios";
 import { cancelarPedidoAdmin, entregarPedido, enviarPedido, guardarNotas, producirPedido, revisarPedido } from "../acciones";
 
 export const metadata: Metadata = { title: "Pedido" };
@@ -51,6 +53,9 @@ const EVENTOS: Record<string, string> = {
   reembolso_parcial: "Se devolvió una parte del pago",
   disputa_abierta: "El banco abrió una disputa",
   disputa_cerrada: "Se cerró la disputa",
+  saldo_creado: "Los gafetes de la compra quedaron en el saldo de la empresa",
+  saldo_liberado: "El saldo que usaba el pedido regresó a la empresa",
+  digitales_activos: "Se activaron los gafetes digitales",
 };
 const PAGADOS = ["pagado", "en_produccion", "enviado", "entregado"];
 
@@ -63,19 +68,32 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
 
   const { data: pedido } = await servicio.from("pedidos").select("*").eq("id", id).maybeSingle();
   if (!pedido) notFound();
-  const [{ data: empresa }, { data: gafetes }, { data: eventos }] = await Promise.all([
+  const [{ data: empresa }, { data: gafetes }, { data: eventos }, { data: verificada }] = await Promise.all([
     servicio.from("empresas").select("id, nombre").eq("id", pedido.empresa_id).maybeSingle(),
-    servicio.from("gafetes").select("id, motivo, datos").eq("pedido_id", id).limit(5000),
+    servicio.from("gafetes").select("id, tipo, motivo, razon, datos").eq("pedido_id", id).limit(5000),
     servicio.from("pedido_eventos").select("id, tipo, detalle, creado_en").eq("pedido_id", id).order("creado_en").limit(500),
+    servicio
+      .from("constancias")
+      .select("metodo, negocio, estado")
+      .eq("empresa_id", pedido.empresa_id)
+      .order("creado_en", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   const aprobacion = aprobacionDe(pedido);
   const direccion = pedido.direccion as DireccionCopiada | null;
   const facturacion = pedido.facturacion as FacturacionCopiada | null;
   const material = pedido.material ? materialPara(pedido.material) : null;
+  const soloDigital = pedido.modalidad === "digital";
+  // Una fila por persona: con impreso + digital, cada persona tiene dos gafetes en el pedido.
   const personas = (gafetes ?? [])
-    .map((g) => ({ id: g.id, motivo: g.motivo, ...(g.datos as unknown as GafeteCopiado) }))
+    .filter((g) => g.tipo === (soloDigital ? "digital" : "impreso"))
+    .map((g) => ({ id: g.id, motivo: g.motivo, razon: g.razon, ...(g.datos as unknown as GafeteCopiado) }))
     .sort((a, b) => (a.nombre ?? "").localeCompare(b.nombre ?? "", "es"));
+  const prepago = pedido.tipo === "prepago";
+  const conceptos = conceptosDe(pedido);
+  const articulos = articulosDe(pedido);
   const faltaRevisar = requiereRevision(pedido) && !pedido.revisado_en;
   const pagado = PAGADOS.includes(pedido.estado);
   const sinCobrar = ["por_pagar", "pago_en_proceso", "autorizado"].includes(pedido.estado);
@@ -87,7 +105,9 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
         <Link href={`${RUTA_ADMIN}/pedidos`} className="underline">Pedidos</Link> / {pedido.folio}
       </p>
       <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-3xl font-extrabold">Pedido {pedido.folio}</h1>
+        <h1 className="text-3xl font-extrabold">
+          {prepago ? "Compra prepagada" : "Pedido"} {pedido.folio}
+        </h1>
         <EstadoPedido valor={pedido.estado} />
       </div>
       <p className="text-gris">
@@ -98,7 +118,8 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
         ) : (
           "Empresa"
         )}{" "}
-        · {pedido.piezas.toLocaleString("es-MX")} {pedido.piezas === 1 ? "gafete" : "gafetes"} ·{" "}
+        · {pedido.piezas.toLocaleString("es-MX")} {pedido.piezas === 1 ? "gafete" : "gafetes"}
+        {prepago ? "" : ` · ${nombreModalidad(pedido.modalidad as Modalidad)}`} ·{" "}
         {pesos(Number(pedido.total))} con IVA
       </p>
 
@@ -116,8 +137,9 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
       ) : null}
       {pedido.primer_pedido && pagado ? (
         <p className="rounded-tarjeta bg-resaltador/30 p-4 text-sm">
-          <strong>Es el primer pedido de esta empresa.</strong> Revisa que los gafetes correspondan a la empresa de su constancia antes de
-          producir.
+          <strong>Es el primer pedido de esta empresa.</strong> Revisa que los gafetes correspondan a la empresa que verificó
+          {verificada ? ` (${nombreMetodo(verificada.metodo).toLowerCase()}${verificada.negocio ? `: «${verificada.negocio}»` : ""})` : ""} antes
+          de producir.
         </p>
       ) : null}
 
@@ -136,23 +158,35 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
               : "Ya pasaron los minutos de gracia y el cargo no se ha podido hacer. Vuelve a cargar la página; si sigue igual, revisa el pago en Stripe."}
           </p>
         ) : null}
-        {pedido.estado === "pagado" ? (
+        {prepago && pedido.estado === "pagado" ? (
+          <p className="text-sm">
+            Compra del carrito pagada: sus gafetes y envíos ya están en el saldo de la empresa. No hay nada que producir; se imprimen
+            cuando la empresa haga un pedido con su equipo y su diseño.
+          </p>
+        ) : pedido.estado === "pagado" ? (
           <div className="flex flex-wrap items-center gap-3">
             {faltaRevisar ? (
               <form action={revisarPedido}>
                 {oculto}
-                <button type="submit" className={claseBoton}>Ya lo revisé, se puede producir</button>
+                <button type="submit" className={claseBoton}>
+                  {soloDigital ? "Ya lo revisé, activar los gafetes digitales" : "Ya lo revisé, se puede producir"}
+                </button>
               </form>
-            ) : pedido.disputa === "abierta" ? null : (
+            ) : pedido.disputa === "abierta" || soloDigital ? null : (
               <form action={producirPedido}>
                 {oculto}
                 <button type="submit" className={claseBoton}>Pasar a producción</button>
               </form>
             )}
-            <Link href={`${RUTA_ADMIN}/imprimir/${pedido.empresa_id}?pedido=${pedido.id}`} className={claseBotonSecundario}>
-              PDF de impresión
-            </Link>
+            {soloDigital ? null : (
+              <Link href={`${RUTA_ADMIN}/imprimir/${pedido.empresa_id}?pedido=${pedido.id}`} className={claseBotonSecundario}>
+                PDF de impresión
+              </Link>
+            )}
           </div>
+        ) : null}
+        {pedido.estado === "pagado" && pedido.modalidad === "ambos" && faltaRevisar ? (
+          <p className="mt-3 text-sm text-gris">Al marcarlo como revisado también se activan sus gafetes digitales.</p>
         ) : null}
         {pedido.estado === "en_produccion" ? (
           <div className="space-y-4">
@@ -185,7 +219,9 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
             </form>
           </div>
         ) : null}
-        {pedido.estado === "entregado" ? <p className="text-sm">Pedido entregado. No queda nada por hacer.</p> : null}
+        {pedido.estado === "entregado" ? (
+          <p className="text-sm">{soloDigital ? "Gafetes digitales activos. No queda nada por hacer." : "Pedido entregado. No queda nada por hacer."}</p>
+        ) : null}
         {pedido.estado === "cancelado" ? <p className="text-sm">Pedido cancelado, sin cobro.</p> : null}
         {pedido.estado === "reembolsado" ? <p className="text-sm">Se devolvió el pago completo desde Stripe.</p> : null}
 
@@ -207,21 +243,49 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
       <div className="grid gap-5 lg:grid-cols-2">
         <Bloque titulo="Pedido">
           <dl className="space-y-2 text-sm">
-            <div className="flex justify-between gap-3">
-              <dt>
-                {pedido.piezas.toLocaleString("es-MX")} × {pesos(Number(pedido.por_pieza))}
-                <span className="block text-gris">
-                  {pedido.dos_caras ? "Frente y vuelta" : "Una cara"}
+            {prepago ? (
+              articulos.map((a, i) => (
+                <div key={i} className="flex justify-between gap-3">
+                  <dt>
+                    {a.nombre}
+                    {a.detalle.map((d) => (
+                      <span key={d} className="block text-gris">{d}</span>
+                    ))}
+                  </dt>
+                  <dd className="font-semibold">{pesos(a.subtotal)}</dd>
+                </div>
+              ))
+            ) : (
+              <>
+                {(conceptos ?? [{ nombre: "Gafetes impresos", cantidad: pedido.piezas, precio: Number(pedido.por_pieza) }]).map((x) => (
+                  <div key={x.nombre} className="flex justify-between gap-3">
+                    <dt>
+                      {x.nombre}
+                      <span className="block text-gris">
+                        {x.cantidad.toLocaleString("es-MX")} × {x.precio ? pesos(x.precio) : "del saldo prepagado"}
+                      </span>
+                    </dt>
+                    <dd className="font-semibold">{pesos(x.cantidad * x.precio)}</dd>
+                  </div>
+                ))}
+                <p className="text-gris">
+                  {soloDigital ? "Solo digital" : pedido.dos_caras ? "Frente y vuelta" : "Una cara"}
                   {material ? `, ${material.nombre}` : ""}
                   {pedido.fuente === "listos" ? ", gafetes que la empresa subió ya terminados" : ""}
-                </span>
-              </dt>
-              <dd className="font-semibold">{pesos(Number(pedido.subtotal))}</dd>
-            </div>
-            <div className="flex justify-between gap-3">
-              <dt>Envío</dt>
-              <dd>{Number(pedido.envio) ? pesos(Number(pedido.envio)) : "Gratis"}</dd>
-            </div>
+                  {(pedido.diseno as { reglas?: Record<string, { nombre: string }> } | null)?.reglas
+                    ? `, diseños por reglas (${Object.values((pedido.diseno as { reglas: Record<string, { nombre: string }> }).reglas)
+                        .map((d) => d.nombre)
+                        .join(", ")})`
+                    : ""}
+                </p>
+              </>
+            )}
+            {soloDigital ? null : (
+              <div className="flex justify-between gap-3">
+                <dt>Envío</dt>
+                <dd>{Number(pedido.envio) ? pesos(Number(pedido.envio)) : pedido.envio_de_saldo ? "Del saldo prepagado" : prepago ? "Incluido arriba" : "Gratis"}</dd>
+              </div>
+            )}
             <div className="flex justify-between gap-3">
               <dt>IVA</dt>
               <dd>{pesos(Number(pedido.iva))}</dd>
@@ -290,8 +354,10 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
           </div>
         </dl>
         <p className="mt-3 text-sm text-gris">
-          La empresa marcó la casilla «Revisé la vista previa de mis gafetes y credenciales, los datos son correctos y apruebo que se
-          impriman tal como se ven». Su constancia fiscal aprobada y la guía de envío completan la evidencia.
+          {prepago
+            ? "Compra hecha desde el carrito con una cuenta que aceptó los términos vigentes. No lleva vista previa: los gafetes se aprueban al pedirlos."
+            : null}
+          {prepago ? null : "La empresa marcó la casilla «Revisé la vista previa de mis gafetes y credenciales, los datos son correctos y apruebo que se impriman tal como se ven». Su verificación aprobada, la carta de responsabilidad que aceptó y la guía de envío completan la evidencia."}
         </p>
       </Bloque>
 
@@ -320,18 +386,20 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
         </Bloque>
       </div>
 
+      {personas.length ? (
       <Bloque titulo={`${personas.length === 1 ? "1 gafete" : `${personas.length.toLocaleString("es-MX")} gafetes`}`}>
         <ul className="max-h-80 divide-y divide-linea overflow-y-auto text-sm">
           {personas.map((p) => (
             <li key={p.id} className="flex flex-wrap items-baseline justify-between gap-x-3 py-2">
               <span className="font-semibold">{p.nombre}</span>
               <span className="text-gris">
-                {[p.numero, p.valores?.puesto, p.motivo === "reposicion" ? "Reposición" : null].filter(Boolean).join(" · ")}
+                {[p.numero, p.valores?.puesto, etiquetaMotivo(p.motivo, p.razon)].filter(Boolean).join(" · ")}
               </span>
             </li>
           ))}
         </ul>
       </Bloque>
+      ) : null}
     </div>
   );
 }

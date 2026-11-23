@@ -1,5 +1,5 @@
 import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react";
-import { claseEntrada } from "./Formulario";
+import { claseEntrada } from "./clases";
 
 /** Etiqueta con su campo de texto. */
 export function Entrada({
@@ -64,5 +64,39 @@ export function Estatus({ valor }: { valor: string }) {
     <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${COLORES[valor] ?? COLORES.baja}`}>
       {nombre}
     </span>
+  );
+}
+
+/**
+ * Grupo de opciones que se ven como chips (Gloria las prefiere a un menú
+ * desplegable). Son radios de verdad, así que funcionan dentro de cualquier
+ * formulario y con el teclado.
+ */
+export function Chips({
+  etiqueta,
+  name,
+  opciones,
+  inicial,
+}: {
+  etiqueta: string;
+  name: string;
+  opciones: { valor: string; texto: string; detalle?: string }[];
+  inicial?: string;
+}) {
+  return (
+    <fieldset>
+      <legend className="text-sm font-semibold">{etiqueta}</legend>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {opciones.map((o) => (
+          <label key={o.valor} className="cursor-pointer">
+            <input type="radio" name={name} value={o.valor} defaultChecked={o.valor === inicial} className="peer sr-only" />
+            <span className="inline-block rounded-full border border-linea bg-white px-3.5 py-1.5 text-sm font-semibold transition-colors peer-checked:border-tinta peer-checked:bg-tinta peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-rojo hover:border-tinta">
+              {o.texto}
+              {o.detalle ? <span className="ml-1 font-normal opacity-75">{o.detalle}</span> : null}
+            </span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
   );
 }

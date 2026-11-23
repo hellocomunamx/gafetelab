@@ -5,6 +5,8 @@ import { Bloque } from "@/components/cuenta/Entrada";
 import { constanciaDe } from "@/lib/cuenta/constancia";
 import { camposDe } from "@/lib/cuenta/consultas";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
+import { pedidoAbiertoDe } from "@/lib/pedidos/abierto";
+import { leerPredeterminados } from "@/lib/pedidos/predeterminados";
 import { claveDe } from "@/lib/cuenta/texto";
 
 export default async function Resumen() {
@@ -26,12 +28,16 @@ export default async function Resumen() {
     supabase.from("disenos").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).then((r) => r.count ?? 0),
   ]);
 
+  const { data: ajustes } = await supabase.from("empresas").select("predeterminados").eq("id", empresa.id).maybeSingle();
+  const { aviso } = leerPredeterminados(ajustes?.predeterminados);
+  const abierto = aviso.cantidad ? (await pedidoAbiertoDe(supabase, empresa.id, aviso)).length : 0;
+
   const pasos = [
     {
       hecho: constancia?.estado === "aprobada",
-      texto: constancia?.estado === "pendiente" ? "Tu Constancia de Situación Fiscal está en revisión" : "Sube la Constancia de Situación Fiscal de tu empresa",
-      href: "/cuenta/constancia",
-      accion: constancia?.estado === "pendiente" ? "Ver" : constancia ? "Subir una nueva" : "Subir constancia",
+      texto: constancia?.estado === "pendiente" ? "La verificación de tu empresa está en revisión" : "Verifica tu empresa",
+      href: "/cuenta/verificacion",
+      accion: constancia?.estado === "pendiente" ? "Ver" : constancia ? "Intentar de nuevo" : "Verificar",
     },
     { hecho: activos + bajas > 0, texto: "Sube a tu equipo", href: "/cuenta/equipo/importar", accion: "Importar con Excel" },
     { hecho: activos > 0 && sinFoto === 0, texto: "Sube las fotos", href: "/cuenta/equipo/fotos", accion: "Subir fotos" },
@@ -48,16 +54,25 @@ export default async function Resumen() {
           <p>
             <strong>
               {constancia
-                ? "No pudimos aceptar tu Constancia de Situación Fiscal."
-                : "Falta la Constancia de Situación Fiscal de tu empresa."}
+                ? "No pudimos aceptar la verificación de tu empresa."
+                : "Falta verificar tu empresa."}
             </strong>{" "}
-            {constancia ? (constancia.motivo ?? "") : "La necesitas antes de tu primer pedido."}{" "}
-            <Link href="/cuenta/constancia" className="font-semibold underline underline-offset-4">
-              {constancia ? "Subir una nueva" : "Subirla ahora"}
+            {constancia ? (constancia.motivo ?? "") : "Lo necesitas antes de tu primer pedido. Con RFC o sin RFC: tú eliges cómo."}{" "}
+            <Link href="/cuenta/verificacion" className="font-semibold underline underline-offset-4">
+              {constancia ? "Intentar de nuevo" : "Verificarla ahora"}
             </Link>
           </p>
           <PorQueConstancia className="mt-2" />
         </div>
+      ) : null}
+      {aviso.cantidad && abierto >= aviso.cantidad ? (
+        <p className="rounded-tarjeta bg-resaltador/30 p-4 text-sm">
+          <strong>Tu pedido abierto ya tiene {abierto.toLocaleString("es-MX")} gafetes y credenciales.</strong> Llegaste a la
+          cantidad que elegiste.{" "}
+          <Link href="/cuenta/pedidos/abierto" className="font-semibold underline underline-offset-4">
+            Revisarlo y pedir
+          </Link>
+        </p>
       ) : null}
       <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[

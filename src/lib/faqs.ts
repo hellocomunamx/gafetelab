@@ -89,7 +89,12 @@ export const faqsGenerales: Faq[] = [
   },
   {
     pregunta: "¿Qué necesito para abrir la cuenta de mi empresa?",
-    respuesta: `Tu correo y la ${constancia.nombre} de tu empresa, con no más de ${site.constanciaMeses} meses de antigüedad. ${constancia.motivo} La descargas gratis en el portal del SAT y la subes una sola vez.`,
+    respuesta: `Tu correo y verificar tu empresa antes del primer pedido. Tú eliges cómo: con la ${constancia.nombre} (de no más de ${site.constanciaMeses} meses), con tu INE y una prueba de tu negocio (la liga a tus redes o a Google Maps, o una foto de tu local), o con un correo con el dominio de tu empresa. En todos los casos aceptas una carta de responsabilidad y lo revisamos a mano. Así nadie puede mandar a hacer gafetes con el nombre o el logo de tu empresa. Se hace una sola vez.`,
+  },
+  {
+    pregunta: "¿Puedo pedir gafetes si no tengo RFC?",
+    respuesta:
+      "Sí. Muchos negocios trabajan sin RFC y también son bienvenidos. Verificas tu negocio con tu INE y una prueba de que el negocio es tuyo: la liga a su Facebook, Instagram o Google Maps, o una foto del local, la fachada, el menú o el uniforme donde se vea el mismo nombre que llevarán los gafetes. Lo revisamos a mano, normalmente en menos de un día hábil. Eso sí, sin RFC no podemos emitir una factura a tu nombre.",
   },
   {
     pregunta: "¿Qué puedo hacer en mi cuenta?",
@@ -158,7 +163,7 @@ export const faqsGenerales: Faq[] = [
   {
     pregunta: "¿Qué gafetes o credenciales no hacen?",
     respuesta:
-      "No hacemos identificaciones oficiales ni documentos de gobierno, y tampoco gafetes o credenciales de una empresa distinta a la que hace el pedido. Solo producimos identificaciones internas de tu propia organización, y por eso te pedimos la Constancia de Situación Fiscal de tu empresa al abrir tu cuenta: su razón social debe coincidir con la de los gafetes.",
+      "No hacemos identificaciones oficiales ni documentos de gobierno, y tampoco gafetes o credenciales de una empresa distinta a la que hace el pedido. Solo producimos identificaciones internas de tu propia organización, y por eso verificamos tu empresa antes del primer pedido (con tu constancia fiscal, tu INE y una prueba de tu negocio, o un correo de tu empresa): el nombre debe coincidir con el de los gafetes.",
   },
   {
     pregunta: "¿Qué pasa con los datos y las fotos de mis empleados?",

@@ -155,7 +155,6 @@ export const funcionesPlataforma: { grupo: string; resumen: string; funciones: F
       {
         titulo: "Diseños por reglas",
         texto: "Un diseño distinto según el puesto, el departamento, la sucursal o el tipo de contrato.",
-        pronto: true,
       },
     ],
   },
@@ -170,17 +169,14 @@ export const funcionesPlataforma: { grupo: string; resumen: string; funciones: F
       {
         titulo: "Reposiciones",
         texto: "Vuelve a pedir un gafete perdido o dañado sin capturar otra vez sus datos.",
-        pronto: true,
       },
       {
         titulo: "Predeterminados de tu negocio",
         texto: "Tu material, tu diseño y tu dirección de entrega ya vienen elegidos en cada pedido nuevo.",
-        pronto: true,
       },
       {
         titulo: "Pedido abierto con aviso",
         texto: "Ve sumando altas y reposiciones, y te avisamos cuando llegues a la cantidad que tú elijas.",
-        pronto: true,
       },
     ],
   },

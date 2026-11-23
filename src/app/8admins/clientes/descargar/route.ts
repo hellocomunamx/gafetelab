@@ -22,7 +22,7 @@ export async function GET() {
         "Razón social",
         "Ciudad",
         "Alta",
-        "Constancia",
+        "Verificación",
         "Usuarios",
         "Personas activas",
         "Pedidos",

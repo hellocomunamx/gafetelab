@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { RUTA_ADMIN } from "@/lib/admin/ruta";
 import { requerirAdmin } from "@/lib/admin/sesion";
 import { requiereRevision } from "@/lib/pedidos/reglas";
-import { anotar, avisarEnvio, cancelarAutorizado, cerrarCobro, type Pedido, type Servicio } from "@/lib/pedidos/servidor";
+import { activarDigitales, anotar, avisarEnvio, cancelarAutorizado, cerrarCobro, liberarSaldo, type Pedido, type Servicio } from "@/lib/pedidos/servidor";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -33,7 +33,8 @@ async function mover(
 ) {
   const { data: movido } = await x.servicio.from("pedidos").update(cambios).eq("id", x.pedido.id).eq("estado", de).select("*");
   if (!movido?.length) return null;
-  await x.servicio.from("gafetes").update({ estado: gafetes }).eq("pedido_id", x.pedido.id).neq("estado", "cancelado");
+  // Solo los impresos siguen a producción y envío; los digitales se activan al pagarse.
+  await x.servicio.from("gafetes").update({ estado: gafetes }).eq("pedido_id", x.pedido.id).eq("tipo", "impreso").neq("estado", "cancelado");
   await anotar(x.servicio, x.pedido.id, evento, {}, x.usuario);
   return movido[0];
 }
@@ -44,13 +45,18 @@ export async function revisarPedido(d: FormData) {
   if (!x || x.pedido.revisado_en) return;
   await x.servicio.from("pedidos").update({ revisado_en: new Date().toISOString(), revisado_por: x.usuario }).eq("id", x.pedido.id);
   await anotar(x.servicio, x.pedido.id, "revisado", {}, x.usuario);
+  // Si ya estaba pagado, sus gafetes digitales se activan en este momento.
+  if (x.pedido.pagado_en && !["cancelado", "reembolsado"].includes(x.pedido.estado)) {
+    await activarDigitales(x.servicio, { ...x.pedido, revisado_en: new Date().toISOString() });
+  }
   refrescar(x.pedido.id);
 }
 
 /** Pasa a producción. Solo con el pago confirmado, sin disputa abierta y, si hacía falta, ya revisado. */
 export async function producirPedido(d: FormData) {
   const x = await abrir(d);
-  if (!x || x.pedido.estado !== "pagado" || x.pedido.disputa === "abierta") return;
+  // Las compras del carrito no se producen: su contenido ya está en el saldo de la empresa.
+  if (!x || x.pedido.tipo === "prepago" || x.pedido.modalidad === "digital" || x.pedido.estado !== "pagado" || x.pedido.disputa === "abierta") return;
   if (requiereRevision(x.pedido) && !x.pedido.revisado_en) return;
   await mover(x, "pagado", { estado: "en_produccion", produccion_en: new Date().toISOString() }, "en_produccion", "en_produccion");
   refrescar(x.pedido.id);
@@ -101,6 +107,7 @@ export async function cancelarPedidoAdmin(d: FormData) {
       .select("id");
     if (movido?.length) {
       await servicio.from("gafetes").update({ estado: "cancelado" }).eq("pedido_id", pedido.id);
+      await liberarSaldo(servicio, pedido.id);
       await anotar(servicio, pedido.id, "cancelado", { por: "administracion" }, usuario);
     }
   }

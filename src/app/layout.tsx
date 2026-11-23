@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { Asistente } from "@/components/Asistente";
 import { Encabezado } from "@/components/Encabezado";
 import { JsonLd } from "@/components/JsonLd";
 import { Pie } from "@/components/Pie";
@@ -110,6 +111,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <Pie />
+        <Asistente correoSitio={site.correo} />
         <JsonLd data={[organizacion(), sitioWeb()]} />
       </body>
     </html>

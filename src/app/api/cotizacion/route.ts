@@ -30,6 +30,7 @@ export async function POST(solicitud: Request) {
     modalidad,
     dosCaras: cuerpo.dosCaras === true,
     material: materialPara(cuerpo.material).id,
+    paquete: Number(cuerpo.paquete) || undefined,
   });
 
   if (!correoActivo()) {
@@ -89,7 +90,9 @@ ${notas.map((n) => `<li>${escapar(n)}</li>`).join("")}
   const resultado = await enviarCorreo({
     para: correo,
     copiaOculta: site.correo,
-    asunto: `Tu cotización de ${cotizacion.piezas} gafetes en ${site.nombre}`,
+    asunto: cotizacion.paquete
+      ? `Tu cotización del paquete de ${cotizacion.piezas} gafetes en ${site.nombre}`
+      : `Tu cotización de ${cotizacion.piezas} gafetes en ${site.nombre}`,
     html,
     texto,
   });

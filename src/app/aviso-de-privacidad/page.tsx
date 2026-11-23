@@ -61,8 +61,11 @@ export default function AvisoDePrivacidad() {
               <li>
                 <strong>De quien compra o crea una cuenta:</strong> nombre, correo electrónico,
                 teléfono, empresa, domicilio de entrega y datos de facturación (RFC, nombre o razón
-                social, régimen fiscal, código postal y uso del comprobante). También la Constancia
-                de Situación Fiscal de la empresa, con los datos que trae impresos.
+                social, régimen fiscal, código postal y uso del comprobante). Para verificar a la
+                empresa, lo que elijas mandarnos: la Constancia de Situación Fiscal, con los datos
+                que trae impresos; o la credencial para votar (INE) de quien responde por el negocio y
+                una liga o foto del negocio; o un correo de la empresa. También la fecha en que
+                aceptaste la carta de responsabilidad.
               </li>
               <li>
                 <strong>De las personas que aparecen en los gafetes y credenciales:</strong> los
@@ -115,8 +118,9 @@ export default function AvisoDePrivacidad() {
                 desactivaciones y reactivaciones.
               </li>
               <li>
-                Comprobar, con la Constancia de Situación Fiscal, que la empresa que pide los
-                gafetes y credenciales es la misma que aparece en ellos.
+                Comprobar, con la verificación que elegiste, que la empresa que pide los gafetes y
+                credenciales es la misma que aparece en ellos. La INE solo la ve nuestro equipo de
+                revisión y no la usamos para nada más.
               </li>
               <li>Cobrar tu pedido, emitir tu factura y cumplir obligaciones fiscales.</li>
               <li>Atender dudas, aclaraciones y solicitudes de soporte.</li>

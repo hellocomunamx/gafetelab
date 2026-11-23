@@ -8,7 +8,10 @@ import { ligasDe } from "@/lib/cuenta/fotos";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
 import { rutasDe } from "@/lib/diseno/limpiar";
 import { materiales } from "@/lib/materiales";
+import { pedidoAbiertoDe } from "@/lib/pedidos/abierto";
+import { esRazon, leerPredeterminados, type Razon } from "@/lib/pedidos/predeterminados";
 import { type FuenteDePedido, prepararPedido } from "@/lib/pedidos/preparar";
+import { saldoDe } from "@/lib/pedidos/servidor";
 import { stripeActivo } from "@/lib/stripe";
 import { clienteServicio } from "@/lib/supabase/publico";
 
@@ -19,8 +22,15 @@ const Aviso = ({ children }: { children: ReactNode }) => (
 );
 const liga = "font-semibold text-rojo underline underline-offset-4";
 
-export default async function Nuevo() {
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export default async function Nuevo({
+  searchParams,
+}: {
+  searchParams: Promise<{ personas?: string; razon?: string; abierto?: string }>;
+}) {
   const { supabase, empresa, administra } = await requerirEmpresa();
+  const q = await searchParams;
   const encabezado = (
     <>
       <p className="text-sm">
@@ -45,13 +55,30 @@ export default async function Nuevo() {
     );
   }
 
-  const [constancia, preparado, { data: direcciones }, { data: fiscales }] = await Promise.all([
+  const [constancia, preparado, { data: direcciones }, { data: fiscales }, { data: ajustes }] = await Promise.all([
     constanciaDe(supabase, empresa.id),
     prepararPedido(supabase, empresa),
     supabase.from("direcciones").select("*").eq("empresa_id", empresa.id).order("predeterminada", { ascending: false }).order("creado_en"),
     supabase.from("datos_fiscales").select("*").eq("empresa_id", empresa.id).order("predeterminado", { ascending: false }).order("creado_en"),
+    supabase.from("empresas").select("predeterminados").eq("id", empresa.id).maybeSingle(),
   ]);
   const { personas, fuentes, etiquetas } = preparado;
+  const predeterminados = leerPredeterminados(ajustes?.predeterminados);
+
+  // ¿Viene a pedir algo en particular? Una reposición desde la ficha de la persona o su pedido abierto.
+  let preseleccion: { personas: string[]; razones: Record<string, Razon>; origen: "reposicion" | "abierto" } | null = null;
+  if (q.abierto) {
+    const renglones = await pedidoAbiertoDe(supabase, empresa.id, predeterminados.aviso);
+    preseleccion = {
+      personas: renglones.map((r) => r.empleado_id),
+      razones: Object.fromEntries(renglones.map((r) => [r.empleado_id, r.razon])),
+      origen: "abierto",
+    };
+  } else if (q.personas) {
+    const ids = q.personas.split(",").filter((id) => UUID.test(id)).slice(0, 500);
+    const razon = esRazon(q.razon) ? q.razon : null;
+    preseleccion = { personas: ids, razones: razon ? Object.fromEntries(ids.map((id) => [id, razon])) : {}, origen: "reposicion" };
+  }
 
   let falta: ReactNode = null;
   if (!stripeActivo() || !clienteServicio()) {
@@ -69,15 +96,15 @@ export default async function Nuevo() {
       <>
         <p className="font-semibold">
           {constancia?.estado === "pendiente"
-            ? "Tu Constancia de Situación Fiscal está en revisión."
-            : "Antes de tu primer pedido necesitamos la Constancia de Situación Fiscal de tu empresa."}
+            ? "La verificación de tu empresa está en revisión."
+            : "Antes de tu primer pedido necesitamos verificar tu empresa."}
         </p>
         <p className="mt-1 text-gris">
           {constancia?.estado === "pendiente"
             ? "En cuanto la aprobemos vas a poder pedir. Normalmente tarda menos de un día hábil."
-            : "Así comprobamos que los gafetes y credenciales son de tu empresa. Solo se pide una vez."}{" "}
-          <Link href="/cuenta/constancia" className={liga}>
-            {constancia?.estado === "pendiente" ? "Ver mi constancia" : "Subir mi constancia"}
+            : "Así comprobamos que los gafetes y credenciales son de tu empresa. Con RFC o sin RFC, y solo una vez."}{" "}
+          <Link href="/cuenta/verificacion" className={liga}>
+            {constancia?.estado === "pendiente" ? "Ver mi verificación" : "Verificar mi empresa"}
           </Link>
         </p>
       </>
@@ -114,19 +141,57 @@ export default async function Nuevo() {
 
   // Una muestra por cada opción: el gafete de la primera persona que lo tiene completo.
   const muestraDe = (f: FuenteDePedido) => [...f.gafetes.entries()].find(([, g]) => !g.faltan.length);
+  // Con reglas, una muestra por cada diseño que se usa.
+  const reglas = fuentes.find((f) => f.tipo === "reglas");
+  const muestrasReglas = reglas
+    ? [...(reglas.disenos?.keys() ?? [])].flatMap((id) => {
+        const f = fuentes.find((x) => x.id === id);
+        const m = [...reglas.gafetes.entries()].find(([, g]) => g.disenoId === id && !g.faltan.length);
+        return f && m ? [{ fuente: f, copia: m[1].copia, personas: [...reglas.gafetes.values()].filter((g) => g.disenoId === id).length }] : [];
+      })
+    : [];
   const [imagenes, fotos, listos] = await Promise.all([
     ligasDe(supabase, "disenos", fuentes.flatMap((f) => (f.diseno ? [...rutasDe(f.diseno.frente), ...rutasDe(f.diseno.vuelta)] : []))),
-    ligasDe(supabase, "fotos", fuentes.map((f) => muestraDe(f)?.[1].copia.foto)),
+    ligasDe(supabase, "fotos", [...fuentes.map((f) => muestraDe(f)?.[1].copia.foto), ...muestrasReglas.map((m) => m.copia.foto)]),
     ligasDe(supabase, "gafetes", fuentes.flatMap((f) => {
       const copia = f.tipo === "listos" ? muestraDe(f)?.[1].copia : undefined;
       return [copia?.frente?.ruta, copia?.vuelta?.ruta];
     })),
   ]);
   const ligasImagenes = Object.fromEntries(imagenes);
+  const [saldos, { data: digitales }] = await Promise.all([
+    saldoDe(supabase, empresa.id),
+    supabase.from("gafetes").select("empleado_id").eq("empresa_id", empresa.id).eq("tipo", "digital").in("estado", ["en_pedido", "activo"]).limit(20000),
+  ]);
 
   const muestras: Record<string, ReactNode> = {};
   const vistas: FuenteVista[] = fuentes.map((f) => {
-    const muestra = muestraDe(f);
+    const muestra = f.tipo === "reglas" ? undefined : muestraDe(f);
+    if (f.tipo === "reglas") {
+      muestras[f.id] = (
+        <div className="grid gap-4 sm:grid-cols-3">
+          {muestrasReglas.slice(0, 6).map((m) => (
+            <figure key={m.fuente.id}>
+              <GafeteSvg
+                cara={m.fuente.diseno!.frente}
+                orientacion={m.fuente.diseno!.orientacion}
+                datos={m.copia.valores ?? {}}
+                etiquetas={etiquetas}
+                foto={(m.copia.foto && fotos.get(m.copia.foto)) || null}
+                qr={m.copia.qr}
+                imagenes={ligasImagenes}
+                titulo={`Gafete de ${m.copia.nombre} con el diseño ${m.fuente.nombre}`}
+                className="h-40 w-auto max-w-full drop-shadow"
+              />
+              <figcaption className="mt-2 text-sm text-gris">
+                <strong className="text-tinta">{m.fuente.nombre}</strong> · {m.personas.toLocaleString("es-MX")}{" "}
+                {m.personas === 1 ? "persona" : "personas"}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      );
+    }
     if (muestra) {
       const copia = muestra[1].copia;
       const caras = f.diseno
@@ -160,7 +225,7 @@ export default async function Nuevo() {
       muestras[f.id] = (
         <figure>
           <div className={`grid gap-3 ${caras.length > 1 ? "grid-cols-2" : "max-w-[16rem]"}`}>{caras}</div>
-          <figcaption className="mt-2 text-sm text-gris">Así se imprime el de {copia.nombre}.</figcaption>
+          <figcaption className="mt-2 text-sm text-gris">Así se ve el de {copia.nombre}.</figcaption>
         </figure>
       );
     }
@@ -169,8 +234,13 @@ export default async function Nuevo() {
       tipo: f.tipo,
       nombre: f.nombre,
       dosCaras: Boolean(f.diseno?.vuelta),
-      gafetes: Object.fromEntries([...f.gafetes.entries()].map(([id, g]) => [id, { faltan: g.faltan, vuelta: Boolean(g.copia.vuelta) }])),
-      vista: f.tipo === "diseno" ? `/cuenta/disenos/${f.id}/vista` : "/cuenta/disenos/listos",
+      gafetes: Object.fromEntries(
+        [...f.gafetes.entries()].map(([id, g]) => {
+          const suyo = g.disenoId ? f.disenos?.get(g.disenoId) : undefined;
+          return [id, { faltan: g.faltan, vuelta: suyo ? Boolean(suyo.diseno.vuelta) : Boolean(g.copia.vuelta), diseno: suyo?.fila.nombre }];
+        }),
+      ),
+      vista: f.tipo === "diseno" ? `/cuenta/disenos/${f.id}/vista` : f.tipo === "reglas" ? "/cuenta/disenos/reglas" : "/cuenta/disenos/listos",
     };
   });
 
@@ -188,6 +258,16 @@ export default async function Nuevo() {
           texto: `${d.calle}, ${d.colonia}, ${d.ciudad}, ${d.estado}, C.P. ${d.cp}`,
         }))}
         fiscales={(fiscales ?? []).map((f) => ({ id: f.id, titulo: f.rfc, texto: f.razon_social }))}
+        saldos={saldos}
+        conDigital={[...new Set((digitales ?? []).map((g) => g.empleado_id))]}
+        inicial={{
+          fuente: predeterminados.fuente,
+          material: predeterminados.material,
+          sinFactura: predeterminados.sin_factura,
+          personas: preseleccion?.personas ?? null,
+          razones: preseleccion?.razones ?? {},
+          origen: preseleccion?.origen ?? null,
+        }}
       />
     </div>
   );

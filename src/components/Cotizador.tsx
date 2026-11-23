@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
+import { carritoMaximoPiezas } from "@/lib/carrito";
 import { condiciones, nombreArchivo, nuevoFolio, renglones, totales } from "@/lib/cotizacion";
 import { grosorTexto, type MaterialId, materiales } from "@/lib/materiales";
 import {
@@ -10,12 +11,14 @@ import {
   envio,
   type Modalidad,
   modalidades,
+  paqueteVigenciaMeses,
   paquetes,
   pesos,
   precioPaquete,
   tramos,
 } from "@/lib/precios";
 import { entregaTexto } from "@/lib/site";
+import { BotonAgregar } from "./carrito/BotonAgregar";
 import { MuestraMaterial } from "./MuestraMaterial";
 import { VistaGafete } from "./VistaGafete";
 
@@ -36,18 +39,27 @@ export function Cotizador() {
   const [modalidad, setModalidad] = useState<Modalidad>("impreso");
   const [dosCaras, setDosCaras] = useState(false);
   const [material, setMaterial] = useState<MaterialId>("estandar");
+  // Piezas del paquete prepagado elegido; null cotiza piezas sueltas.
+  const [paqueteElegido, setPaqueteElegido] = useState<number | null>(null);
   const [empresa, setEmpresa] = useState("");
   const [correo, setCorreo] = useState("");
   const [sitioWeb, setSitioWeb] = useState("");
   const [generando, setGenerando] = useState(false);
   const [estado, setEstado] = useState<Estado>({ tipo: "inactivo" });
 
-  const opciones = { modalidad, dosCaras, material };
+  // Los paquetes son de gafetes impresos: con digital se vuelve a piezas sueltas.
+  const paqueteActivo = modalidad === "impreso" ? paqueteElegido : null;
+  const opciones = { modalidad, dosCaras, material, paquete: paqueteActivo ?? undefined };
   const c = cotizar(cantidad, opciones);
-  const siguiente = tramos.find((t) => t.desde > c.piezas);
+  const siguiente = c.paquete ? undefined : tramos.find((t) => t.desde > c.piezas);
   const ahorro = siguiente ? c.porPieza - cotizar(siguiente.desde, opciones).porPieza : 0;
   // Pedidos chicos: se sugiere el paquete prepagado más pequeño que los cubre.
-  const paquete = c.llevaEnvio && c.piezas < paquetes[0].piezas ? paquetes[0] : null;
+  const paquete = !c.paquete && modalidad === "impreso" && c.piezas < paquetes[0].piezas ? paquetes[0] : null;
+
+  function elegirPaquete(piezasPaquete: number | null) {
+    setPaqueteElegido(piezasPaquete);
+    if (piezasPaquete) setPiezas(String(piezasPaquete));
+  }
 
   async function descargarPdf() {
     setGenerando(true);
@@ -134,7 +146,11 @@ export function Cotizador() {
             max={CANTIDAD_MAXIMA}
             value={piezas}
             // Solo dígitos y sin ceros a la izquierda: "010" se vuelve "10".
-            onChange={(e) => setPiezas(e.target.value.replace(/\D/g, "").replace(/^0+(?=\d)/, "").slice(0, 6))}
+            // Escribir una cantidad propia deja el paquete y cotiza piezas sueltas.
+            onChange={(e) => {
+              setPaqueteElegido(null);
+              setPiezas(e.target.value.replace(/\D/g, "").replace(/^0+(?=\d)/, "").slice(0, 6));
+            }}
             // Al salir, el campo muestra la cantidad con la que se cotizó (mínimo 1).
             onBlur={() => setPiezas(String(cantidad))}
             className="mt-3 w-full max-w-48 rounded-tarjeta-chica border border-linea px-4 py-3 text-lg font-semibold"
@@ -145,6 +161,46 @@ export function Cotizador() {
             </span>
           ) : null}
         </label>
+
+        {modalidad === "impreso" ? (
+          <div className="-mt-3 min-w-0 rounded-tarjeta-chica bg-papel p-4">
+            <p id="paquetes-cotizador" className="text-sm font-semibold">
+              ¿Los vas a pedir de a poquitos? Llévate un paquete prepagado
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2" role="group" aria-labelledby="paquetes-cotizador">
+              {paquetes.map((p) => {
+                const activo = paqueteActivo === p.piezas;
+                return (
+                  <button
+                    key={p.piezas}
+                    type="button"
+                    aria-pressed={activo}
+                    onClick={() => elegirPaquete(activo ? null : p.piezas)}
+                    className={`rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors ${
+                      activo ? "border-tinta bg-tinta text-white" : "border-linea bg-white hover:border-tinta"
+                    }`}
+                  >
+                    {p.piezas} gafetes
+                    <span className={`font-normal ${activo ? "text-white/75" : "text-gris"}`}> · {pesos(p.porPieza)} c/u</span>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="mt-2 text-sm text-gris">
+              {c.paquete ? (
+                <>
+                  Pagas hoy los {c.paquete.piezas} gafetes y los pides cuando quieras durante {paqueteVigenciaMeses}{" "}
+                  meses, con {c.paquete.envios} envíos incluidos.{" "}
+                  <button type="button" onClick={() => elegirPaquete(null)} className="underline underline-offset-4">
+                    Mejor por piezas
+                  </button>
+                </>
+              ) : (
+                "Mismo precio por pieza aunque pidas de uno en uno, y los envíos ya van incluidos."
+              )}
+            </p>
+          </div>
+        ) : null}
 
         {c.llevaEnvio ? (
           <fieldset className="min-w-0">
@@ -167,7 +223,7 @@ export function Cotizador() {
               ))}
             </div>
             <p className="mt-2 text-sm text-gris">
-              Frente y vuelta suma {pesos(extraDosCaras(cantidad))} por pieza con esta cantidad.
+              Frente y vuelta suma {pesos(extraDosCaras(c.piezas))} por pieza con esta cantidad.
             </p>
           </fieldset>
         ) : null}
@@ -231,7 +287,7 @@ export function Cotizador() {
               <input type="radio" name="entrega" className="sr-only" checked readOnly />
               <span className="block font-semibold">Estándar</span>
               <span className="block text-sm text-white/75">
-                {c.llevaEnvio ? entregaTexto : "Se activan en tu plataforma"}
+                {c.paquete ? `${entregaTexto} por pedido` : c.llevaEnvio ? entregaTexto : "Se activan en tu plataforma"}
               </span>
             </label>
             <div
@@ -250,7 +306,7 @@ export function Cotizador() {
       </div>
 
       <div className="min-w-0 self-start rounded-tarjeta border border-linea bg-white p-6 shadow-sm sm:p-7">
-        <h2 className="text-xl font-extrabold">Tu cotización</h2>
+        <h2 className="text-xl font-extrabold">{c.paquete ? `Tu paquete de ${c.paquete.piezas} gafetes` : "Tu cotización"}</h2>
         <div aria-live="polite">
           <table className="mt-4 w-full text-sm">
             <caption className="sr-only">Desglose de tu cotización</caption>
@@ -297,17 +353,40 @@ export function Cotizador() {
               <strong>¿Pides de a poquitos?</strong> El paquete de {paquete.piezas} gafetes cuesta{" "}
               {pesos(precioPaquete(paquete))} e incluye {paquete.envios} envíos: usas{" "}
               {c.piezas === 1 ? "uno" : c.piezas} hoy y el resto queda a tu favor.{" "}
-              <Link href="/precios#paquetes" className="underline">
-                Ver paquetes
-              </Link>
+              <button type="button" onClick={() => elegirPaquete(paquete.piezas)} className="font-semibold underline">
+                Cotizar el paquete
+              </button>
             </p>
           ) : null}
 
           <p className="mt-4 text-sm text-gris">
-            {c.llevaEnvio
+            {c.paquete
+              ? `Los usas cuando quieras durante ${paqueteVigenciaMeses} meses; cada pedido llega en ${entregaTexto} a cualquier parte de México. No es reembolsable y sí se puede transferir a otra empresa.`
+              : c.llevaEnvio
               ? `Entrega en ${entregaTexto} a cualquier parte de México, a partir del pago y de que apruebes la vista previa.`
               : "Los gafetes digitales no llevan envío: se activan en tu plataforma."}{" "}
             {c.modalidad === "impreso" ? "Pago único, sin suscripción." : "Pago único, sin suscripción: el gafete digital se paga una sola vez, no cada mes."}
+          </p>
+        </div>
+
+        <div className="mt-6 border-t border-linea pt-5">
+          {c.piezas > carritoMaximoPiezas ? (
+            <p className="rounded-tarjeta-chica bg-papel px-4 py-3 text-sm">
+              En línea se compran hasta {carritoMaximoPiezas.toLocaleString("es-MX")} gafetes a la vez. Agrega dos compras al carrito o descarga la cotización.
+            </p>
+          ) : (
+            <BotonAgregar
+              articulo={
+                !c.paquete
+                  ? { tipo: "gafetes", piezas: c.piezas, modalidad: c.modalidad, dosCaras: c.dosCaras, material }
+                  : !c.dosCaras && material === "estandar"
+                    ? { tipo: "paquete", piezas: c.paquete.piezas }
+                    : { tipo: "medida", renglones: [{ piezas: c.paquete.piezas, dosCaras: c.dosCaras, material }] }
+              }
+            />
+          )}
+          <p className="mt-2 text-xs text-gris">
+            Pagas ahora y tus gafetes quedan a tu favor: subes a tu equipo y tu diseño cuando quieras, y los pides o activas desde tu plataforma.
           </p>
         </div>
 
@@ -328,7 +407,7 @@ export function Cotizador() {
             type="button"
             onClick={descargarPdf}
             disabled={generando}
-            className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-rojo px-6 py-3 font-semibold text-white transition-colors hover:bg-rojo-oscuro disabled:opacity-60"
+            className="mt-4 inline-flex w-full items-center justify-center rounded-full border border-tinta px-6 py-3 font-semibold transition-colors hover:bg-papel disabled:opacity-60"
           >
             {generando ? "Generando PDF…" : "Descargar cotización en PDF"}
           </button>

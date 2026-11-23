@@ -69,10 +69,19 @@ export default function Terminos() {
             <ul>
               <li>Para crear una cuenta debes ser mayor de 18 años y darnos datos verdaderos.</li>
               <li>
-                Para dar de alta a tu empresa te pedimos su Constancia de Situación Fiscal, con no más
-                de {site.constanciaMeses} meses de antigüedad. El RFC y la razón social de la constancia
-                deben coincidir con la empresa que aparece en los gafetes y son los datos con los que
-                te facturamos. Podemos revisar un pedido antes de producirlo y pedirte que aclares o
+                Antes del primer pedido verificamos tu empresa con la opción que elijas: su Constancia
+                de Situación Fiscal, con no más de {site.constanciaMeses} meses de antigüedad; tu INE y
+                una prueba de tu negocio (la liga a sus redes o a Google Maps, o una foto del local); o
+                un correo con el dominio de tu empresa. El nombre de la empresa verificada debe
+                coincidir con el que aparece en los gafetes. Si verificas con la constancia, su RFC y su
+                razón social son los datos con los que te facturamos.
+              </li>
+              <li>
+                Al verificar tu empresa aceptas una carta de responsabilidad: declaras que representas
+                al negocio de los gafetes, que tienes derecho a usar su nombre, su logo y los datos de
+                las personas que aparecen en ellos, que los usarás solo para identificar a personas de
+                tu propia organización y que lo que nos mandas es verdadero. Si no lo es, respondes tú
+                por los daños a terceros y podemos cancelar el pedido sin producirlo. Podemos revisar un pedido antes de producirlo y pedirte que aclares o
                 compruebes que los gafetes son de tu propia organización.
               </li>
               <li>

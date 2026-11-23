@@ -137,7 +137,7 @@ export default async function Datos({
           <strong>Revisa bien tus datos.</strong> La factura (CFDI) se pide{" "}
           {site.plazoFactura} y, una vez emitida, no se puede
           modificar. Captúralos tal como aparecen en tu{" "}
-          <Link href="/cuenta/constancia" className="underline">Constancia de Situación Fiscal</Link>.
+          Constancia de Situación Fiscal del SAT.
         </p>
 
         {fiscales?.length ? (

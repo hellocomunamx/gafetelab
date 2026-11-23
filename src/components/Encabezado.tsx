@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { envioGratisTexto } from "@/lib/precios";
 import { entregaTexto } from "@/lib/site";
+import { IconoCarrito } from "./carrito/IconoCarrito";
+import { EnlaceCuenta } from "./cuenta/EnlaceCuenta";
 import { Logo } from "./Logo";
 import { Boton, Contenedor } from "./ui";
 
@@ -38,9 +40,8 @@ export function Encabezado() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
-          <Link href="/cuenta" className="hidden px-2 font-medium whitespace-nowrap hover:text-rojo sm:block">
-            Mi cuenta
-          </Link>
+          <EnlaceCuenta className="hidden px-2 font-medium whitespace-nowrap hover:text-rojo sm:block" />
+          <IconoCarrito />
           <Boton href="/cotizar" className="px-5 py-2 text-sm">
             Cotizar<span className="hidden sm:inline">&nbsp;en línea</span>
           </Boton>
@@ -62,9 +63,7 @@ export function Encabezado() {
                   {n.texto}
                 </Link>
               ))}
-              <Link href="/cuenta" className="rounded-tarjeta-chica px-3 py-2 font-medium hover:bg-papel sm:hidden">
-                Mi cuenta
-              </Link>
+              <EnlaceCuenta className="rounded-tarjeta-chica px-3 py-2 font-medium hover:bg-papel sm:hidden" />
             </nav>
           </details>
         </div>

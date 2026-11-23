@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BotonAgregar } from "@/components/carrito/BotonAgregar";
 import { Afiliados } from "@/components/Afiliados";
 import { Faq } from "@/components/Faq";
 import { GruposFunciones, MuyPronto, Palomita, SinCostoExtra } from "@/components/Funciones";
@@ -15,7 +16,7 @@ import { modalidadesDetalle } from "@/lib/plataforma";
 import { envio, notaIva, paqueteVigenciaMeses, paquetes, pesos, precioMinimo, precioPaquete } from "@/lib/precios";
 import { paginaFaq, producto, video, videoPitch } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
-import { constancia, entregaTexto, site } from "@/lib/site";
+import { entregaTexto, site, verificacion } from "@/lib/site";
 
 export const metadata = metadatos({
   titulo: `${site.titulo} | ${site.nombre}`,
@@ -34,9 +35,11 @@ export default function Inicio() {
         <Contenedor className="grid items-center gap-6 py-14 sm:py-20 lg:grid-cols-[1.2fr_1fr] lg:gap-12">
           <div>
             <p className="font-mano text-2xl text-rojo">Hola, soy tu gafete</p>
-            <h1 className="mt-2 text-4xl leading-[1.05] font-extrabold sm:text-6xl">
-              Gafetes y credenciales para todo tu equipo,{" "}
-              <span className="resaltado">sin vueltas</span>.
+            <h1 className="mt-2 text-[2rem] leading-[1.08] font-extrabold sm:text-5xl">
+              Gafetes y credenciales para todo tu equipo o asistentes a eventos.
+              <span className="mt-2 block">
+                <span className="resaltado">Automático y simplificado</span>.
+              </span>
             </h1>
             <p className="mt-5 max-w-xl text-lg text-gris">
               Diseña tu gafete, sube a tu equipo como te acomode y revisa cada uno antes de pagar.
@@ -155,10 +158,9 @@ export default function Inicio() {
           ))}
         </ol>
         <p className="mt-6 max-w-3xl text-sm text-gris">
-          <strong className="text-tinta">Antes de empezar:</strong> {constancia.corto} Así comprobamos
-          que los gafetes son de tu propia empresa.{" "}
-          <Link href="/como-funciona#constancia" className="underline underline-offset-4">
-            Por qué la pedimos
+          <strong className="text-tinta">Antes de empezar:</strong> {verificacion.corto}{" "}
+          <Link href="/como-funciona#verificacion" className="underline underline-offset-4">
+            Por qué lo pedimos
           </Link>
         </p>
       </Seccion>
@@ -221,6 +223,7 @@ export default function Inicio() {
               <p className="mt-1 text-gris">{pesos(p.porPieza)} por pieza</p>
               <p className="text-gris">{p.envios} envíos incluidos</p>
               <p className="mt-3 font-titulos text-xl font-extrabold">{pesos(precioPaquete(p))}</p>
+              <BotonAgregar articulo={{ tipo: "paquete", piezas: p.piezas }} texto="Lo quiero" irAlCarrito className="mt-4" />
             </li>
           ))}
         </ul>

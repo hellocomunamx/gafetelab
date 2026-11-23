@@ -29,6 +29,16 @@ Sin `RESEND_API_KEY`, el cotizador sigue funcionando y descargando el PDF; solo 
 
 El formulario de contacto (`/contacto`) usa el mismo secreto: manda cada mensaje a `site.correo` con Resend y pone como «responder a» el correo de quien escribió. Sin `RESEND_API_KEY` avisa que todavía no está activo y muestra el correo de contacto.
 
+### Asistente de IA (Gafi)
+
+Botón flotante «¿Dudas?» en todo el sitio público (no aparece dentro de la plataforma). Platica con la API de Claude (`claude-opus-5-5`, esfuerzo bajo) y solo resuelve dudas: no lee ni cambia cuentas ni pedidos. Lo que sabe sale de `llmsFullTxt()` y de los términos (`src/lib/asistente.ts`), así que se actualiza solo cuando cambian precios, entrega o preguntas frecuentes. Nombre, saludo y límites en `src/lib/asistente-publico.ts`.
+
+```bash
+npx wrangler secret put ANTHROPIC_API_KEY
+```
+
+Límite de uso: 8 mensajes por minuto por IP y 60 por minuto en todo el sitio (bindings `ratelimits` en `wrangler.jsonc`), 30 mensajes por conversación y 1,000 caracteres por mensaje. Sin `ANTHROPIC_API_KEY`, el chat responde que todavía no está activo y muestra el contacto.
+
 ### Publicar
 
 `npm run deploy` compila con los valores de `.env.production` (URL del sitio y Supabase, todos públicos) y publica el Worker en `lagafeteria.com` y `www.lagafeteria.com`. Esos valores mandan sobre `.env.local`, así que lo que tengas para desarrollo no se cuela al sitio publicado.
@@ -161,6 +171,12 @@ Configurar Stripe (una vez):
 2. Con el sitio ya publicado, crear el webhook hacia `https://lagafeteria.com/api/stripe/webhook` con estos eventos: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `payment_intent.payment_failed`, `payment_intent.canceled`, `charge.refunded`, `charge.dispute.created` y `charge.dispute.closed`. Su secreto de firma va en `STRIPE_WEBHOOK_SECRET`.
 
 Sin esas dos llaves (o sin `SUPABASE_SECRET_KEY`), la plataforma dice que los pedidos todavía no están activos y todo lo demás funciona igual. `STRIPE_API_URL` solo sirve para apuntar a un Stripe simulado en pruebas locales.
+
+### Carrito y saldo prepagado
+
+Los paquetes (`/precios#paquetes`), el paquete a la medida y el cotizador tienen «Lo quiero» o «Agregar al carrito». El carrito vive en el navegador (`src/lib/carrito-navegador.ts`) y no pide cuenta hasta pagar; `/carrito` lleva a entrar o crear la cuenta, aceptar términos y registrar la empresa, y regresa solo al carrito (`?siguiente=/carrito`, `src/lib/cuenta/siguiente.ts`).
+
+Pagar el carrito crea un pedido de tipo `prepago` (`src/app/carrito/acciones.ts`) que se cobra igual que cualquier pedido. Al confirmarse el pago, su contenido queda en `saldos` (gafetes por cara y material, y envíos), con vigencia de 12 meses. Al hacer un pedido de impresión se usa primero el saldo (`src/lib/pedidos/saldo.ts`): se cobra solo la diferencia de vuelta o de material y los gafetes que falten; si el saldo cubre todo, el pedido queda pagado sin pasar por Stripe. El saldo se aparta con `usar_saldo` (todo o nada) y regresa si el pedido se cancela. Migración `20261123070000_carrito_y_saldo.sql`.
 
 ### Administración (solo quien opera LaGafetería)
 

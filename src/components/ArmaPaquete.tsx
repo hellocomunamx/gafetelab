@@ -1,12 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
-import { MOTIVO_PAQUETE } from "@/lib/contacto";
+import { BotonAgregar } from "@/components/carrito/BotonAgregar";
+import { carritoMaximoPiezas } from "@/lib/carrito";
 import { type MaterialId, materiales } from "@/lib/materiales";
 import {
   cotizarPaquete,
-  notaIva,
   paqueteMaximoRenglones,
   paqueteMinimoPiezas,
   paqueteVigenciaMeses,
@@ -35,13 +34,6 @@ export function ArmaPaquete() {
     setRenglones((previos) => previos.map((r) => (r.clave === clave ? { ...r, ...cambios } : r)));
 
   const c = cotizarPaquete(renglones.map((r) => ({ ...r, piezas: Number.parseInt(r.piezas, 10) || 0 })));
-  const resumen = c.renglones
-    .map(
-      (r) =>
-        `- ${r.piezas} ${r.dosCaras ? "por frente y vuelta" : "a una cara"} en ${r.material.nombre}: ${pesos(r.porPieza)} por pieza`,
-    )
-    .join("\n");
-  const mensaje = `Quiero dejar prepagado este paquete de ${c.piezas} gafetes:\n${resumen}\nTotal: ${pesos(c.subtotal)} ${notaIva}, con ${c.envios} envíos incluidos.`;
 
   return (
     <div className="grid gap-6 rounded-tarjeta border border-linea bg-white p-5 sm:p-7 lg:grid-cols-[1.5fr_1fr]">
@@ -162,12 +154,16 @@ export function ArmaPaquete() {
                 {pesos(c.siguiente.porPieza)} por pieza.
               </p>
             ) : null}
-            <Link
-              href={`/contacto?motivo=${encodeURIComponent(MOTIVO_PAQUETE)}&mensaje=${encodeURIComponent(mensaje)}#formulario`}
-              className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-rojo px-6 py-3 font-semibold text-white transition-colors hover:bg-rojo-oscuro"
-            >
-              Quiero este paquete
-            </Link>
+            <BotonAgregar
+              articulo={{ tipo: "medida", renglones: c.renglones.map((r) => ({ piezas: r.piezas, dosCaras: r.dosCaras, material: r.material.id })) }}
+              texto="Lo quiero"
+              irAlCarrito
+              className="mt-5"
+              deshabilitado={c.piezas > carritoMaximoPiezas}
+            />
+            {c.piezas > carritoMaximoPiezas ? (
+              <p className="text-sm text-rojo-oscuro">Una compra lleva hasta {carritoMaximoPiezas.toLocaleString("es-MX")} gafetes.</p>
+            ) : null}
             <p className="mt-3 text-xs text-gris">
               Los usas cuando quieras durante {paqueteVigenciaMeses} meses. No es reembolsable y sí se puede
               transferir a otra empresa.
