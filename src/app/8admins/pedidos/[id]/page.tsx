@@ -23,7 +23,7 @@ import {
   sigueEnGracia,
 } from "@/lib/pedidos/reglas";
 import { aprobacionDe, cobrarAutorizados, articulosDe, conceptosDe } from "@/lib/pedidos/servidor";
-import { pesos } from "@/lib/precios";
+import { type Modalidad, nombreModalidad, pesos } from "@/lib/precios";
 import { cancelarPedidoAdmin, entregarPedido, enviarPedido, guardarNotas, producirPedido, revisarPedido } from "../acciones";
 
 export const metadata: Metadata = { title: "Pedido" };
@@ -54,6 +54,7 @@ const EVENTOS: Record<string, string> = {
   disputa_cerrada: "Se cerró la disputa",
   saldo_creado: "Los gafetes de la compra quedaron en el saldo de la empresa",
   saldo_liberado: "El saldo que usaba el pedido regresó a la empresa",
+  digitales_activos: "Se activaron los gafetes digitales",
 };
 const PAGADOS = ["pagado", "en_produccion", "enviado", "entregado"];
 
@@ -68,7 +69,7 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
   if (!pedido) notFound();
   const [{ data: empresa }, { data: gafetes }, { data: eventos }, { data: verificada }] = await Promise.all([
     servicio.from("empresas").select("id, nombre").eq("id", pedido.empresa_id).maybeSingle(),
-    servicio.from("gafetes").select("id, motivo, datos").eq("pedido_id", id).limit(5000),
+    servicio.from("gafetes").select("id, tipo, motivo, datos").eq("pedido_id", id).limit(5000),
     servicio.from("pedido_eventos").select("id, tipo, detalle, creado_en").eq("pedido_id", id).order("creado_en").limit(500),
     servicio
       .from("constancias")
@@ -83,7 +84,10 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
   const direccion = pedido.direccion as DireccionCopiada | null;
   const facturacion = pedido.facturacion as FacturacionCopiada | null;
   const material = pedido.material ? materialPara(pedido.material) : null;
+  const soloDigital = pedido.modalidad === "digital";
+  // Una fila por persona: con impreso + digital, cada persona tiene dos gafetes en el pedido.
   const personas = (gafetes ?? [])
+    .filter((g) => g.tipo === (soloDigital ? "digital" : "impreso"))
     .map((g) => ({ id: g.id, motivo: g.motivo, ...(g.datos as unknown as GafeteCopiado) }))
     .sort((a, b) => (a.nombre ?? "").localeCompare(b.nombre ?? "", "es"));
   const prepago = pedido.tipo === "prepago";
@@ -113,7 +117,8 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
         ) : (
           "Empresa"
         )}{" "}
-        · {pedido.piezas.toLocaleString("es-MX")} {pedido.piezas === 1 ? "gafete" : "gafetes"} ·{" "}
+        · {pedido.piezas.toLocaleString("es-MX")} {pedido.piezas === 1 ? "gafete" : "gafetes"}
+        {prepago ? "" : ` · ${nombreModalidad(pedido.modalidad as Modalidad)}`} ·{" "}
         {pesos(Number(pedido.total))} con IVA
       </p>
 
@@ -162,18 +167,25 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
             {faltaRevisar ? (
               <form action={revisarPedido}>
                 {oculto}
-                <button type="submit" className={claseBoton}>Ya lo revisé, se puede producir</button>
+                <button type="submit" className={claseBoton}>
+                  {soloDigital ? "Ya lo revisé, activar los gafetes digitales" : "Ya lo revisé, se puede producir"}
+                </button>
               </form>
-            ) : pedido.disputa === "abierta" ? null : (
+            ) : pedido.disputa === "abierta" || soloDigital ? null : (
               <form action={producirPedido}>
                 {oculto}
                 <button type="submit" className={claseBoton}>Pasar a producción</button>
               </form>
             )}
-            <Link href={`${RUTA_ADMIN}/imprimir/${pedido.empresa_id}?pedido=${pedido.id}`} className={claseBotonSecundario}>
-              PDF de impresión
-            </Link>
+            {soloDigital ? null : (
+              <Link href={`${RUTA_ADMIN}/imprimir/${pedido.empresa_id}?pedido=${pedido.id}`} className={claseBotonSecundario}>
+                PDF de impresión
+              </Link>
+            )}
           </div>
+        ) : null}
+        {pedido.estado === "pagado" && pedido.modalidad === "ambos" && faltaRevisar ? (
+          <p className="mt-3 text-sm text-gris">Al marcarlo como revisado también se activan sus gafetes digitales.</p>
         ) : null}
         {pedido.estado === "en_produccion" ? (
           <div className="space-y-4">
@@ -206,7 +218,9 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
             </form>
           </div>
         ) : null}
-        {pedido.estado === "entregado" ? <p className="text-sm">Pedido entregado. No queda nada por hacer.</p> : null}
+        {pedido.estado === "entregado" ? (
+          <p className="text-sm">{soloDigital ? "Gafetes digitales activos. No queda nada por hacer." : "Pedido entregado. No queda nada por hacer."}</p>
+        ) : null}
         {pedido.estado === "cancelado" ? <p className="text-sm">Pedido cancelado, sin cobro.</p> : null}
         {pedido.estado === "reembolsado" ? <p className="text-sm">Se devolvió el pago completo desde Stripe.</p> : null}
 
@@ -254,16 +268,18 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
                   </div>
                 ))}
                 <p className="text-gris">
-                  {pedido.dos_caras ? "Frente y vuelta" : "Una cara"}
+                  {soloDigital ? "Solo digital" : pedido.dos_caras ? "Frente y vuelta" : "Una cara"}
                   {material ? `, ${material.nombre}` : ""}
                   {pedido.fuente === "listos" ? ", gafetes que la empresa subió ya terminados" : ""}
                 </p>
               </>
             )}
-            <div className="flex justify-between gap-3">
-              <dt>Envío</dt>
-              <dd>{Number(pedido.envio) ? pesos(Number(pedido.envio)) : pedido.envio_de_saldo ? "Del saldo prepagado" : prepago ? "Incluido arriba" : "Gratis"}</dd>
-            </div>
+            {soloDigital ? null : (
+              <div className="flex justify-between gap-3">
+                <dt>Envío</dt>
+                <dd>{Number(pedido.envio) ? pesos(Number(pedido.envio)) : pedido.envio_de_saldo ? "Del saldo prepagado" : prepago ? "Incluido arriba" : "Gratis"}</dd>
+              </div>
+            )}
             <div className="flex justify-between gap-3">
               <dt>IVA</dt>
               <dd>{pesos(Number(pedido.iva))}</dd>

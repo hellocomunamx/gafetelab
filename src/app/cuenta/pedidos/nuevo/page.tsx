@@ -124,7 +124,10 @@ export default async function Nuevo() {
     })),
   ]);
   const ligasImagenes = Object.fromEntries(imagenes);
-  const saldos = await saldoDe(supabase, empresa.id);
+  const [saldos, { data: digitales }] = await Promise.all([
+    saldoDe(supabase, empresa.id),
+    supabase.from("gafetes").select("empleado_id").eq("empresa_id", empresa.id).eq("tipo", "digital").in("estado", ["en_pedido", "activo"]).limit(20000),
+  ]);
 
   const muestras: Record<string, ReactNode> = {};
   const vistas: FuenteVista[] = fuentes.map((f) => {
@@ -162,7 +165,7 @@ export default async function Nuevo() {
       muestras[f.id] = (
         <figure>
           <div className={`grid gap-3 ${caras.length > 1 ? "grid-cols-2" : "max-w-[16rem]"}`}>{caras}</div>
-          <figcaption className="mt-2 text-sm text-gris">Así se imprime el de {copia.nombre}.</figcaption>
+          <figcaption className="mt-2 text-sm text-gris">Así se ve el de {copia.nombre}.</figcaption>
         </figure>
       );
     }
@@ -191,6 +194,7 @@ export default async function Nuevo() {
         }))}
         fiscales={(fiscales ?? []).map((f) => ({ id: f.id, titulo: f.rfc, texto: f.razon_social }))}
         saldos={saldos}
+        conDigital={[...new Set((digitales ?? []).map((g) => g.empleado_id))]}
       />
     </div>
   );

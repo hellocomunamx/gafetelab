@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { borrarEmpleado, cambiarEstatus, quitarFoto } from "@/app/cuenta/acciones";
+import { desactivarDigital, reactivarDigital } from "@/app/cuenta/equipo/digital-acciones";
 import { renovarLiga } from "@/app/cuenta/equipo/ligas/acciones";
 import { Confirmar } from "@/components/cuenta/Confirmar";
 import { Bloque, Estatus } from "@/components/cuenta/Entrada";
@@ -36,7 +37,7 @@ const fecha = (iso: string) =>
 export default async function Persona({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!UUID.test(id)) notFound();
-  const { supabase, empresa } = await requerirEmpresa();
+  const { supabase, empresa, administra } = await requerirEmpresa();
   const { data: persona } = await supabase
     .from("empleados")
     .select("*")
@@ -68,6 +69,8 @@ export default async function Persona({ params }: { params: Promise<{ id: string
   const avisosListo = listo ? avisosDeGafete(frenteListo, vueltaLista) : [];
   const ligasListo = listo ? await ligasDe(supabase, "gafetes", [frenteListo?.ruta, vueltaLista?.ruta]) : null;
   const deBaja = persona.estatus === "baja";
+  // Su gafete digital más reciente que no se canceló: en pedido, activo o desactivado.
+  const digital = (gafetes ?? []).find((g) => g.tipo === "digital" && g.estado !== "cancelado");
   const qr = contenidoQr(empresa, { codigo: persona.codigo, valores: datosDePersona(persona, campos) });
 
   return (
@@ -164,6 +167,35 @@ export default async function Persona({ params }: { params: Promise<{ id: string
                   Cambiarlo o quitarlo
                 </Link>
               </p>
+            </Bloque>
+          ) : null}
+
+          {digital ? (
+            <Bloque titulo="Gafete digital">
+              <p className="text-sm text-gris">
+                {deBaja
+                  ? "Está de baja: su liga ya no muestra el gafete digital."
+                  : digital.estado === "activo"
+                    ? "Activo. Lo abre en su celular con su liga personal y se actualiza solo si cambian sus datos."
+                    : digital.estado === "desactivado"
+                      ? "Desactivado: su liga ya no lo muestra."
+                      : "Se activa en cuanto se confirme el pago de su pedido."}
+              </p>
+              {administra && !deBaja && digital.estado === "activo" ? (
+                <div className="mt-3">
+                  <Confirmar accion={desactivarDigital} id={persona.id} texto="Desactivar su gafete digital" confirmar="Sí, desactivar">
+                    Su liga deja de mostrar el gafete. Lo puedes volver a activar sin costo.
+                  </Confirmar>
+                </div>
+              ) : null}
+              {administra && !deBaja && digital.estado === "desactivado" ? (
+                <form action={reactivarDigital} className="mt-3">
+                  <input type="hidden" name="id" value={persona.id} />
+                  <button type="submit" className={`${claseBotonSecundario} px-4 py-1.5 text-sm`}>
+                    Volver a activarlo
+                  </button>
+                </form>
+              ) : null}
             </Bloque>
           ) : null}
 

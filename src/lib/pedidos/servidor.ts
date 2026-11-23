@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { correoActivo, enviarCorreo } from "@/lib/correo";
+import { type Correo, correoActivo, enviarCorreo, enviarCorreos } from "@/lib/correo";
+import { correoGafeteDigital } from "@/lib/cuenta/correo-digital";
+import { CORREOS_POR_ENVIO, urlDeLiga } from "@/lib/cuenta/ligas";
 import { RUTA_ADMIN } from "@/lib/admin/ruta";
 import { pesos } from "@/lib/precios";
 import { site, urlAbsoluta } from "@/lib/site";
@@ -9,7 +11,7 @@ import type { SaldoNuevo } from "@/lib/carrito";
 import type { MaterialId } from "@/lib/materiales";
 import { paqueteVigenciaMeses } from "@/lib/precios";
 import type { Database, Json } from "@/lib/supabase/tipos";
-import { type AprobacionPedido, type MetodoPago, pago } from "./reglas";
+import { type AprobacionPedido, type MetodoPago, pago, requiereRevision } from "./reglas";
 import type { ConceptoCobro, SaldoDisponible } from "./saldo";
 
 /**
@@ -191,15 +193,20 @@ export async function marcarPagado(
     );
     return true;
   }
+  const digitalesActivos = await activarDigitales(servicio, pedido);
   await avisarInterno(
     `Pedido ${pedido.folio} pagado${estabaCancelado ? " (estaba cancelado)" : ""}`,
     [
       `Se confirmó el pago del pedido ${pedido.folio}: ${pedido.piezas} gafetes y credenciales, ${pesos(Number(pedido.total))} con IVA.`,
       estabaCancelado
         ? "Ojo: el pedido estaba cancelado cuando llegó el pago. Decide si se produce o se devuelve el dinero."
-        : pedido.primer_pedido || pedido.alertas.length
-          ? "Necesita tu revisión antes de pasar a producción."
-          : "Ya puede pasar a producción.",
+        : pedido.modalidad === "digital"
+          ? digitalesActivos
+            ? "Es solo digital: los gafetes ya quedaron activos en el celular de cada persona."
+            : "Es solo digital: necesita tu revisión para activar los gafetes."
+          : pedido.primer_pedido || pedido.alertas.length
+            ? "Necesita tu revisión antes de pasar a producción."
+            : "Ya puede pasar a producción.",
     ],
     pedido.id,
   );
@@ -415,4 +422,79 @@ export async function saldoDe(cliente: Servicio, empresaId: string): Promise<Sal
       venceEn: s.vence_en,
     }))
     .filter((s) => s.disponible > 0);
+}
+
+// ---------------------------------------------------------------------------
+// Gafete digital
+// ---------------------------------------------------------------------------
+
+/**
+ * Activa los gafetes digitales de un pedido pagado. Si el pedido necesita
+ * revisión (primer pedido de la empresa o palabras de alerta), espera a que la
+ * administradora lo revise. Un pedido solo digital queda entregado al
+ * activarse: no hay nada que producir ni enviar. Devuelve true si quedaron activos.
+ */
+export async function activarDigitales(
+  servicio: Servicio,
+  pedido: Pick<Pedido, "id" | "tipo" | "modalidad" | "primer_pedido" | "alertas" | "revisado_en" | "disputa">,
+): Promise<boolean> {
+  if (pedido.tipo === "prepago" || pedido.modalidad === "impreso") return false;
+  if (requiereRevision(pedido) && !pedido.revisado_en) return false;
+  if (pedido.disputa === "abierta") return false;
+  const { data: activados } = await servicio
+    .from("gafetes")
+    .update({ estado: "activo" })
+    .eq("pedido_id", pedido.id)
+    .eq("tipo", "digital")
+    .eq("estado", "en_pedido")
+    .select("id, empleado_id");
+  if (pedido.modalidad === "digital") {
+    await servicio.from("pedidos").update({ estado: "entregado", entregado_en: new Date().toISOString() }).eq("id", pedido.id).eq("estado", "pagado");
+  }
+  if (activados?.length) {
+    const avisados = await avisarDigitales(
+      servicio,
+      activados.map((g) => g.empleado_id),
+    );
+    await anotar(servicio, pedido.id, "digitales_activos", { gafetes: activados.length, avisados });
+  }
+  return true;
+}
+
+/**
+ * Manda a cada persona con correo la liga de su gafete digital recién activo.
+ * Quien no tiene correo la recibe como siempre: la empresa la copia o la manda
+ * por WhatsApp desde sus ligas. Devuelve cuántos correos salieron.
+ */
+async function avisarDigitales(servicio: Servicio, empleados: string[]): Promise<number> {
+  if (!correoActivo() || !empleados.length) return 0;
+  const { data: personas } = await servicio
+    .from("empleados")
+    .select("id, nombre, correo, liga, empresa_id")
+    .in("id", empleados.slice(0, CORREOS_POR_ENVIO))
+    .eq("estatus", "activo")
+    .not("correo", "is", null);
+  if (!personas?.length) return 0;
+  const { data: empresa } = await servicio.from("empresas").select("nombre").eq("id", personas[0].empresa_id).maybeSingle();
+  if (!empresa) return 0;
+  const correos: Correo[] = personas.map((p) => ({
+    para: p.correo!,
+    ...correoGafeteDigital({ nombre: p.nombre, empresa: empresa.nombre, liga: urlDeLiga(p.liga) }),
+  }));
+  try {
+    const { enviados } = await enviarCorreos(correos);
+    if (enviados) {
+      await servicio
+        .from("empleados")
+        .update({ liga_enviada_en: new Date().toISOString() })
+        .in(
+          "id",
+          personas.slice(0, enviados).map((p) => p.id),
+        );
+    }
+    return enviados;
+  } catch {
+    // El aviso es una cortesía: el gafete ya quedó activo y la liga se puede mandar desde la plataforma.
+    return 0;
+  }
 }
