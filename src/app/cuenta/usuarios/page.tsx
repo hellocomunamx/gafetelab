@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
-import { cambiarRol, cancelarInvitacion, invitarUsuario, quitarUsuario } from "@/app/cuenta/usuarios/acciones";
+import {
+  cambiarRol,
+  cancelarInvitacion,
+  invitarUsuario,
+  quitarUsuario,
+  reenviarInvitacion,
+} from "@/app/cuenta/usuarios/acciones";
+import { BotonReenviar } from "@/components/cuenta/BotonReenviar";
 import { Confirmar } from "@/components/cuenta/Confirmar";
 import { Bloque, Entrada } from "@/components/cuenta/Entrada";
 import { Formulario } from "@/components/cuenta/Formulario";
@@ -168,10 +175,13 @@ export default async function Usuarios() {
                     <p className="min-w-0 text-sm">
                       <span className="font-semibold break-all">{i.correo}</span>
                       <span className="text-gris">
-                        {" "}· {roles[i.rol as Rol].nombre} · Invitado el {fecha(i.creado_en)}
+                        {" "}· {roles[i.rol as Rol].nombre} · Enviada el {fecha(i.creado_en)}
                       </span>
                     </p>
-                    <Confirmar accion={cancelarInvitacion} id={i.id} texto="Cancelar invitación" confirmar="Sí, cancelar" />
+                    <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
+                      <BotonReenviar accion={reenviarInvitacion} id={i.id} />
+                      <Confirmar accion={cancelarInvitacion} id={i.id} texto="Cancelar invitación" confirmar="Sí, cancelar" />
+                    </div>
                   </li>
                 ))}
               </ul>
