@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { correoInvitacion } from "@/lib/cuenta/correo-invitacion";
+import { correoAccesoRetirado, correoInvitacion } from "@/lib/cuenta/correo-invitacion";
 import { empresasParaInvitar } from "@/lib/cuenta/invitar";
 import { LARGO_MINIMO_CONTRASENA } from "@/lib/cuenta/roles";
 import {
@@ -144,12 +144,36 @@ export async function quitarUsuario(d: FormData) {
   const { supabase, usuario, empresa } = await requerirEmpresa();
   const usuarioId = id(d);
   if (!usuarioId) return;
+  // Su correo se lee antes de quitarlo: después ya no aparece en la lista.
+  const quitado =
+    usuarioId === usuario.id
+      ? null
+      : ((await supabase.rpc("usuarios_de", { p_empresa: empresa.id })).data ?? []).find((u) => u.usuario_id === usuarioId);
   const { error } = await supabase.rpc("quitar_usuario", { p_empresa: empresa.id, p_usuario: usuarioId });
   refrescar();
   if (!error && usuarioId === usuario.id) {
     (await cookies()).delete(COOKIE_EMPRESA);
     redirect("/cuenta");
   }
+  if (!error && quitado?.correo && correoActivo()) await avisarAccesoRetirado(supabase, usuario, empresa.nombre, quitado.correo);
+}
+
+/** Avisa por correo a quien le quitaron el acceso. Si falla, no detiene nada. */
+async function avisarAccesoRetirado(
+  supabase: Awaited<ReturnType<typeof requerirEmpresa>>["supabase"],
+  usuario: { id: string; email?: string },
+  empresa: string,
+  correo: string,
+) {
+  const { data: perfil } = await supabase.from("perfiles").select("nombre").eq("id", usuario.id).maybeSingle();
+  const mensaje = correoAccesoRetirado({
+    empresa,
+    quien: perfil?.nombre || usuario.email || `Quien administra ${empresa}`,
+    contacto: perfil?.nombre ? (usuario.email ?? null) : null,
+    liga: `${await origenSolicitud()}/cuenta`,
+  });
+  const envio = await enviarCorreo({ para: correo, ...mensaje });
+  if (envio.error) console.error("No se pudo avisar del acceso retirado:", envio.error);
 }
 
 // --- Invitaciones que me hicieron ------------------------------------------

@@ -46,3 +46,32 @@ ${lista}<p style="margin:0 0 20px;"><a href="${escapar(opts.liga)}" style="displ
   ].join("\n");
   return { asunto: `Te invitaron a ${empresas} en ${site.nombre}`, html, texto };
 }
+
+/** Correo que avisa a alguien que le quitaron el acceso a la plataforma de una empresa. */
+export function correoAccesoRetirado(opts: { empresa: string; quien: string; contacto: string | null; liga: string }) {
+  const contacto = opts.contacto ? `${opts.quien} (${opts.contacto})` : opts.quien;
+  const html = `<!doctype html><html lang="es"><body style="margin:0;background:#EEF0F5;font-family:Arial,Helvetica,sans-serif;color:#1B1F3B;">
+<div style="max-width:520px;margin:0 auto;padding:24px;">
+<div style="background:#fff;border-radius:14px;overflow:hidden;">
+<div style="background:#1B1F3B;color:#fff;padding:20px 24px;">
+<p style="margin:0;font-size:20px;font-weight:bold;">${escapar(site.nombre)}</p>
+</div>
+<div style="padding:24px;">
+<p style="margin:0 0 12px;font-size:18px;font-weight:bold;">Ya no tienes acceso a ${escapar(opts.empresa)}</p>
+<p style="margin:0 0 16px;font-size:15px;line-height:1.55;">${escapar(opts.quien)} quitó tu acceso a la plataforma de ${escapar(opts.empresa)} en ${escapar(site.nombre)}. Tu cuenta sigue activa y, si estás en otras empresas, sigues entrando a ellas.</p>
+<p style="margin:0 0 20px;font-size:15px;line-height:1.55;">Si crees que es un error, escríbele a ${escapar(contacto)}.</p>
+<p style="margin:0 0 20px;"><a href="${escapar(opts.liga)}" style="display:inline-block;background:#E63B2E;color:#fff;text-decoration:none;font-weight:bold;padding:12px 22px;border-radius:999px;font-size:15px;">Entrar a mi cuenta</a></p>
+<p style="margin:0;font-size:13px;line-height:1.5;color:#5C6178;">Este es un aviso automático; no hace falta responderlo.</p>
+</div></div>
+</div></body></html>`;
+  const texto = [
+    `Ya no tienes acceso a ${opts.empresa}`,
+    "",
+    `${opts.quien} quitó tu acceso a la plataforma de ${opts.empresa} en ${site.nombre}. Tu cuenta sigue activa y, si estás en otras empresas, sigues entrando a ellas.`,
+    "",
+    `Si crees que es un error, escríbele a ${contacto}.`,
+    "",
+    `Entrar a mi cuenta: ${opts.liga}`,
+  ].join("\n");
+  return { asunto: `Ya no tienes acceso a ${opts.empresa} en ${site.nombre}`, html, texto };
+}
