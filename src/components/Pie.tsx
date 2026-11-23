@@ -73,7 +73,7 @@ export function Pie() {
         </nav>
       </Contenedor>
       <div className="border-t border-white/10">
-        <Contenedor className="flex flex-col gap-3 py-5 text-xs text-white/60 sm:flex-row sm:items-center sm:justify-between">
+        <Contenedor className="flex flex-col items-center gap-3 pt-5 pb-24 text-center text-xs text-white/60 sm:pb-28">
           <p>
             © {site.actualizado.slice(0, 4)} {site.nombre}. Hecho en {site.estadoBase}, México.
           </p>
