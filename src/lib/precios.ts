@@ -141,7 +141,17 @@ export function tramoPara(cantidad: number): Tramo {
   );
 }
 
-export type Opciones = { modalidad?: Modalidad; dosCaras?: boolean; material?: MaterialId };
+export type Opciones = {
+  modalidad?: Modalidad;
+  dosCaras?: boolean;
+  material?: MaterialId;
+  /** Piezas de un paquete prepagado de lista: se cotiza el paquete en lugar de piezas sueltas. */
+  paquete?: number;
+};
+
+/** El paquete de lista con esas piezas, o null si no existe. */
+export const paquetePara = (piezas: unknown): Paquete | null =>
+  paquetes.find((p) => p.piezas === Number(piezas)) ?? null;
 
 export type Cotizacion = {
   piezas: number;
@@ -161,6 +171,8 @@ export type Cotizacion = {
   faltaParaEnvioGratis: number;
   iva: number;
   total: number;
+  /** Paquete prepagado cotizado: sus envíos ya van incluidos en el precio. */
+  paquete: Paquete | null;
 };
 
 /** Limita la cantidad a un entero entre 1 y 100,000. */
@@ -169,15 +181,23 @@ export function normalizarCantidad(cantidad: number): number {
 }
 
 export function cotizar(cantidad: number, opciones: Opciones = {}): Cotizacion {
-  const piezas = normalizarCantidad(cantidad);
   const modalidad = opciones.modalidad ?? "impreso";
+  // Los paquetes prepagados son de gafetes impresos, sin la versión digital.
+  const paquete = modalidad === "impreso" ? paquetePara(opciones.paquete) : null;
+  const piezas = paquete ? paquete.piezas : normalizarCantidad(cantidad);
   const impreso = modalidad !== "digital";
   const dosCaras = impreso && Boolean(opciones.dosCaras);
   const material = impreso ? materialPara(opciones.material) : null;
   const tramo = tramoPara(piezas);
 
   const conceptos: Cotizacion["conceptos"] = [];
-  if (impreso) {
+  if (paquete) {
+    conceptos.push({ nombre: `Paquete prepagado de ${paquete.piezas} gafetes, una cara`, porPieza: paquete.porPieza });
+    if (material && material.extra > 0) {
+      conceptos.push({ nombre: `Material: ${material.nombre}`, porPieza: material.extra });
+    }
+    if (dosCaras) conceptos.push({ nombre: "Impresión por frente y vuelta", porPieza: extraDosCaras(piezas) });
+  } else if (impreso) {
     conceptos.push({ nombre: "Gafete impreso en PVC, una cara", porPieza: tramo.precio });
     if (material && material.extra > 0) {
       conceptos.push({ nombre: `Material: ${material.nombre}`, porPieza: material.extra });
@@ -190,8 +210,9 @@ export function cotizar(cantidad: number, opciones: Opciones = {}): Cotizacion {
 
   const porPieza = conceptos.reduce((suma, c) => suma + c.porPieza, 0);
   const subtotal = porPieza * piezas;
-  const envioGratis = impreso && subtotal >= envio.gratisDesde;
-  const costoEnvio = impreso && !envioGratis ? envio.tarifa : 0;
+  // En un paquete los envíos ya van incluidos en el precio por pieza.
+  const envioGratis = impreso && !paquete && subtotal >= envio.gratisDesde;
+  const costoEnvio = impreso && !paquete && !envioGratis ? envio.tarifa : 0;
   const iva = Math.round((subtotal + costoEnvio) * tasaIva * 100) / 100;
 
   return {
@@ -205,9 +226,10 @@ export function cotizar(cantidad: number, opciones: Opciones = {}): Cotizacion {
     llevaEnvio: impreso,
     envio: costoEnvio,
     envioGratis,
-    faltaParaEnvioGratis: impreso && !envioGratis ? envio.gratisDesde - subtotal : 0,
+    faltaParaEnvioGratis: impreso && !paquete && !envioGratis ? envio.gratisDesde - subtotal : 0,
     iva,
     total: Math.round((subtotal + costoEnvio + iva) * 100) / 100,
+    paquete,
   };
 }
 

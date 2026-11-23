@@ -146,7 +146,8 @@ export function cotizarArticulo(a: ArticuloCarrito): ArticuloCotizado | null {
   const c = cotizarPaquete(a.renglones);
   if (c.incompleto || c.piezas > carritoMaximoPiezas) return null;
   return {
-    nombre: `Paquete a la medida de ${c.piezas.toLocaleString("es-MX")} gafetes prepagados`,
+    // Un solo tipo de gafete (como el que sale del cotizador) es un paquete de lista con otras opciones.
+    nombre: `${c.renglones.length === 1 ? "Paquete" : "Paquete a la medida"} de ${c.piezas.toLocaleString("es-MX")} gafetes prepagados`,
     detalle: [
       ...c.renglones.map(
         (r) => `${r.piezas.toLocaleString("es-MX")} · ${caras(r.dosCaras)}, ${r.material.nombre}: ${pesos(r.porPieza)} por pieza`,
