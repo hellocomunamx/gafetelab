@@ -32,7 +32,7 @@ export const metadata: Metadata = { title: "Pedido" };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const COLUMNAS =
-  "id, folio, tipo, conceptos, articulos, gafetes_de_saldo, envio_de_saldo, estado, material, dos_caras, piezas, fuente, por_pieza, subtotal, envio, iva, total, direccion, facturacion, solo_transferencia, metodo, ficha_url, gracia_hasta, paqueteria, guia, pagado_en, produccion_en, enviado_en, entregado_en, cancelado_en, creado_en";
+  "id, folio, tipo, modalidad, conceptos, articulos, gafetes_de_saldo, envio_de_saldo, estado, material, dos_caras, piezas, fuente, por_pieza, subtotal, envio, iva, total, direccion, facturacion, solo_transferencia, metodo, ficha_url, gracia_hasta, paqueteria, guia, pagado_en, produccion_en, enviado_en, entregado_en, cancelado_en, creado_en";
 const hora = (iso: string) =>
   new Date(iso).toLocaleTimeString("es-MX", { hour: "numeric", minute: "2-digit", timeZone: "America/Hermosillo" });
 
@@ -52,7 +52,7 @@ export default async function Pedido({
 
   const [{ data: pedido }, { data: gafetes }] = await Promise.all([
     supabase.from("pedidos").select(COLUMNAS).eq("id", id).eq("empresa_id", empresa.id).maybeSingle(),
-    supabase.from("gafetes").select("id, empleado_id, motivo, datos").eq("pedido_id", id).eq("empresa_id", empresa.id).limit(5000),
+    supabase.from("gafetes").select("id, empleado_id, tipo, estado, motivo, datos").eq("pedido_id", id).eq("empresa_id", empresa.id).limit(5000),
   ]);
   if (!pedido) notFound();
 
@@ -61,7 +61,12 @@ export default async function Pedido({
   const direccion = pedido.direccion as DireccionCopiada | null;
   const facturacion = pedido.facturacion as FacturacionCopiada | null;
   const material = pedido.material ? materialPara(pedido.material as Parameters<typeof materialPara>[0]) : null;
+  const soloDigital = pedido.modalidad === "digital";
+  const conDigital = pedido.modalidad !== "impreso" && pedido.tipo !== "prepago";
+  const digitalesActivos = (gafetes ?? []).filter((g) => g.tipo === "digital" && g.estado === "activo").length;
+  // Una fila por persona: con impreso + digital, cada persona tiene dos gafetes en el pedido.
   const personas = (gafetes ?? [])
+    .filter((g) => g.tipo === (soloDigital ? "digital" : "impreso"))
     .map((g) => ({ id: g.id, empleado: g.empleado_id, motivo: g.motivo, ...(g.datos as unknown as GafeteCopiado) }))
     .sort((a, b) => (a.nombre ?? "").localeCompare(b.nombre ?? "", "es"));
   const prepago = pedido.tipo === "prepago";
@@ -75,11 +80,20 @@ export default async function Pedido({
         pagado: "¡Listo! Tus gafetes ya están en tu saldo prepagado. Úsalos cuando quieras al hacer un pedido.",
         autorizado: "Tu tarjeta ya autorizó el pago. Todavía puedes cancelar sin costo; después se hace el cargo y tus gafetes quedan en tu saldo.",
       }
-    : {};
+    : soloDigital
+      ? {
+          por_pagar: "Tu pedido está guardado. Los gafetes digitales se activan en cuanto se confirme el pago.",
+          autorizado: "Tu tarjeta ya autorizó el pago. Todavía puedes cancelar sin costo; después se hace el cargo y se activan tus gafetes digitales.",
+          pagado: "Recibimos tu pago. Revisamos tu pedido antes de activar los gafetes digitales; normalmente tarda menos de un día hábil.",
+          entregado: "Tus gafetes digitales ya están activos en el celular de cada persona.",
+        }
+      : {};
+  // Un pedido solo digital no se produce ni se envía: se activa.
+  const pasos: readonly Estado[] = soloDigital ? ["por_pagar", "pagado", "entregado"] : pasosPedido;
   const enGracia = estado === "autorizado" && sigueEnGracia(pedido.gracia_hasta);
   const cerrado = estado === "cancelado" || estado === "reembolsado";
   // Pasos ya cumplidos: hacer el pedido cuenta como el primero.
-  const cumplidos = pasosPedido.indexOf(estado === "pago_en_proceso" || estado === "autorizado" ? "por_pagar" : estado) + 1;
+  const cumplidos = pasos.indexOf(estado === "pago_en_proceso" || estado === "autorizado" ? "por_pagar" : estado) + 1;
   const fechas: Partial<Record<Estado, string | null>> = {
     por_pagar: pedido.creado_en,
     pagado: pedido.pagado_en,
@@ -102,7 +116,8 @@ export default async function Pedido({
 
       {regreso === "saldo" && estado === "pagado" ? (
         <p role="status" className="rounded-tarjeta bg-resaltador/30 p-4 text-sm">
-          <strong>¡Listo! Tu pedido salió completo de tu saldo prepagado.</strong> No hay nada que pagar: lo revisamos y lo mandamos a producción.
+          <strong>¡Listo! Tu pedido salió completo de tu saldo prepagado.</strong> No hay nada que pagar:{" "}
+          {soloDigital ? "lo revisamos y activamos tus gafetes digitales." : "lo revisamos y lo mandamos a producción."}
         </p>
       ) : regreso === "error" ? (
         <p role="alert" className="rounded-tarjeta bg-resaltador/30 p-4 text-sm">
@@ -219,8 +234,8 @@ export default async function Pedido({
           </div>
         ) : null}
         {cerrado || prepago ? null : (
-          <ol className="mt-5 grid gap-2 text-sm sm:grid-cols-5">
-            {pasosPedido.map((paso, i) => {
+          <ol className={`mt-5 grid gap-2 text-sm ${soloDigital ? "sm:grid-cols-3" : "sm:grid-cols-5"}`}>
+            {pasos.map((paso, i) => {
               const hecho = i < cumplidos;
               const actual = i === cumplidos;
               const fecha = hecho ? fechas[paso] : null;
@@ -232,7 +247,7 @@ export default async function Pedido({
                 >
                   <span className="block font-semibold">
                     <span aria-hidden className="mr-1.5">{hecho ? "✓" : "○"}</span>
-                    {paso === "por_pagar" ? "Pedido hecho" : estadosPedido[paso].nombre}
+                    {paso === "por_pagar" ? "Pedido hecho" : soloDigital && paso === "entregado" ? "Activos" : estadosPedido[paso].nombre}
                   </span>
                   {fecha ? <span className="block text-xs text-gris">{fechaHora(fecha)}</span> : null}
                 </li>
@@ -240,7 +255,7 @@ export default async function Pedido({
             })}
           </ol>
         )}
-        {!prepago && (estado === "pagado" || estado === "en_produccion") ? (
+        {!prepago && !soloDigital && (estado === "pagado" || estado === "en_produccion") ? (
           <p className="mt-3 text-sm text-gris">La entrega es en {entregaTexto}, contados desde que se confirmó tu pago.</p>
         ) : null}
       </section>
@@ -285,7 +300,7 @@ export default async function Pedido({
                 <dd className="font-semibold">{pesos(Number(pedido.subtotal))}</dd>
               </div>
             )}
-            {prepago ? null : (
+            {prepago || soloDigital ? null : (
               <div className="flex justify-between gap-3">
                 <dt>Envío</dt>
                 <dd>{Number(pedido.envio) ? pesos(Number(pedido.envio)) : pedido.envio_de_saldo ? "De tu saldo" : "Gratis"}</dd>
@@ -306,7 +321,7 @@ export default async function Pedido({
           </p>
         </Bloque>
 
-        <Bloque titulo={prepago ? "Factura" : "Envío y factura"}>
+        <Bloque titulo={prepago || soloDigital ? "Factura" : "Envío y factura"}>
           {direccion ? (
             <p className="text-sm">
               <strong>{direccion.destinatario}</strong> · {direccion.telefono}
@@ -328,6 +343,27 @@ export default async function Pedido({
         </Bloque>
       </div>
 
+      {conDigital ? (
+        <Bloque titulo="Gafetes digitales">
+          <p className="text-sm">
+            {digitalesActivos
+              ? `${digitalesActivos.toLocaleString("es-MX")} ${digitalesActivos === 1 ? "gafete digital activo" : "gafetes digitales activos"}. Cada persona lo abre en su celular con su liga personal y lo puede guardar en su pantalla de inicio.`
+              : cerrado
+                ? "Los gafetes digitales de este pedido no se activaron."
+                : "Se activan en cuanto se confirme el pago."}
+          </p>
+          {digitalesActivos ? (
+            <p className="mt-2 text-sm text-gris">
+              A quienes tienen correo les mandamos su liga al activarse. A los demás mándasela desde{" "}
+              <Link href="/cuenta/equipo/ligas" className="font-semibold text-rojo underline underline-offset-4">
+                Ligas
+              </Link>
+              , por WhatsApp o copiándola. Si cambian sus datos, su gafete digital se actualiza solo.
+            </p>
+          ) : null}
+        </Bloque>
+      ) : null}
+
       {personas.length ? (
       <Bloque titulo={`${personas.length === 1 ? "1 gafete" : `${personas.length.toLocaleString("es-MX")} gafetes`} en este pedido`}>
         <ul className="max-h-80 divide-y divide-linea overflow-y-auto text-sm">
@@ -343,7 +379,9 @@ export default async function Pedido({
           ))}
         </ul>
         <p className="mt-3 text-sm text-gris">
-          Se imprimen con los datos y el diseño que tenían cuando hiciste el pedido. Los cambios posteriores no lo modifican.
+          {soloDigital
+            ? "Usan el diseño que aprobaste en este pedido, con los datos y la foto vigentes de cada persona."
+            : "Se imprimen con los datos y el diseño que tenían cuando hiciste el pedido. Los cambios posteriores no lo modifican."}
         </p>
       </Bloque>
       ) : null}

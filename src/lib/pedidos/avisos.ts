@@ -155,6 +155,8 @@ export async function procesarAviso(servicio: Servicio, aviso: AvisoStripe): Pro
         if (pedido.tipo === "prepago") await anularSaldos(servicio, pedido.id);
         // Lo que no se alcanzó a entregar deja de contar como gafete emitido.
         await servicio.from("gafetes").update({ estado: "cancelado" }).eq("pedido_id", pedido.id).in("estado", ["en_pedido", "en_produccion"]);
+        // Los gafetes digitales que ya estaban en el celular dejan de mostrarse.
+        await servicio.from("gafetes").update({ estado: "desactivado" }).eq("pedido_id", pedido.id).eq("tipo", "digital").eq("estado", "activo");
       }
       await anotar(servicio, pedido.id, total ? "reembolsado" : "reembolso_parcial", { devuelto: Number(o.amount_refunded) || 0 });
       return total ? "reembolsado" : "reembolso_parcial";

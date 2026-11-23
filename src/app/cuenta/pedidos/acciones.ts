@@ -18,7 +18,7 @@ import {
   soloTransferencia,
 } from "@/lib/pedidos/reglas";
 import { abrirCobro, anotar, cancelarAutorizado, cerrarCobro, liberarSaldo, marcarPagado, saldoDe } from "@/lib/pedidos/servidor";
-import { cotizarConSaldo } from "@/lib/pedidos/saldo";
+import { cotizarPedido, esModalidad, llevaDigital, llevaImpreso } from "@/lib/pedidos/digital";
 import { stripeActivo } from "@/lib/stripe";
 import { clienteServicio } from "@/lib/supabase/publico";
 import type { Json } from "@/lib/supabase/tipos";
@@ -30,6 +30,8 @@ const SOLO_ADMIN = "Solo quien es dueño o administrador de la empresa puede hac
 export type EntradaPedido = {
   /** Id de un diseño o "listos". */
   fuente: string;
+  /** Impreso, digital o los dos. Si no llega, impreso. */
+  modalidad?: string;
   personas: string[];
   material: string;
   direccion: string;
@@ -58,7 +60,11 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
   if (!ids.length) return { error: "Elige al menos a una persona." };
   if (ids.length > pedidoMaximoPiezas) return { error: `Un pedido lleva hasta ${pedidoMaximoPiezas.toLocaleString("es-MX")} gafetes.` };
 
-  const material = materiales.find((m) => m.id === entrada.material && m.disponible);
+  const modalidad = esModalidad(entrada.modalidad) ? entrada.modalidad : "impreso";
+  const impreso = llevaImpreso(modalidad);
+  const digital = llevaDigital(modalidad);
+  // Lo digital no lleva material: el precio se calcula como estándar y no se guarda.
+  const material = impreso ? materiales.find((m) => m.id === entrada.material && m.disponible) : materiales[0];
   if (!material) return { error: "Elige el material de tus gafetes." };
 
   const { fuentes } = await prepararPedido(supabase, empresa);
@@ -71,7 +77,7 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
   }
 
   const [{ data: direccion }, { data: fiscales }, { count: abiertos }, { count: pagados }, aceptacion] = await Promise.all([
-    UUID.test(entrada.direccion ?? "")
+    impreso && UUID.test(entrada.direccion ?? "")
       ? supabase.from("direcciones").select("*").eq("id", entrada.direccion).eq("empresa_id", empresa.id).maybeSingle()
       : Promise.resolve({ data: null }),
     entrada.facturacion && UUID.test(entrada.facturacion)
@@ -81,15 +87,25 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
     servicio.from("pedidos").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).eq("tipo", "impresion").not("pagado_en", "is", null),
     miAceptacion(),
   ]);
-  if (!direccion) return { error: "Elige a dónde enviamos tu pedido." };
+  if (impreso && !direccion) return { error: "Elige a dónde enviamos tu pedido." };
   if (entrada.facturacion && !fiscales) return { error: "Esos datos de facturación ya no existen. Vuelve a cargar la página." };
   if ((abiertos ?? 0) >= pedidosAbiertosMaximo) {
     return { error: "Tienes varios pedidos sin pagar. Paga o cancela alguno antes de hacer otro." };
   }
 
-  const dosCaras = llevaVuelta(fuente, ids);
+  // Quien ya tiene su gafete digital no lo vuelve a pagar: sigue sirviendo aunque cambien sus datos.
+  if (digital) {
+    const yaTienen = await conDigital(servicio, empresa.id, ids);
+    if (yaTienen.size) {
+      return {
+        error: `${yaTienen.size === 1 ? "Una persona ya tiene" : `${yaTienen.size} personas ya tienen`} su gafete digital. Quítalas del pedido o pide solo impreso.`,
+      };
+    }
+  }
+
+  const dosCaras = impreso && llevaVuelta(fuente, ids);
   // Primero se usa el saldo prepagado de la empresa; solo se cobra lo que falte.
-  const c = cotizarConSaldo(ids.length, { dosCaras, material: material.id as MaterialId }, await saldoDe(servicio, empresa.id));
+  const c = cotizarPedido(ids.length, { modalidad, dosCaras, material: material.id as MaterialId }, await saldoDe(servicio, empresa.id));
   const h = await headers();
   const aprobacion: AprobacionPedido = {
     vista_previa: true,
@@ -100,7 +116,7 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
     navegador: h.get("user-agent")?.slice(0, 300) ?? null,
     en: new Date().toISOString(),
   };
-  const copiaDireccion: DireccionCopiada = {
+  const copiaDireccion: DireccionCopiada | null = direccion && {
     destinatario: direccion.destinatario,
     telefono: direccion.telefono,
     calle: direccion.calle,
@@ -132,8 +148,8 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
     .insert({
       empresa_id: empresa.id,
       creado_por: usuario.id,
-      modalidad: "impreso",
-      material: material.id,
+      modalidad,
+      material: impreso ? material.id : null,
       dos_caras: dosCaras,
       piezas: c.piezas,
       fuente: fuente.tipo,
@@ -169,25 +185,28 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
     }
   }
 
-  // Los gafetes del pedido, con la copia de cada persona. Quien ya tuvo un gafete impreso lleva una reposición.
+  // Los gafetes del pedido, con la copia de cada persona: uno impreso, uno digital o los dos.
+  // Quien ya tuvo un gafete del mismo tipo lleva una reposición.
   const { data: previos } = await servicio
     .from("gafetes")
-    .select("empleado_id")
+    .select("empleado_id, tipo")
     .eq("empresa_id", empresa.id)
-    .eq("tipo", "impreso")
     .neq("estado", "cancelado")
     .limit(20000);
-  const conGafete = new Set((previos ?? []).map((g) => g.empleado_id));
-  const renglones = copias.map((x) => ({
-    empresa_id: empresa.id,
-    empleado_id: x.id,
-    tipo: "impreso",
-    motivo: conGafete.has(x.id) ? "reposicion" : "alta",
-    estado: "en_pedido",
-    datos: x.gafete!.copia as unknown as NonNullable<Json>,
-    diseno_id: fuente.fila?.id ?? null,
-    pedido_id: pedido.id,
-  }));
+  const conGafete = new Set((previos ?? []).map((g) => `${g.tipo}:${g.empleado_id}`));
+  const tipos = [...(impreso ? ["impreso"] : []), ...(digital ? ["digital"] : [])];
+  const renglones = tipos.flatMap((tipo) =>
+    copias.map((x) => ({
+      empresa_id: empresa.id,
+      empleado_id: x.id,
+      tipo,
+      motivo: conGafete.has(`${tipo}:${x.id}`) ? "reposicion" : "alta",
+      estado: "en_pedido",
+      datos: x.gafete!.copia as unknown as NonNullable<Json>,
+      diseno_id: fuente.fila?.id ?? null,
+      pedido_id: pedido.id,
+    })),
+  );
   for (let i = 0; i < renglones.length; i += 500) {
     const { error: falla } = await servicio.from("gafetes").insert(renglones.slice(i, i + 500));
     if (falla) {
@@ -199,7 +218,7 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
     servicio,
     pedido.id,
     "creado",
-    { piezas: c.piezas, total: c.total, de_saldo: c.deSaldo, envio_de_saldo: c.envioDeSaldo, fuente: fuente.id === FUENTE_LISTOS ? "listos" : fuente.nombre },
+    { piezas: c.piezas, modalidad, total: c.total, de_saldo: c.deSaldo, digitales_de_saldo: c.digitalesDeSaldo, envio_de_saldo: c.envioDeSaldo, fuente: fuente.id === FUENTE_LISTOS ? "listos" : fuente.nombre },
     usuario.id,
   );
   revalidatePath("/cuenta", "layout");
@@ -263,4 +282,20 @@ export async function cancelarPedido(d: FormData) {
     }
   }
   revalidatePath("/cuenta", "layout");
+}
+
+/** Personas que ya tienen un gafete digital pedido o activo. */
+async function conDigital(servicio: NonNullable<ReturnType<typeof clienteServicio>>, empresaId: string, ids: string[]): Promise<Set<string>> {
+  const encontradas = new Set<string>();
+  for (let i = 0; i < ids.length; i += 200) {
+    const { data } = await servicio
+      .from("gafetes")
+      .select("empleado_id")
+      .eq("empresa_id", empresaId)
+      .eq("tipo", "digital")
+      .in("estado", ["en_pedido", "activo"])
+      .in("empleado_id", ids.slice(i, i + 200));
+    for (const g of data ?? []) encontradas.add(g.empleado_id);
+  }
+  return encontradas;
 }
