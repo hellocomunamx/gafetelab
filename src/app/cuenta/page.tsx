@@ -10,7 +10,7 @@ import { leerPredeterminados } from "@/lib/pedidos/predeterminados";
 import { claveDe } from "@/lib/cuenta/texto";
 
 export default async function Resumen() {
-  const { supabase, empresa } = await requerirEmpresa();
+  const { supabase, usuario, empresa } = await requerirEmpresa();
   const contar = (filtro: (q: ReturnType<typeof base>) => ReturnType<typeof base>) =>
     filtro(base()).then((r) => r.count ?? 0);
   const base = () =>
@@ -27,6 +27,13 @@ export default async function Resumen() {
     supabase.from("datos_fiscales").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).then((r) => r.count ?? 0),
     supabase.from("disenos").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).then((r) => r.count ?? 0),
   ]);
+
+  // Saludo con el nombre de pila: el de su perfil o, si entró con Google, el de su cuenta.
+  const { data: perfil } = await supabase.from("perfiles").select("nombre").eq("id", usuario.id).maybeSingle();
+  const meta = usuario.user_metadata as { full_name?: unknown; name?: unknown } | undefined;
+  const completo = [perfil?.nombre, meta?.full_name, meta?.name].find((v): v is string => typeof v === "string" && !!v.trim());
+  const nombre = completo?.trim().split(/\s+/)[0];
+  const verificada = constancia?.estado === "aprobada";
 
   const { data: ajustes } = await supabase.from("empresas").select("predeterminados").eq("id", empresa.id).maybeSingle();
   const { aviso } = leerPredeterminados(ajustes?.predeterminados);
@@ -48,7 +55,29 @@ export default async function Resumen() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-extrabold">Hola, {empresa.nombre}</h1>
+      <div>
+        <h1 className="text-3xl font-extrabold">{nombre ? `Hola, ${nombre}` : "¡Hola!"}</h1>
+        <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2 text-lg text-gris">
+          <span>
+            Te damos la bienvenida a tu plataforma de <strong className="text-tinta">{empresa.nombre}</strong>.
+          </span>
+          {verificada ? (
+            <Link
+              href="/cuenta/verificacion"
+              className="inline-flex items-center gap-1.5 rounded-full bg-[#e3f4ec] px-3 py-1 text-sm font-semibold text-[#0a5c3b]"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden className="shrink-0">
+                <path
+                  fill="currentColor"
+                  d="M12 1.5l2.6 1.9 3.2-.1 1 3 2.6 1.9-1 3.1 1 3.1-2.6 1.9-1 3-3.2-.1L12 22.5l-2.6-1.9-3.2.1-1-3-2.6-1.9 1-3.1-1-3.1 2.6-1.9 1-3 3.2.1L12 1.5z"
+                />
+                <path fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" d="M8 12.3l2.7 2.7L16.2 9.5" />
+              </svg>
+              Empresa verificada
+            </Link>
+          ) : null}
+        </p>
+      </div>
       {!constancia || constancia.estado === "rechazada" ? (
         <div role={constancia ? "alert" : undefined} className="rounded-tarjeta bg-resaltador/30 p-4 text-sm">
           <p>
