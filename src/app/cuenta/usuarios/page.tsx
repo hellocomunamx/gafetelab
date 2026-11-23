@@ -82,7 +82,7 @@ export default async function Usuarios() {
                   ) : null}
                   {puedoQuitar ? (
                     <Confirmar accion={quitarUsuario} id={u.usuario_id} texto="Quitar acceso" confirmar="Sí, quitar">
-                      Ya no podrá entrar a la plataforma de {empresa.nombre}.
+                      Ya no podrá entrar a la plataforma de {empresa.nombre}. Le avisaremos por correo.
                     </Confirmar>
                   ) : null}
                   {soyYo && suRol !== "propietario" ? (

@@ -90,7 +90,18 @@ export async function elegirEmpresa(d: FormData) {
     if (data) await recordarEmpresa(data.id);
   }
   refrescar();
-  redirect("/cuenta");
+  redirect(mismaSeccion(d.get("ruta")));
+}
+
+/**
+ * Al cambiar de empresa se queda en la misma sección. Si estaba en algo de la
+ * otra empresa (un diseño, una persona, un pedido), cae a la lista de esa sección.
+ */
+function mismaSeccion(ruta: unknown): string {
+  if (typeof ruta !== "string" || !/^\/cuenta(\/[a-z0-9-]+)*$/i.test(ruta)) return "/cuenta";
+  const partes = ruta.split("/");
+  const elemento = partes.findIndex((p) => UUID.test(p));
+  return elemento === -1 ? ruta : partes.slice(0, elemento).join("/");
 }
 
 export async function guardarEmpresa(_: Resultado, d: FormData): Promise<Resultado> {
