@@ -1,11 +1,14 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { elegirEmpresa } from "@/app/cuenta/acciones";
 
-/** Lista de las empresas de la persona: al elegir otra, cambia de inmediato. */
+/** Lista de las empresas de la persona: al elegir otra, cambia de inmediato y se queda en la misma sección. */
 export function SelectorEmpresa({ empresas, actual }: { empresas: { id: string; nombre: string }[]; actual?: string }) {
+  const ruta = usePathname();
   return (
     <form action={elegirEmpresa} className="flex items-center gap-2">
+      <input type="hidden" name="ruta" value={ruta} />
       <label className="sr-only" htmlFor="empresa">
         Cambiar de empresa
       </label>
