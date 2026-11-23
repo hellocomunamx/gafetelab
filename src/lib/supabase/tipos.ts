@@ -171,16 +171,44 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
-                },"gafetes": {
+                },"reglas_diseno": {
                   Row: {
-                    "datos": NonNullable<Json>,"diseno_id": string | null,"emitido_en": string,"empleado_id": string,"empresa_id": string,"estado": string,"id": string,"motivo": string,"pedido_id": string | null,"tipo": string
+                    "campo": string,"creado_en": string,"diseno_id": string,"empresa_id": string,"id": string,"orden": number,"valor": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "datos"?: NonNullable<Json>,"diseno_id"?: string | null,"emitido_en"?: string,"empleado_id": string,"empresa_id": string,"estado"?: string,"id"?: string,"motivo": string,"pedido_id"?: string | null,"tipo": string
+                    "campo": string,"creado_en"?: string,"diseno_id": string,"empresa_id": string,"id"?: string,"orden"?: number,"valor": string
                   }
                   Update: {
-                    "datos"?: NonNullable<Json>,"diseno_id"?: string | null,"emitido_en"?: string,"empleado_id"?: string,"empresa_id"?: string,"estado"?: string,"id"?: string,"motivo"?: string,"pedido_id"?: string | null,"tipo"?: string
+                    "campo"?: string,"creado_en"?: string,"diseno_id"?: string,"empresa_id"?: string,"id"?: string,"orden"?: number,"valor"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"pedido_abierto": {
+                  Row: {
+                    "agregado_por": string | null,"creado_en": string,"empleado_id": string,"empresa_id": string,"razon": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "agregado_por"?: string | null,"creado_en"?: string,"empleado_id": string,"empresa_id": string,"razon": string
+                  }
+                  Update: {
+                    "agregado_por"?: string | null,"creado_en"?: string,"empleado_id"?: string,"empresa_id"?: string,"razon"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"gafetes": {
+                  Row: {
+                    "datos": NonNullable<Json>,"diseno_id": string | null,"emitido_en": string,"empleado_id": string,"empresa_id": string,"estado": string,"id": string,"motivo": string,"pedido_id": string | null,"razon": string | null,"tipo": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "datos"?: NonNullable<Json>,"diseno_id"?: string | null,"emitido_en"?: string,"empleado_id": string,"empresa_id": string,"estado"?: string,"id"?: string,"motivo": string,"pedido_id"?: string | null,"razon"?: string | null,"tipo": string
+                  }
+                  Update: {
+                    "datos"?: NonNullable<Json>,"diseno_id"?: string | null,"emitido_en"?: string,"empleado_id"?: string,"empresa_id"?: string,"estado"?: string,"id"?: string,"motivo"?: string,"pedido_id"?: string | null,"razon"?: string | null,"tipo"?: string
                   }
                   Relationships: [
                     {

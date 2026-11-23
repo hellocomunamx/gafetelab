@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { EstadoPedido } from "@/components/cuenta/EstadoPedido";
-import { claseBoton } from "@/components/cuenta/Formulario";
+import { claseBoton } from "@/components/cuenta/clases";
 import { fechaLarga } from "@/lib/cuenta/constancia";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
+import { pedidoAbiertoDe } from "@/lib/pedidos/abierto";
+import { leerPredeterminados } from "@/lib/pedidos/predeterminados";
 import { resumenSaldo } from "@/lib/pedidos/saldo";
 import { cobrarAutorizados, saldoDe } from "@/lib/pedidos/servidor";
 import { pesos } from "@/lib/precios";
@@ -16,7 +18,7 @@ export default async function Pedidos() {
   // De paso, se cobran los pedidos a los que ya se les acabaron los minutos de gracia.
   const servicio = clienteServicio();
   if (servicio) await cobrarAutorizados(servicio).catch(() => null);
-  const [{ data: pedidos }, saldos] = await Promise.all([
+  const [{ data: pedidos }, saldos, { data: ajustes }] = await Promise.all([
     supabase
       .from("pedidos")
       .select("id, folio, tipo, estado, piezas, total, creado_en")
@@ -24,7 +26,10 @@ export default async function Pedidos() {
       .order("creado_en", { ascending: false })
       .limit(200),
     saldoDe(supabase, empresa.id),
+    supabase.from("empresas").select("predeterminados").eq("id", empresa.id).maybeSingle(),
   ]);
+  const { aviso } = leerPredeterminados(ajustes?.predeterminados);
+  const abierto = (await pedidoAbiertoDe(supabase, empresa.id, aviso)).length;
   const enSaldo = resumenSaldo(saldos);
   const vence = saldos.find((s) => s.concepto === "gafetes")?.venceEn;
 
@@ -37,6 +42,26 @@ export default async function Pedidos() {
             Hacer un pedido
           </Link>
         ) : null}
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Link href="/cuenta/pedidos/abierto" className="rounded-tarjeta border border-linea bg-white p-5 hover:border-tinta">
+          <p className="font-titulos text-lg font-extrabold">
+            Pedido abierto{" "}
+            <span className="ml-1 rounded-full bg-resaltador/50 px-2 py-0.5 text-sm">
+              {abierto.toLocaleString("es-MX")}
+              {aviso.cantidad ? ` de ${aviso.cantidad.toLocaleString("es-MX")}` : ""}
+            </span>
+          </p>
+          <p className="mt-1 text-sm text-gris">
+            {aviso.cantidad && abierto >= aviso.cantidad
+              ? "Ya llegaste a tu cantidad. Revísalo y pídelo en un solo envío."
+              : "Ve sumando altas y reposiciones, y te avisamos al llegar a la cantidad que elijas."}
+          </p>
+        </Link>
+        <Link href="/cuenta/pedidos/ajustes" className="rounded-tarjeta border border-linea bg-white p-5 hover:border-tinta">
+          <p className="font-titulos text-lg font-extrabold">Predeterminados de tu negocio</p>
+          <p className="mt-1 text-sm text-gris">Tu material, tu diseño, tu dirección y tu factura ya elegidos en cada pedido nuevo.</p>
+        </Link>
       </div>
       {enSaldo.gafetes || enSaldo.envios || enSaldo.digitales ? (
         <section className="rounded-tarjeta border border-linea bg-white p-5 sm:p-6">

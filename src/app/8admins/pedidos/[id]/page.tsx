@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import { etiquetaMotivo } from "@/lib/pedidos/predeterminados";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Confirmar } from "@/components/cuenta/Confirmar";
 import { Bloque } from "@/components/cuenta/Entrada";
 import { EstadoPedido } from "@/components/cuenta/EstadoPedido";
-import { claseBoton, claseBotonSecundario, claseEntrada } from "@/components/cuenta/Formulario";
+import { claseBoton, claseBotonSecundario, claseEntrada } from "@/components/cuenta/clases";
 import { RUTA_ADMIN } from "@/lib/admin/ruta";
 import { requerirAdmin } from "@/lib/admin/sesion";
 import { materialPara } from "@/lib/materiales";
@@ -65,7 +66,7 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
   if (!pedido) notFound();
   const [{ data: empresa }, { data: gafetes }, { data: eventos }] = await Promise.all([
     servicio.from("empresas").select("id, nombre").eq("id", pedido.empresa_id).maybeSingle(),
-    servicio.from("gafetes").select("id, motivo, datos").eq("pedido_id", id).limit(5000),
+    servicio.from("gafetes").select("id, motivo, razon, datos").eq("pedido_id", id).limit(5000),
     servicio.from("pedido_eventos").select("id, tipo, detalle, creado_en").eq("pedido_id", id).order("creado_en").limit(500),
   ]);
 
@@ -74,7 +75,7 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
   const facturacion = pedido.facturacion as FacturacionCopiada | null;
   const material = pedido.material ? materialPara(pedido.material) : null;
   const personas = (gafetes ?? [])
-    .map((g) => ({ id: g.id, motivo: g.motivo, ...(g.datos as unknown as GafeteCopiado) }))
+    .map((g) => ({ id: g.id, motivo: g.motivo, razon: g.razon, ...(g.datos as unknown as GafeteCopiado) }))
     .sort((a, b) => (a.nombre ?? "").localeCompare(b.nombre ?? "", "es"));
   const prepago = pedido.tipo === "prepago";
   const conceptos = conceptosDe(pedido);
@@ -246,6 +247,11 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
                   {pedido.dos_caras ? "Frente y vuelta" : "Una cara"}
                   {material ? `, ${material.nombre}` : ""}
                   {pedido.fuente === "listos" ? ", gafetes que la empresa subió ya terminados" : ""}
+                  {(pedido.diseno as { reglas?: Record<string, { nombre: string }> } | null)?.reglas
+                    ? `, diseños por reglas (${Object.values((pedido.diseno as { reglas: Record<string, { nombre: string }> }).reglas)
+                        .map((d) => d.nombre)
+                        .join(", ")})`
+                    : ""}
                 </p>
               </>
             )}
@@ -358,7 +364,7 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
             <li key={p.id} className="flex flex-wrap items-baseline justify-between gap-x-3 py-2">
               <span className="font-semibold">{p.nombre}</span>
               <span className="text-gris">
-                {[p.numero, p.valores?.puesto, p.motivo === "reposicion" ? "Reposición" : null].filter(Boolean).join(" · ")}
+                {[p.numero, p.valores?.puesto, etiquetaMotivo(p.motivo, p.razon)].filter(Boolean).join(" · ")}
               </span>
             </li>
           ))}

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Bloque, Entrada } from "@/components/cuenta/Entrada";
-import { Formulario, claseBotonSecundario, claseEntrada } from "@/components/cuenta/Formulario";
+import { Formulario } from "@/components/cuenta/Formulario";
+import { claseBotonSecundario, claseEntrada } from "@/components/cuenta/clases";
 import { AccionesLiga, BotonConfirmado } from "@/components/cuenta/Ligas";
 import { correoActivo } from "@/lib/correo";
 import { constanciaDe, puedePedir } from "@/lib/cuenta/constancia";

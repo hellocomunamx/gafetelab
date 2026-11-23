@@ -56,7 +56,7 @@ const datosClave = () =>
     `- Entrega: ${entregaTexto}. Entrega exprés: próximamente.`,
     `- Envío: a todo México desde ${site.estadoBase}, con tarifa única de ${pesos(envio.tarifa)} MXN; gratis en pedidos desde ${pesos(envio.gratisDesde)} MXN antes de IVA.`,
     `- Cotización: el precio no se pide por correo. El cotizador en línea (${urlAbsoluta("/cotizar")}) muestra al momento precio, envío, IVA, total y entrega sin pedir datos, y permite descargar la cotización en PDF o recibirla por correo.`,
-    `- Plataforma: incluida con la cuenta, sin costo extra (sin mensualidad, sin costo por usuario y sin pedido mínimo). Hoy incluye: ${funciones(false)}. Próximamente: ${funciones(true)}.`,
+    `- Plataforma: incluida con la cuenta, sin costo extra (sin mensualidad, sin costo por usuario y sin pedido mínimo). Hoy incluye: ${funciones(false)}.${funciones(true) ? ` Próximamente: ${funciones(true)}.` : ""}`,
     `- Administración del equipo: ${accionesPlataforma.map((a) => a.titulo.toLowerCase()).join(", ")}. Ajustes de la empresa: ${ajustesPlataforma.map((a) => a.titulo.toLowerCase()).join(", ")}.`,
     `- Carga de datos del equipo: ${formasDeCargar.map((f) => `${f.titulo.charAt(0).toLowerCase()}${f.titulo.slice(1)}${f.pronto ? " (próximamente)" : ""}`).join("; ")}.`,
     `- Cómo se pide: en línea, con plantillas o diseño propio, campos variables (nombre, puesto, número, foto, código QR), carga del equipo y vista previa de cada gafete antes de pagar.`,

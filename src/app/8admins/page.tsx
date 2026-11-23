@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { claseBoton, claseBotonSecundario, claseEntrada } from "@/components/cuenta/Formulario";
+import { claseBoton, claseBotonSecundario, claseEntrada } from "@/components/cuenta/clases";
 import { palabrasSensibles, textosDeDiseno } from "@/lib/admin/alertas";
 import { RUTA_ADMIN } from "@/lib/admin/ruta";
 import { requerirAdmin } from "@/lib/admin/sesion";

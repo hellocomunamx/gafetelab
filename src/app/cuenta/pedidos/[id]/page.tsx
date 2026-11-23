@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import { etiquetaMotivo } from "@/lib/pedidos/predeterminados";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cancelarPedido, pagarPedido } from "@/app/cuenta/pedidos/acciones";
 import { Confirmar } from "@/components/cuenta/Confirmar";
 import { Bloque } from "@/components/cuenta/Entrada";
 import { EstadoPedido } from "@/components/cuenta/EstadoPedido";
-import { claseBoton, claseBotonSecundario } from "@/components/cuenta/Formulario";
+import { claseBoton, claseBotonSecundario } from "@/components/cuenta/clases";
 import { fechaLarga } from "@/lib/cuenta/constancia";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
 import { materialPara } from "@/lib/materiales";
@@ -52,7 +53,7 @@ export default async function Pedido({
 
   const [{ data: pedido }, { data: gafetes }] = await Promise.all([
     supabase.from("pedidos").select(COLUMNAS).eq("id", id).eq("empresa_id", empresa.id).maybeSingle(),
-    supabase.from("gafetes").select("id, empleado_id, motivo, datos").eq("pedido_id", id).eq("empresa_id", empresa.id).limit(5000),
+    supabase.from("gafetes").select("id, empleado_id, motivo, razon, datos").eq("pedido_id", id).eq("empresa_id", empresa.id).limit(5000),
   ]);
   if (!pedido) notFound();
 
@@ -62,7 +63,7 @@ export default async function Pedido({
   const facturacion = pedido.facturacion as FacturacionCopiada | null;
   const material = pedido.material ? materialPara(pedido.material as Parameters<typeof materialPara>[0]) : null;
   const personas = (gafetes ?? [])
-    .map((g) => ({ id: g.id, empleado: g.empleado_id, motivo: g.motivo, ...(g.datos as unknown as GafeteCopiado) }))
+    .map((g) => ({ id: g.id, empleado: g.empleado_id, motivo: g.motivo, razon: g.razon, ...(g.datos as unknown as GafeteCopiado) }))
     .sort((a, b) => (a.nombre ?? "").localeCompare(b.nombre ?? "", "es"));
   const prepago = pedido.tipo === "prepago";
   const conceptos = conceptosDe(pedido);
@@ -337,7 +338,7 @@ export default async function Pedido({
                 {p.nombre}
               </Link>
               <span className="text-gris">
-                {[p.numero, p.motivo === "reposicion" ? "Reposición" : null].filter(Boolean).join(" · ")}
+                {[p.numero, etiquetaMotivo(p.motivo, p.razon)].filter(Boolean).join(" · ")}
               </span>
             </li>
           ))}
