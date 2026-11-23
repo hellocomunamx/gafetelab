@@ -89,6 +89,13 @@ export default async function Admin() {
                     <p className="text-gris">
                       <strong className="text-tinta">{nombreMetodo(c.metodo)}</strong>
                       {c.fecha_emision ? ` · emitida el ${fechaLarga(c.fecha_emision)}` : ""} · mandada el {fechaLarga(c.creado_en)}
+                      {c.metodo === "constancia" ? (
+                        c.fecha_leida ? (
+                          <span className="text-[#0a5c3b]"> · fecha leída del PDF</span>
+                        ) : (
+                          <strong className="text-rojo-oscuro"> · fecha escrita a mano: compárala con el archivo</strong>
+                        )
+                      ) : null}
                     </p>
                     {c.negocio ? <p className="mt-1">Negocio en los gafetes: <strong>{c.negocio}</strong></p> : null}
                     {c.metodo === "constancia" ? (

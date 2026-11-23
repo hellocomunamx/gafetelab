@@ -7,7 +7,8 @@ import { guardarFiscalesDeConstancia } from "@/app/cuenta/verificacion/acciones"
 import { CartaResponsabilidad } from "@/components/cuenta/CartaResponsabilidad";
 import { claseBoton, claseEntrada } from "@/components/cuenta/Formulario";
 import { regimenesFiscales } from "@/lib/cuenta/catalogos";
-import { PESO_MAXIMO_CONSTANCIA, rutaConstancia, TIPOS_CONSTANCIA, type TipoConstancia } from "@/lib/cuenta/constancia";
+import { ACEPTA_VERIFICACION, extensionDe, FORMATOS_VERIFICACION, prepararArchivo } from "@/lib/cuenta/archivo-verificacion";
+import { PESO_MAXIMO_CONSTANCIA, rutaConstancia } from "@/lib/cuenta/constancia";
 import { type DatosConstancia, leerConstancia, RFC_VALIDO } from "@/lib/cuenta/constancia-datos";
 import { textoDePdf } from "@/lib/cuenta/leer-pdf";
 import { crearClienteNavegador } from "@/lib/supabase/client";
@@ -39,6 +40,8 @@ export function SubirConstancia({
   const [lectura, setLectura] = useState<Lectura>("nada");
   const [leido, setLeido] = useState<DatosConstancia>({});
   const [fecha, setFecha] = useState("");
+  // Si la fecha se leyó del PDF del SAT, queda fija: no se puede cambiar a mano.
+  const [fechaLeida, setFechaLeida] = useState(false);
   const [rfc, setRfc] = useState("");
   const [razonSocial, setRazonSocial] = useState("");
   const [regimen, setRegimen] = useState("");
@@ -50,6 +53,8 @@ export function SubirConstancia({
     const archivo = evento.target.files?.[0];
     setError("");
     setLectura("nada");
+    setFechaLeida(false);
+    setFecha("");
     if (!archivo || archivo.type !== "application/pdf" || archivo.size > PESO_MAXIMO_CONSTANCIA) return;
     setLectura("leyendo");
     const datos = await textoDePdf(archivo).then(leerConstancia).catch(() => null);
@@ -59,7 +64,10 @@ export function SubirConstancia({
     setRazonSocial(datos.razonSocial ?? "");
     setRegimen(datos.regimen ?? "");
     setCp(datos.cp ?? "");
-    if (datos.fecha) setFecha(datos.fecha);
+    if (datos.fecha) {
+      setFecha(datos.fecha);
+      setFechaLeida(true);
+    }
     setLectura("leida");
   }
 
@@ -68,14 +76,14 @@ export function SubirConstancia({
     const archivo = new FormData(evento.currentTarget).get("archivo");
     setError("");
     if (!(archivo instanceof File) || !archivo.size) return setError("Elige el archivo de tu constancia.");
-    if (!(archivo.type in TIPOS_CONSTANCIA)) return setError("Sube tu constancia en PDF, JPG o PNG.");
-    if (archivo.size > PESO_MAXIMO_CONSTANCIA) return setError("El archivo pesa más de 5 MB. Sube uno más ligero.");
     if (!fecha) return setError("Escribe la fecha de emisión que aparece en tu constancia.");
     if (fecha > hasta) return setError("La fecha de emisión no puede ser futura.");
     if (fecha < desde) {
-      return setError(`Tu constancia tiene más de ${meses} meses. Descarga una nueva en el portal del SAT y súbela.`);
+      return setError(
+        `Tu constancia es del ${fecha.split("-").reverse().join("/")} y tiene más de ${meses} meses. Descarga una nueva en el portal del SAT y súbela.`,
+      );
     }
-    if (!cartaAceptada) return setError("Acepta la carta de responsabilidad.");
+    if (!cartaAceptada) return setError("Para continuar, debes aceptar la carta de responsabilidad: léela y marca la casilla «Acepto la carta de responsabilidad».");
     const conFiscales = lectura === "leida" && paraFacturar;
     const fiscales = { rfc: rfc.toUpperCase().replace(/[\s-]/g, ""), razonSocial: razonSocial.trim(), regimen, cp: cp.trim() };
     if (conFiscales) {
@@ -86,12 +94,14 @@ export function SubirConstancia({
     }
     setSubiendo(true);
     try {
-      const ruta = rutaConstancia(empresaId, TIPOS_CONSTANCIA[archivo.type as TipoConstancia]);
+      const listo = await prepararArchivo(archivo, "tu constancia");
+      if ("error" in listo) throw new Error(listo.error);
+      const ruta = rutaConstancia(empresaId, extensionDe(listo.archivo));
       const { error: falla } = await crearClienteNavegador()
         .storage.from("constancias")
-        .upload(ruta, archivo, { contentType: archivo.type });
+        .upload(ruta, listo.archivo, { contentType: listo.archivo.type });
       if (falla) throw new Error("No pudimos subir el archivo. Intenta de nuevo.");
-      const resultado = await guardarConstancia({ ruta, fecha, carta: true });
+      const resultado = await guardarConstancia({ ruta, fecha, fechaLeida, carta: true });
       if (resultado.error) throw new Error(resultado.error);
       // La constancia ya quedó; si los datos de facturación no se guardan, se capturan después.
       if (conFiscales) await guardarFiscalesDeConstancia(fiscales).catch(() => null);
@@ -110,12 +120,12 @@ export function SubirConstancia({
       <label className="block">
         <span className="font-semibold">Archivo de tu constancia</span>
         <span className="block text-sm text-gris">
-          PDF, JPG o PNG de hasta 5 MB. Con el PDF que descargas del SAT, tus datos se llenan solos.
+          {FORMATOS_VERIFICACION}. Con el PDF que descargas del SAT, tus datos se llenan solos.
         </span>
         <input
           type="file"
           name="archivo"
-          accept="application/pdf,image/jpeg,image/png"
+          accept={ACEPTA_VERIFICACION}
           disabled={subiendo}
           onChange={alElegir}
           className="mt-2 block w-full text-sm file:mr-4 file:cursor-pointer file:rounded-full file:border file:border-solid file:border-tinta file:bg-white file:px-4 file:py-2 file:font-semibold"
@@ -179,16 +189,22 @@ export function SubirConstancia({
 
       <label className="block sm:max-w-xs">
         <span className="font-semibold">Fecha de emisión{lectura === "leida" ? leyo(leido.fecha) : null}</span>
-        <span className="block text-sm text-gris">Viene en la constancia, en «Lugar y fecha de emisión».</span>
+        <span className="block text-sm text-gris">
+          {fechaLeida
+            ? "La leímos de tu constancia y no se puede cambiar."
+            : "Viene en la constancia, en «Lugar y fecha de emisión». La revisamos contra tu archivo."}
+        </span>
         <input
           type="date"
           name="fecha"
           min={desde}
           max={hasta}
           value={fecha}
-          onChange={(e) => setFecha(e.target.value)}
+          onChange={(e) => (fechaLeida ? null : setFecha(e.target.value))}
+          readOnly={fechaLeida}
+          aria-readonly={fechaLeida}
           disabled={subiendo}
-          className={claseEntrada}
+          className={`${claseEntrada} ${fechaLeida ? "cursor-not-allowed bg-papel text-gris" : ""}`}
         />
       </label>
       <CartaResponsabilidad aceptada={cartaAceptada} alCambiar={setCartaAceptada} deshabilitada={subiendo} />
