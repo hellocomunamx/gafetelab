@@ -12,7 +12,7 @@ export const site = {
   lema: "Hola, soy ___",
   titulo: "Gafetes y credenciales para empleados en todo México",
   descripcion:
-    "Gafetes y credenciales para tu equipo, impresos en PVC o digitales, sin vueltas: diseña tu gafete, sube a tu equipo y revisa cada uno antes de pagar. Plataforma incluida, sin costo extra. Envíos a todo México.",
+    "Gafetes y credenciales para todo tu equipo o asistentes a eventos, impresos en PVC o digitales. Automático y simplificado: diseña tu gafete, sube a tu equipo y revisa cada uno antes de pagar. Plataforma incluida, sin costo extra. Envíos a todo México.",
   descripcionCorta:
     "Tienda en línea para administrar e imprimir gafetes y credenciales de empleados o de asistentes a eventos, impresos y digitales, con envíos a todo México.",
   correo: `hola@${dominio}`,

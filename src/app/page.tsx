@@ -34,9 +34,11 @@ export default function Inicio() {
         <Contenedor className="grid items-center gap-6 py-14 sm:py-20 lg:grid-cols-[1.2fr_1fr] lg:gap-12">
           <div>
             <p className="font-mano text-2xl text-rojo">Hola, soy tu gafete</p>
-            <h1 className="mt-2 text-4xl leading-[1.05] font-extrabold sm:text-6xl">
-              Gafetes y credenciales para todo tu equipo,{" "}
-              <span className="resaltado">sin vueltas</span>.
+            <h1 className="mt-2 text-[2rem] leading-[1.08] font-extrabold sm:text-5xl">
+              Gafetes y credenciales para todo tu equipo o asistentes a eventos.
+              <span className="mt-2 block">
+                <span className="resaltado">Automático y simplificado</span>.
+              </span>
             </h1>
             <p className="mt-5 max-w-xl text-lg text-gris">
               Diseña tu gafete, sube a tu equipo como te acomode y revisa cada uno antes de pagar.
