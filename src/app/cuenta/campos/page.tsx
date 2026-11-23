@@ -7,7 +7,7 @@ import { Bloque, Entrada, Seleccion } from "@/components/cuenta/Entrada";
 import { Formulario } from "@/components/cuenta/Formulario";
 import { claseBoton } from "@/components/cuenta/clases";
 import { camposDe } from "@/lib/cuenta/consultas";
-import { modosQr, resumenQr, rutaVerificacion } from "@/lib/cuenta/qr";
+import { datosVerificables, modosQr, resumenQr, rutaVerificacion } from "@/lib/cuenta/qr";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
 import { claveDe } from "@/lib/cuenta/texto";
 
@@ -173,7 +173,7 @@ export default async function Campos() {
             empresa={empresa.nombre}
             camposTexto={opciones(["texto", "fecha"])}
             camposFecha={opciones(["fecha"])}
-            conFoto={Boolean(process.env.SUPABASE_SECRET_KEY)}
+            datos={datosVerificables(campos, Boolean(process.env.SUPABASE_SECRET_KEY))}
           />
         ) : (
           <p className="rounded-tarjeta-chica bg-papel p-4 text-sm">
