@@ -7,6 +7,7 @@ import {
   type Cotizacion,
   envio,
   nombreModalidad,
+  paqueteVigenciaMeses,
   pesos,
   tasaIva,
 } from "./precios";
@@ -56,7 +57,9 @@ export function renglones(c: Cotizacion) {
 /** Totales en orden: subtotal, envío, IVA y total. */
 export function totales(c: Cotizacion) {
   const filas = [{ etiqueta: "Subtotal", valor: pesos(c.subtotal), fuerte: false }];
-  if (c.llevaEnvio) {
+  if (c.paquete) {
+    filas.push({ etiqueta: `${c.paquete.envios} envíos a todo México`, valor: "Incluidos", fuerte: false });
+  } else if (c.llevaEnvio) {
     filas.push({
       etiqueta: "Envío a todo México",
       valor: c.envioGratis ? "Gratis" : pesos(c.envio),
@@ -75,7 +78,13 @@ export function condiciones(d: DatosCotizacion): string[] {
     `Modalidad: ${nombreModalidad(c.modalidad)}${c.llevaEnvio ? (c.dosCaras ? ", impresión por frente y vuelta" : ", impresión a una cara") : ""}.`,
   ];
   if (c.material) lista.push(`Material: ${c.material.nombre}, ${grosorTexto(c.material)}, tamaño CR80.`);
-  if (c.llevaEnvio) {
+  if (c.paquete) {
+    lista.push(
+      `Paquete prepagado: pagas hoy los ${c.paquete.piezas} gafetes y los pides cuando quieras, en uno o varios pedidos, durante ${paqueteVigenciaMeses} meses. Incluye ${c.paquete.envios} envíos a todo México.`,
+    );
+    lista.push(`Cada pedido se entrega en ${entregaTexto} a partir de que apruebas la vista previa de tus gafetes.`);
+    lista.push("Los paquetes no son reembolsables y se pueden transferir a la cuenta de otra empresa.");
+  } else if (c.llevaEnvio) {
     lista.push(
       `Entrega estándar: ${entregaTexto} a partir de que confirmas el pago y apruebas la vista previa de tus gafetes.`,
     );
