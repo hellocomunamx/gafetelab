@@ -178,8 +178,6 @@ Los paquetes (`/precios#paquetes`), el paquete a la medida y el cotizador tienen
 
 Pagar el carrito crea un pedido de tipo `prepago` (`src/app/carrito/acciones.ts`) que se cobra igual que cualquier pedido. Al confirmarse el pago, su contenido queda en `saldos` (gafetes por cara y material, y envíos), con vigencia de 12 meses. Al hacer un pedido de impresión se usa primero el saldo (`src/lib/pedidos/saldo.ts`): se cobra solo la diferencia de vuelta o de material y los gafetes que falten; si el saldo cubre todo, el pedido queda pagado sin pasar por Stripe. El saldo se aparta con `usar_saldo` (todo o nada) y regresa si el pedido se cancela. Migración `20261123070000_carrito_y_saldo.sql`.
 
-La venta de gafetes digitales en el carrito está apagada mientras el gafete digital no se active en la plataforma: el cotizador los cotiza, pero no deja agregarlos, y el servidor descarta cualquier artículo digital (`ventaDigitalActiva` en `src/lib/carrito.ts`). Se enciende con `NEXT_PUBLIC_VENTA_DIGITAL=1` en `.env.production` y volviendo a publicar.
-
 ### Administración (solo quien opera LaGafetería)
 
 `/8admins` es el panel interno (la ruta está en `src/lib/admin/ruta.ts`; no es `/admin` a propósito, y no se anuncia en `robots.txt` ni en el sitemap). No aparece en ningún menú de las empresas y, a quien no es administradora o no ha iniciado sesión, le responde «no existe». Trae ocho cosas:
