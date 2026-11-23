@@ -207,6 +207,24 @@ select id from auth.users where email = 'correo-de-la-administradora';
 
 Y para quitarla: `delete from privado.administradores where usuario_id = '<id>';`
 
+### Envíos con Envia
+
+En el detalle de un pedido en producción, el panel dice cuántos sobres armar y, con un clic, cotiza en vivo con las paqueterías de [Envia.com](https://envia.com) y compra la guía.
+
+- **Sobres** (`src/lib/envios/sobres.ts`): 5.5 g por gafete, 60 g de sobre y hasta 100 gafetes por sobre de 25 × 18 cm, para no pasar de 1 kg real ni volumétrico. Con más piezas se reparten parejo.
+- **Cotizar** (`src/lib/envios/envia.ts`): una consulta por paquetería, todas a la vez, de la más barata a la más cara, con la más barata y la más rápida marcadas, y lo que te queda o pones contra el envío que se cobró (con IVA). El estado de origen y destino sale solo del código postal (Geocodes de Envia).
+- **Guía**: «Generar guía y marcar como enviado» la compra con tu saldo de Envia, guarda en la bitácora el número de guía, la etiqueta en PDF, el rastreo y el costo, pasa el pedido a enviado y le manda al cliente el correo con la liga de rastreo. Una guía equivocada se cancela desde Envia.
+- Sigue el formulario para marcar como enviado algo que mandaste por fuera.
+
+Configurar (una vez), con la cuenta de Cloudflare de hello.comunamx:
+
+```bash
+npx wrangler secret put ENVIA_API_KEY   # ship.envia.com → Desarrolladores → Acceso de API
+npx wrangler secret put ENVIA_ORIGEN    # {"nombre":"…","telefono":"…","calle":"…","numero":"…","colonia":"…","ciudad":"Ciudad Obregón","cp":"85000"}
+```
+
+`ENVIA_PAQUETERIAS` (opcional) limita las paqueterías que se cotizan. Sin `ENVIA_API_KEY` y `ENVIA_ORIGEN`, el panel solo dice cuántos sobres armar.
+
 ### Conteo de visitas
 
 Las visitas se cuentan en casa, sin servicios externos y sin cookies: el componente `Visita` (en el layout) avisa de cada página vista a `/api/visita`, que guarda un renglón en la tabla `visitas` (migración `20261123050000_visitas.sql`) con la página, si es la primera de la visita, de dónde llegó (el sitio que la mandó o `utm_source`), el tipo de dispositivo y el país y estado que informa Cloudflare. No se guarda la dirección IP ni el navegador. Las reglas están en `src/lib/visitas.ts`:
