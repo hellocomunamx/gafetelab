@@ -59,7 +59,17 @@ export default async function Verificar({ params }: { params: Promise<{ codigo: 
     minute: "2-digit",
     timeZone: ZONA,
   });
-  const renglones = [gafete.puesto, gafete.departamento, gafete.numero_empleado ? `No. de empleado ${gafete.numero_empleado}` : null].filter(Boolean);
+  // `datos` trae los campos que eligió la empresa con su nombre actual; sin él
+  // (base de datos aún sin actualizar) se usan los tres de antes.
+  const renglones =
+    gafete.datos ??
+    [
+      { clave: "puesto", etiqueta: "Puesto", tipo: "texto", valor: gafete.puesto },
+      { clave: "numero_empleado", etiqueta: "Número de empleado", tipo: "texto", valor: gafete.numero_empleado },
+      { clave: "departamento", etiqueta: "Departamento", tipo: "texto", valor: gafete.departamento },
+    ].filter((r): r is { clave: string; etiqueta: string; tipo: string; valor: string } => Boolean(r.valor));
+  const valorDe = (r: { tipo: string; valor: string }) =>
+    r.tipo === "fecha" && /^\d{4}-\d{2}-\d{2}$/.test(r.valor) ? fechaLarga(r.valor) : r.valor;
 
   return (
     <Contenedor className="py-10 sm:py-14">
@@ -85,9 +95,16 @@ export default async function Verificar({ params }: { params: Promise<{ codigo: 
               />
             ) : null}
             {gafete.nombre ? <p className="font-titulos text-2xl leading-tight font-extrabold">{gafete.nombre}</p> : null}
-            {renglones.map((r) => (
-              <p key={r} className="mt-1 text-gris">{r}</p>
-            ))}
+            {renglones.length ? (
+              <dl className="mx-auto mt-4 max-w-xs space-y-2 text-left">
+                {renglones.map((r) => (
+                  <div key={r.clave} className="flex items-baseline justify-between gap-4 border-b border-linea pb-2 last:border-0">
+                    <dt className="text-sm text-gris">{r.etiqueta}</dt>
+                    <dd className="text-right font-semibold break-words">{valorDe(r)}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : null}
             {gafete.empresa ? (
               <p className={`font-semibold ${gafete.nombre || renglones.length ? "mt-4 border-t border-linea pt-4" : ""}`}>
                 {gafete.empresa}

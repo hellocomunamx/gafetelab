@@ -10,6 +10,8 @@ export type Verificacion = {
   /** AAAA-MM-DD, si la empresa usa un campo de fecha como vigencia. */
   vigente_hasta?: string;
   con_foto?: boolean;
+  /** Campos elegidos por la empresa, en su orden y con su nombre actual. */
+  datos?: { clave: string; etiqueta: string; tipo: string; valor: string }[];
 };
 
 const CODIGO = /^[A-Za-z0-9_-]{12}$/;

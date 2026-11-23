@@ -31,15 +31,29 @@ export const modosQr: { id: ModoQr; titulo: string; texto: string }[] = [
   },
 ];
 
-/** Lo que la empresa puede mostrar en la página de verificación. */
-export const datosVerificables = [
-  { clave: "empresa", etiqueta: "Nombre de tu empresa" },
-  { clave: "nombre", etiqueta: "Nombre" },
-  { clave: "puesto", etiqueta: "Puesto" },
-  { clave: "numero_empleado", etiqueta: "Número de empleado" },
-  { clave: "departamento", etiqueta: "Departamento" },
-  { clave: "foto", etiqueta: "Fotografía" },
-] as const;
+/** Un dato que la empresa puede mostrar en la página de verificación. */
+export type DatoVerificable = { clave: string; etiqueta: string; tipo: string };
+
+/** Tipos de campo que pueden ir en la página de verificación. */
+const TIPOS_VERIFICABLES = ["texto", "fecha", "foto"];
+
+/**
+ * Lo que la empresa puede mostrar en la página de verificación: el nombre de
+ * la empresa y sus propios campos (de sistema y los que agregó), en el orden
+ * y con el nombre que tienen en Campos. La fotografía solo si el servidor
+ * puede mostrarla.
+ */
+export function datosVerificables(
+  campos: { clave: string; etiqueta: string; tipo: string }[],
+  conFoto = true,
+): DatoVerificable[] {
+  return [
+    { clave: "empresa", etiqueta: "Nombre de tu empresa", tipo: "empresa" },
+    ...campos
+      .filter((c) => TIPOS_VERIFICABLES.includes(c.tipo) && (c.tipo !== "foto" || conFoto))
+      .map(({ clave, etiqueta, tipo }) => ({ clave, etiqueta, tipo })),
+  ];
+}
 
 export const rutaVerificacion = (codigo: string) => `/v/${codigo}`;
 export const ligaVerificacion = (codigo: string) => `${site.url}${rutaVerificacion(codigo)}`;

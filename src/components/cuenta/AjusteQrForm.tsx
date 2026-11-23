@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { guardarQr } from "@/app/cuenta/acciones";
-import { type AjusteQr, datosVerificables, type ModoQr, modosQr } from "@/lib/cuenta/qr";
+import { type AjusteQr, type DatoVerificable, type ModoQr, modosQr } from "@/lib/cuenta/qr";
 import { claseEntrada, Formulario } from "./Formulario";
 
 type Opcion = { clave: string; etiqueta: string };
@@ -10,9 +10,14 @@ type Opcion = { clave: string; etiqueta: string };
 const MUESTRA: Record<string, string> = {
   nombre: "Ana Martínez López",
   puesto: "Ejecutiva de ventas",
-  numero_empleado: "No. 0042",
+  numero_empleado: "0042",
   departamento: "Comercial",
+  tipo_contrato: "Base",
 };
+
+/** Valor de ejemplo para la vista previa. */
+const muestraDe = (v: DatoVerificable) =>
+  MUESTRA[v.clave] ?? (v.tipo === "fecha" ? "31 de diciembre de 2027" : "Lo que captures");
 
 /**
  * Ajuste "Qué muestra tu QR": página de verificación, una liga de la empresa
@@ -23,7 +28,7 @@ export function AjusteQrForm({
   empresa,
   camposTexto,
   camposFecha,
-  conFoto,
+  datos,
 }: {
   ajuste: AjusteQr;
   empresa: string;
@@ -31,8 +36,8 @@ export function AjusteQrForm({
   camposTexto: Opcion[];
   /** Campos de fecha que pueden marcar el vencimiento del gafete. */
   camposFecha: Opcion[];
-  /** Si el servidor puede mostrar la fotografía (necesita SUPABASE_SECRET_KEY). */
-  conFoto: boolean;
+  /** Lo que puede verse al escanear: la empresa y sus campos, con sus nombres actuales. */
+  datos: DatoVerificable[];
 }) {
   const [modo, setModo] = useState<ModoQr>(
     modosQr.find((m) => m.id === ajuste.qr_modo)?.id ?? "verificacion",
@@ -40,7 +45,6 @@ export function AjusteQrForm({
   const [mostrar, setMostrar] = useState<string[]>(ajuste.qr_mostrar);
   const [liga, setLiga] = useState(ajuste.qr_liga ?? "");
   const [dato, setDato] = useState(ajuste.qr_dato);
-  const datos = datosVerificables.filter((v) => v.clave !== "foto" || conFoto);
   const ve = (clave: string) => mostrar.includes(clave) && datos.some((v) => v.clave === clave);
 
   return (
@@ -160,9 +164,18 @@ export function AjusteQrForm({
             </p>
             {ve("foto") ? <div className="mx-auto mt-3 size-14 rounded-full bg-linea" /> : null}
             {ve("nombre") ? <p className="mt-3 font-titulos font-extrabold">{MUESTRA.nombre}</p> : null}
-            {(["puesto", "numero_empleado", "departamento"] as const).map((c) =>
-              ve(c) ? <p key={c} className="text-sm text-gris">{MUESTRA[c]}</p> : null,
-            )}
+            {datos.some((v) => v.tipo !== "foto" && v.tipo !== "empresa" && v.clave !== "nombre" && ve(v.clave)) ? (
+              <dl className="mt-3 space-y-1.5 text-left text-sm">
+                {datos
+                  .filter((v) => v.tipo !== "foto" && v.tipo !== "empresa" && v.clave !== "nombre" && ve(v.clave))
+                  .map((v) => (
+                    <div key={v.clave}>
+                      <dt className="text-xs text-gris">{v.etiqueta}</dt>
+                      <dd className="font-semibold">{muestraDe(v)}</dd>
+                    </div>
+                  ))}
+              </dl>
+            ) : null}
             {ve("empresa") ? <p className="mt-2 text-sm font-semibold">{empresa}</p> : null}
           </div>
         ) : (

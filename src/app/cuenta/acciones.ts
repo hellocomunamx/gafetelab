@@ -493,7 +493,7 @@ export async function guardarQr(_: Resultado, d: FormData): Promise<Resultado> {
   if (!administra) return { error: "Solo quien administra la empresa puede cambiar qué muestra el QR." };
   const modo = modosQr.find((m) => m.id === d.get("qr_modo"))?.id;
   if (!modo) return { error: "Elige qué muestra tu QR." };
-  const { data: campos } = await supabase.from("campos").select("clave, tipo").eq("empresa_id", empresa.id);
+  const { data: campos } = await supabase.from("campos").select("clave, etiqueta, tipo").eq("empresa_id", empresa.id);
   const claves = (tipos: string[]) => (campos ?? []).filter((c) => tipos.includes(c.tipo)).map((c) => c.clave);
 
   const cambios: {
@@ -504,7 +504,9 @@ export async function guardarQr(_: Resultado, d: FormData): Promise<Resultado> {
     qr_dato?: string;
   } = { qr_modo: modo };
   if (modo === "verificacion") {
-    const mostrar = datosVerificables.map((v) => v.clave).filter((clave) => d.get(`mostrar_${clave}`) === "on");
+    const mostrar = datosVerificables(campos ?? [])
+      .map((v) => v.clave)
+      .filter((clave) => d.get(`mostrar_${clave}`) === "on");
     if (!mostrar.some((clave) => clave !== "empresa")) {
       return { error: "Elige al menos un dato de la persona para mostrar." };
     }
