@@ -4,7 +4,8 @@ import { agregarCampo, borrarCampo, guardarCampos } from "@/app/cuenta/acciones"
 import { AjusteQrForm } from "@/components/cuenta/AjusteQrForm";
 import { BotonPlantilla } from "@/components/cuenta/BotonPlantilla";
 import { Bloque, Entrada, Seleccion } from "@/components/cuenta/Entrada";
-import { claseBoton, Formulario } from "@/components/cuenta/Formulario";
+import { Formulario } from "@/components/cuenta/Formulario";
+import { claseBoton } from "@/components/cuenta/clases";
 import { camposDe } from "@/lib/cuenta/consultas";
 import { modosQr, resumenQr, rutaVerificacion } from "@/lib/cuenta/qr";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";

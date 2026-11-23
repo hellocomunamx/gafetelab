@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Confirmar } from "@/components/cuenta/Confirmar";
-import { claseBoton, claseBotonSecundario } from "@/components/cuenta/Formulario";
+import { claseBoton, claseBotonSecundario } from "@/components/cuenta/clases";
 import { GafeteSvg } from "@/components/diseno/GafeteSvg";
 import { camposDe } from "@/lib/cuenta/consultas";
 import { ligasDe } from "@/lib/cuenta/fotos";
@@ -17,7 +17,7 @@ const ligaAccion = "font-semibold underline underline-offset-4";
 
 export default async function Disenos() {
   const { supabase, empresa } = await requerirEmpresa();
-  const [{ data: filas }, campos, { count: listos }] = await Promise.all([
+  const [{ data: filas }, campos, { count: listos }, { count: reglas }] = await Promise.all([
     supabase
       .from("disenos")
       .select("id, nombre, orientacion, frente, vuelta, predeterminado")
@@ -26,6 +26,7 @@ export default async function Disenos() {
       .order("creado_en"),
     camposDe(supabase, empresa.id),
     supabase.from("gafetes_listos").select("empleado_id", { count: "exact", head: true }).eq("empresa_id", empresa.id),
+    supabase.from("reglas_diseno").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id),
   ]);
   const disenos = (filas ?? []).map((f) => ({ ...disenoDeFila(f), predeterminado: f.predeterminado }));
   const ligas = await ligasDe(supabase, "disenos", disenos.flatMap((d) => rutasDe(d.frente)));
@@ -116,8 +117,23 @@ export default async function Disenos() {
           {listos ? "Ver mis gafetes listos" : "Subir gafetes listos"}
         </Link>
       </div>
+      {disenos.length ? (
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-tarjeta border border-linea bg-white p-5">
+          <div className="min-w-0 flex-1 basis-64">
+            <h2 className="text-lg font-extrabold">Diseños por reglas</h2>
+            <p className="text-sm text-gris">
+              {reglas
+                ? `Tienes ${reglas === 1 ? "1 regla" : `${reglas} reglas`}: cada persona recibe el diseño que le toca según su puesto, departamento, sucursal o tipo de contrato.`
+                : "Un diseño distinto según el puesto, el departamento, la sucursal o el tipo de contrato. Cada persona recibe el que le toca."}
+            </p>
+          </div>
+          <Link href="/cuenta/disenos/reglas" className={claseBotonSecundario}>
+            {reglas ? "Ver mis reglas" : "Armar mis reglas"}
+          </Link>
+        </div>
+      ) : null}
       <p className="text-sm text-gris">
-        El diseño predeterminado es el que se usará en tus pedidos. Los datos de las miniaturas son de ejemplo.
+        El diseño predeterminado es el que se usará en tus pedidos{reglas ? " con quien no coincide con ninguna regla" : ""}. Los datos de las miniaturas son de ejemplo.
       </p>
     </div>
   );

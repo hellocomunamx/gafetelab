@@ -5,6 +5,8 @@ import { Bloque } from "@/components/cuenta/Entrada";
 import { constanciaDe } from "@/lib/cuenta/constancia";
 import { camposDe } from "@/lib/cuenta/consultas";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
+import { pedidoAbiertoDe } from "@/lib/pedidos/abierto";
+import { leerPredeterminados } from "@/lib/pedidos/predeterminados";
 import { claveDe } from "@/lib/cuenta/texto";
 
 export default async function Resumen() {
@@ -25,6 +27,10 @@ export default async function Resumen() {
     supabase.from("datos_fiscales").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).then((r) => r.count ?? 0),
     supabase.from("disenos").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).then((r) => r.count ?? 0),
   ]);
+
+  const { data: ajustes } = await supabase.from("empresas").select("predeterminados").eq("id", empresa.id).maybeSingle();
+  const { aviso } = leerPredeterminados(ajustes?.predeterminados);
+  const abierto = aviso.cantidad ? (await pedidoAbiertoDe(supabase, empresa.id, aviso)).length : 0;
 
   const pasos = [
     {
@@ -58,6 +64,15 @@ export default async function Resumen() {
           </p>
           <PorQueConstancia className="mt-2" />
         </div>
+      ) : null}
+      {aviso.cantidad && abierto >= aviso.cantidad ? (
+        <p className="rounded-tarjeta bg-resaltador/30 p-4 text-sm">
+          <strong>Tu pedido abierto ya tiene {abierto.toLocaleString("es-MX")} gafetes y credenciales.</strong> Llegaste a la
+          cantidad que elegiste.{" "}
+          <Link href="/cuenta/pedidos/abierto" className="font-semibold underline underline-offset-4">
+            Revisarlo y pedir
+          </Link>
+        </p>
       ) : null}
       <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[

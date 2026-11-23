@@ -6,6 +6,7 @@ import { type ReactNode, useMemo, useState, useTransition } from "react";
 import { crearPedido } from "@/app/cuenta/pedidos/acciones";
 import { claseBoton, claseEntrada } from "@/components/cuenta/Formulario";
 import type { MaterialId } from "@/lib/materiales";
+import { razones as nombresRazon, type Razon } from "@/lib/pedidos/predeterminados";
 import { pago, pedidoMaximoPiezas, soloTransferencia } from "@/lib/pedidos/reglas";
 import { cotizarPedido, llevaDigital, llevaImpreso } from "@/lib/pedidos/digital";
 import { resumenSaldo, type SaldoDisponible } from "@/lib/pedidos/saldo";
@@ -14,12 +15,15 @@ import { entregaTexto, site } from "@/lib/site";
 
 export type FuenteVista = {
   id: string;
-  tipo: "diseno" | "listos";
+  tipo: "diseno" | "listos" | "reglas";
   nombre: string;
-  /** Con un diseño: si lleva vuelta. Con gafetes listos depende de a quién se elija. */
+  /** Con un diseño: si lleva vuelta. Con reglas o gafetes listos depende de a quién se elija. */
   dosCaras: boolean;
-  /** Por persona: lo que le falta a su gafete y si trae vuelta. Quien no aparece no tiene gafete en esta opción. */
-  gafetes: Record<string, { faltan: string[]; vuelta: boolean }>;
+  /**
+   * Por persona: lo que le falta a su gafete, si trae vuelta y, con reglas, el
+   * nombre del diseño que le toca. Quien no aparece no tiene gafete en esta opción.
+   */
+  gafetes: Record<string, { faltan: string[]; vuelta: boolean; diseno?: string }>;
   /** Dónde se ve la vista previa de todo el equipo. */
   vista: string;
 };
@@ -64,6 +68,7 @@ export function NuevoPedido({
   fiscales,
   saldos,
   conDigital,
+  inicial,
 }: {
   fuentes: FuenteVista[];
   muestras: Record<string, ReactNode>;
@@ -75,6 +80,15 @@ export function NuevoPedido({
   saldos: SaldoDisponible[];
   /** Personas que ya tienen su gafete digital: no se les vuelve a cobrar. */
   conDigital: string[];
+  /** Con qué arranca el pedido: los predeterminados del negocio y, si viene de una reposición o del pedido abierto, a quiénes. */
+  inicial: {
+    fuente: string | null;
+    material: MaterialId | null;
+    sinFactura: boolean;
+    personas: string[] | null;
+    razones: Record<string, Razon>;
+    origen: "reposicion" | "abierto" | null;
+  };
 }) {
   const router = useRouter();
   const yaDigital = useMemo(() => new Set(conDigital), [conDigital]);
@@ -83,16 +97,22 @@ export function NuevoPedido({
   const digital = llevaDigital(modalidad);
   /** Quien ya tiene su gafete digital no entra a un pedido que lleva digital. */
   const bloqueada = (id: string, m: Modalidad = modalidad) => llevaDigital(m) && yaDigital.has(id);
+  const preseleccion = inicial.personas ? new Set(inicial.personas) : null;
   const completas = (f: FuenteVista) =>
-    personas.filter((p) => f.gafetes[p.id] && !f.gafetes[p.id].faltan.length && !bloqueada(p.id)).map((p) => p.id);
+    personas
+      .filter((p) => f.gafetes[p.id] && !f.gafetes[p.id].faltan.length && !bloqueada(p.id) && (!preseleccion || preseleccion.has(p.id)))
+      .map((p) => p.id);
 
-  const [fuenteId, setFuenteId] = useState(fuentes[0].id);
+  const primera = fuentes.find((f) => f.id === inicial.fuente) ?? fuentes[0];
+  const [fuenteId, setFuenteId] = useState(primera.id);
   const fuente = fuentes.find((f) => f.id === fuenteId) ?? fuentes[0];
-  const [elegidas, setElegidas] = useState(() => new Set(completas(fuentes[0]).slice(0, pedidoMaximoPiezas)));
+  const [elegidas, setElegidas] = useState(() => new Set(completas(primera).slice(0, pedidoMaximoPiezas)));
   const [busqueda, setBusqueda] = useState("");
-  const [material, setMaterial] = useState<MaterialId>(materiales[0].id);
+  const [material, setMaterial] = useState<MaterialId>(
+    materiales.find((m) => m.id === inicial.material)?.id ?? materiales[0].id,
+  );
   const [direccion, setDireccion] = useState(direcciones[0]?.id ?? "");
-  const [facturacion, setFacturacion] = useState(fiscales[0]?.id ?? "");
+  const [facturacion, setFacturacion] = useState(inicial.sinFactura ? "" : (fiscales[0]?.id ?? ""));
   const [aprobado, setAprobado] = useState(false);
   const [error, setError] = useState("");
   const [enviando, iniciar] = useTransition();
@@ -146,6 +166,7 @@ export function NuevoPedido({
         direccion,
         facturacion: facturacion || null,
         aprobado,
+        razones: Object.fromEntries([...elegidas].flatMap((id) => (inicial.razones[id] ? [[id, inicial.razones[id]]] : []))),
       });
       if (r.url) window.location.assign(r.url);
       else if (r.pedido && r.pagado) router.push(`/cuenta/pedidos/${r.pedido}?pago=saldo`);
@@ -187,6 +208,15 @@ export function NuevoPedido({
             <p className="mb-4 font-semibold">{fuente.nombre}</p>
           )}
           {muestras[fuente.id] ?? null}
+          {fuente.tipo === "reglas" ? (
+            <p className="mt-3 text-sm text-gris">
+              Cada persona lleva el diseño que le toca según tus{" "}
+              <Link href="/cuenta/disenos/reglas" className="underline underline-offset-4">reglas</Link>.
+              {dosCaras && [...elegidas].some((id) => !fuente.gafetes[id]?.vuelta)
+                ? " Como al menos uno de los diseños lleva vuelta, el pedido se cotiza por frente y vuelta."
+                : ""}
+            </p>
+          ) : null}
           <p className="mt-3 text-sm">
             <Link href={fuente.vista} className={liga}>
               Ver la vista previa de todo el equipo
@@ -195,6 +225,16 @@ export function NuevoPedido({
         </Paso>
 
         <Paso numero={3} titulo="¿Para quiénes?">
+          {inicial.origen ? (
+            <p className="mb-4 rounded-tarjeta-chica bg-papel p-3 text-sm">
+              {inicial.origen === "abierto"
+                ? "Ya elegimos a quienes van en tu pedido abierto. Puedes quitar a alguien antes de pagar."
+                : "Ya elegimos a quien le vas a reponer su gafete. Sus datos y su foto son los que tienes guardados."}{" "}
+              <Link href="/cuenta/pedidos/nuevo" className={liga}>
+                Mejor elegir de todo mi equipo
+              </Link>
+            </p>
+          ) : null}
           <div className="flex flex-wrap items-end justify-between gap-3">
             <label className="block min-w-0 flex-1">
               <span className="text-sm font-semibold">Buscar</span>
@@ -237,8 +277,17 @@ export function NuevoPedido({
                   />
                   <label htmlFor={`persona-${p.id}`} className="min-w-0 flex-1 text-sm">
                     <span className="font-semibold">{p.nombre}</span>
-                    <span className="block text-gris">{[p.numero, p.puesto].filter(Boolean).join(" · ") || "Sin número ni puesto"}</span>
+                    <span className="block text-gris">
+                      {[p.numero, p.puesto, fuente.gafetes[p.id].diseno ? `Diseño: ${fuente.gafetes[p.id].diseno}` : null]
+                        .filter(Boolean)
+                        .join(" · ") || "Sin número ni puesto"}
+                    </span>
                     {tieneDigital ? <span className="block font-medium text-[#0a7d4f]">Ya tiene su gafete digital.</span> : null}
+                    {inicial.razones[p.id] && inicial.razones[p.id] !== "alta" ? (
+                      <span className="mt-0.5 inline-block rounded-full bg-resaltador/50 px-2 py-0.5 text-xs font-semibold">
+                        Reposición: {nombresRazon[inicial.razones[p.id]].nombre.toLowerCase()}
+                      </span>
+                    ) : null}
                     {faltan.length ? (
                       <span className="block font-medium text-rojo-oscuro">
                         Le falta: {faltan.join(", ").toLowerCase()}.{" "}

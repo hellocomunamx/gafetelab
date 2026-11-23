@@ -200,18 +200,43 @@ async function ImprimirPedido({
 }) {
   const [{ data: pedido }, { data: gafetes }] = await Promise.all([
     servicio.from("pedidos").select("id, folio, estado, fuente, diseno_id, diseno, alertas").eq("id", pedidoId).eq("empresa_id", empresa.id).maybeSingle(),
-    servicio.from("gafetes").select("id, datos").eq("pedido_id", pedidoId).eq("tipo", "impreso").neq("estado", "cancelado").limit(LIMITE),
+    servicio.from("gafetes").select("id, datos, diseno_id").eq("pedido_id", pedidoId).eq("tipo", "impreso").neq("estado", "cancelado").limit(LIMITE),
   ]);
   if (!pedido) notFound();
   const copias = (gafetes ?? [])
-    .map((g) => ({ id: g.id, ...(g.datos as unknown as GafeteCopiado) }))
+    .map((g) => ({ id: g.id, disenoId: g.diseno_id, ...(g.datos as unknown as GafeteCopiado) }))
     .sort((a, b) => (a.nombre ?? "").localeCompare(b.nombre ?? "", "es"));
 
+  type CopiaDiseno = { nombre: string; orientacion: string; frente: unknown; vuelta: unknown };
   let fuente: FuenteDeImpresion | null = null;
   let personas: PersonaParaImprimir[] = [];
+  // Con diseños por reglas sale un PDF por cada diseño, con las personas que lo llevan.
+  const grupos: { id: string; nombre: string; fuente: FuenteDeImpresion; personas: PersonaParaImprimir[] }[] = [];
   if (IMPRIMIBLES.includes(pedido.estado)) {
-    const copiaDiseno = pedido.diseno as { nombre: string; orientacion: string; frente: unknown; vuelta: unknown } | null;
-    if (pedido.fuente === "diseno" && copiaDiseno) {
+    const copiaDiseno = pedido.diseno as (CopiaDiseno & { reglas?: Record<string, CopiaDiseno> }) | null;
+    if (pedido.fuente === "diseno" && copiaDiseno?.reglas) {
+      const fotos = await ligasDe(servicio, "fotos", copias.map((c) => c.foto));
+      for (const [id, copia] of Object.entries(copiaDiseno.reglas)) {
+        const diseno = disenoDeFila({ id, ...copia });
+        const imagenes = await ligasDe(servicio, "disenos", [...rutasDe(diseno.frente), ...rutasDe(diseno.vuelta)]);
+        const suyas = copias.filter((c) => c.disenoId === id);
+        if (!suyas.length) continue;
+        grupos.push({
+          id,
+          nombre: copia.nombre,
+          fuente: { tipo: "diseno", diseno, etiquetas, imagenes: Object.fromEntries(imagenes) },
+          personas: suyas.map((c) => ({
+            id: c.id,
+            nombre: c.nombre,
+            numero: c.numero,
+            datos: c.valores ?? {},
+            qr: c.qr ?? "",
+            foto: (c.foto && fotos.get(c.foto)) || undefined,
+            faltan: [],
+          })),
+        });
+      }
+    } else if (pedido.fuente === "diseno" && copiaDiseno) {
       const diseno = disenoDeFila({ id: pedido.diseno_id ?? pedido.id, ...copiaDiseno });
       const [imagenes, fotos] = await Promise.all([
         ligasDe(servicio, "disenos", [...rutasDe(diseno.frente), ...rutasDe(diseno.vuelta)]),
@@ -257,7 +282,16 @@ async function ImprimirPedido({
           usar esos nombres.
         </p>
       ) : null}
-      {fuente && personas.length ? (
+      {grupos.length ? (
+        grupos.map((g) => (
+          <section key={g.id} className="space-y-3">
+            <h2 className="text-xl font-extrabold">
+              {g.nombre} <span className="font-semibold text-gris">· {g.personas.length.toLocaleString("es-MX")} {g.personas.length === 1 ? "gafete" : "gafetes"}</span>
+            </h2>
+            <ImprimirGafetes empresa={`${empresa.nombre} ${pedido.folio} ${g.nombre}`} fuente={g.fuente} personas={g.personas} />
+          </section>
+        ))
+      ) : fuente && personas.length ? (
         <ImprimirGafetes key={pedido.id} empresa={`${empresa.nombre} ${pedido.folio}`} fuente={fuente} personas={personas} />
       ) : (
         <p className="rounded-tarjeta border border-dashed border-linea bg-white p-8 text-center font-semibold">

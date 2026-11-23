@@ -4,9 +4,10 @@ import { notFound } from "next/navigation";
 import { borrarEmpleado, cambiarEstatus, quitarFoto } from "@/app/cuenta/acciones";
 import { desactivarDigital, reactivarDigital } from "@/app/cuenta/equipo/digital-acciones";
 import { renovarLiga } from "@/app/cuenta/equipo/ligas/acciones";
+import { apartarEnAbierto, quitarDeAbierto } from "@/app/cuenta/pedidos/abierto/acciones";
 import { Confirmar } from "@/components/cuenta/Confirmar";
-import { Bloque, Estatus } from "@/components/cuenta/Entrada";
-import { claseBotonSecundario } from "@/components/cuenta/Formulario";
+import { Bloque, Chips, Estatus } from "@/components/cuenta/Entrada";
+import { claseBoton, claseBotonSecundario } from "@/components/cuenta/clases";
 import { FormularioEmpleado } from "@/components/cuenta/FormularioEmpleado";
 import { FotoEmpleado } from "@/components/cuenta/FotoEmpleado";
 import { AccionesLiga } from "@/components/cuenta/Ligas";
@@ -20,6 +21,7 @@ import { ligasDe, ligasDeFotos } from "@/lib/cuenta/fotos";
 import { avisosDeGafete, type CaraGuardada } from "@/lib/cuenta/listos";
 import { contenidoQr, rutaVerificacion } from "@/lib/cuenta/qr";
 import { datosDePersona } from "@/lib/diseno/datos";
+import { etiquetaMotivo, razones, razonesReposicion } from "@/lib/pedidos/predeterminados";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
 
 export const metadata: Metadata = { title: "Persona" };
@@ -60,6 +62,8 @@ export default async function Persona({ params }: { params: Promise<{ id: string
     supabase.from("propuestas").select("estado, motivo").eq("empleado_id", id).maybeSingle(),
     constanciaDe(supabase, empresa.id),
   ]);
+  const { data: enAbierto } = await supabase.from("pedido_abierto").select("razon").eq("empleado_id", id).maybeSingle();
+  const yaTuvoImpreso = (gafetes ?? []).some((g) => g.tipo === "impreso" && g.estado !== "cancelado");
   const estadoLiga = estadoDeLiga(persona, propuesta);
   const urlLiga = urlDeLiga(persona.liga);
   const caraLista = (ruta?: string | null, ancho?: number | null, alto?: number | null): CaraGuardada | null =>
@@ -103,7 +107,7 @@ export default async function Persona({ params }: { params: Promise<{ id: string
                     {gafetes.map((g) => (
                       <tr key={g.id}>
                         <td className="py-2 pr-4">{fecha(g.emitido_en)}</td>
-                        <td className="py-2 pr-4">{motivosGafete[g.motivo] ?? g.motivo}</td>
+                        <td className="py-2 pr-4">{etiquetaMotivo(g.motivo, g.razon) ?? motivosGafete[g.motivo] ?? g.motivo}</td>
                         <td className="py-2 pr-4 capitalize">{g.tipo}</td>
                         <td className="py-2">{estadosGafete[g.estado] ?? g.estado}</td>
                       </tr>
@@ -196,6 +200,63 @@ export default async function Persona({ params }: { params: Promise<{ id: string
                   </button>
                 </form>
               ) : null}
+            </Bloque>
+          ) : null}
+
+          {persona.estatus === "activo" ? (
+            <Bloque titulo={yaTuvoImpreso ? "Reposición" : "Su gafete"}>
+              {enAbierto ? (
+                <>
+                  <p className="text-sm">
+                    Ya va en tu{" "}
+                    <Link href="/cuenta/pedidos/abierto" className="font-semibold underline underline-offset-4">pedido abierto</Link>
+                    {enAbierto.razon !== "alta" ? ` (${razones[enAbierto.razon as keyof typeof razones]?.nombre.toLowerCase() ?? "reposición"})` : ""}.
+                  </p>
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                    {administra ? (
+                      <Link
+                        href={`/cuenta/pedidos/nuevo?personas=${persona.id}${enAbierto.razon !== "alta" ? `&razon=${enAbierto.razon}` : ""}`}
+                        className={`${claseBoton} px-4 py-1.5 text-sm`}
+                      >
+                        Pedirlo ahora
+                      </Link>
+                    ) : null}
+                    <form action={quitarDeAbierto}>
+                      <input type="hidden" name="id" value={persona.id} />
+                      <button type="submit" className="text-sm underline underline-offset-4">Quitarlo</button>
+                    </form>
+                  </div>
+                </>
+              ) : (
+                <form action="/cuenta/pedidos/nuevo" method="get" className="space-y-4">
+                  <input type="hidden" name="id" value={persona.id} />
+                  <input type="hidden" name="personas" value={persona.id} />
+                  {yaTuvoImpreso ? (
+                    <Chips
+                      etiqueta="¿Qué pasó con su gafete?"
+                      name="razon"
+                      inicial="perdido"
+                      opciones={razonesReposicion.map((r) => ({ valor: r, texto: razones[r].nombre }))}
+                    />
+                  ) : (
+                    <>
+                      <input type="hidden" name="razon" value="alta" />
+                      <p className="text-sm text-gris">Todavía no se le imprime ningún gafete.</p>
+                    </>
+                  )}
+                  <p className="text-sm text-gris">Sale con los datos y la foto que tiene guardados, sin capturar nada otra vez.</p>
+                  <div className="flex flex-wrap gap-2">
+                    {administra ? (
+                      <button type="submit" className={`${claseBoton} px-4 py-1.5 text-sm`}>
+                        Pedirlo ahora
+                      </button>
+                    ) : null}
+                    <button type="submit" formAction={apartarEnAbierto} className={`${claseBotonSecundario} px-4 py-1.5 text-sm`}>
+                      Sumarlo al pedido abierto
+                    </button>
+                  </div>
+                </form>
+              )}
             </Bloque>
           ) : null}
 

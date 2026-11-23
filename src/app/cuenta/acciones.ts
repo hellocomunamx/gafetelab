@@ -10,6 +10,7 @@ import { datosVerificables, modosQr } from "@/lib/cuenta/qr";
 import { recordarEmpresa, requerirEmpresa, requerirUsuario } from "@/lib/cuenta/sesion";
 import { claveDe, normalizar } from "@/lib/cuenta/texto";
 import type { FilaImportada, Resultado } from "@/lib/cuenta/tipos";
+import { revisarAviso } from "@/lib/pedidos/abierto";
 import { carta, site } from "@/lib/site";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -267,12 +268,14 @@ export async function guardarEmpleado(_: Resultado, d: FormData): Promise<Result
   if (error || !data) {
     return { error: error?.code === "23505" ? "Ya hay una persona con ese número de empleado." : ERROR_GENERAL };
   }
+  // Un alta nueva puede completar el pedido abierto.
+  if (estatus === "activo") await revisarAviso(empresa.id);
   refrescar();
   redirect(`/cuenta/equipo/${data.id}`);
 }
 
 export async function cambiarEstatus(d: FormData) {
-  const { supabase } = await requerirEmpresa();
+  const { supabase, empresa } = await requerirEmpresa();
   const fila = id(d);
   const estatus = texto(d, "estatus");
   if (fila && ESTATUS.includes(estatus)) {
@@ -280,6 +283,7 @@ export async function cambiarEstatus(d: FormData) {
       .from("empleados")
       .update({ estatus, fecha_baja: estatus === "baja" ? hoy() : null })
       .eq("id", fila);
+    await revisarAviso(empresa.id);
   }
   refrescar();
 }
@@ -386,6 +390,7 @@ export async function importarEmpleados(
   if (nuevas.length) {
     const { error } = await supabase.from("empleados").insert(nuevas as never);
     if (error) return { error: ERROR_GENERAL };
+    await revisarAviso(empresa.id);
   }
   refrescar();
   return { ok: "Listo.", nuevas: nuevas.length, actualizadas: cambios.size };

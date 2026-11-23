@@ -199,14 +199,14 @@ isOneToOne: true
                   ]
                 },"gafetes": {
                   Row: {
-                    "datos": NonNullable<Json>,"diseno_id": string | null,"emitido_en": string,"empleado_id": string,"empresa_id": string,"estado": string,"id": string,"motivo": string,"pedido_id": string | null,"tipo": string
+                    "datos": NonNullable<Json>,"diseno_id": string | null,"emitido_en": string,"empleado_id": string,"empresa_id": string,"estado": string,"id": string,"motivo": string,"pedido_id": string | null,"razon": string | null,"tipo": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "datos"?: NonNullable<Json>,"diseno_id"?: string | null,"emitido_en"?: string,"empleado_id": string,"empresa_id": string,"estado"?: string,"id"?: string,"motivo": string,"pedido_id"?: string | null,"tipo": string
+                    "datos"?: NonNullable<Json>,"diseno_id"?: string | null,"emitido_en"?: string,"empleado_id": string,"empresa_id": string,"estado"?: string,"id"?: string,"motivo": string,"pedido_id"?: string | null,"razon"?: string | null,"tipo": string
                   }
                   Update: {
-                    "datos"?: NonNullable<Json>,"diseno_id"?: string | null,"emitido_en"?: string,"empleado_id"?: string,"empresa_id"?: string,"estado"?: string,"id"?: string,"motivo"?: string,"pedido_id"?: string | null,"tipo"?: string
+                    "datos"?: NonNullable<Json>,"diseno_id"?: string | null,"emitido_en"?: string,"empleado_id"?: string,"empresa_id"?: string,"estado"?: string,"id"?: string,"motivo"?: string,"pedido_id"?: string | null,"razon"?: string | null,"tipo"?: string
                   }
                   Relationships: [
                     {
@@ -301,6 +301,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"pedido_abierto": {
+                  Row: {
+                    "agregado_por": string | null,"creado_en": string,"empleado_id": string,"empresa_id": string,"razon": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "agregado_por"?: string | null,"creado_en"?: string,"empleado_id": string,"empresa_id": string,"razon": string
+                  }
+                  Update: {
+                    "agregado_por"?: string | null,"creado_en"?: string,"empleado_id"?: string,"empresa_id"?: string,"razon"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pedido_abierto_empleado_id_fkey"
+      columns: ["empleado_id"]
+isOneToOne: false
+      referencedRelation: "empleados"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pedido_abierto_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"pedido_eventos": {
                   Row: {
                     "creado_en": string,"detalle": NonNullable<Json>,"id": number,"pedido_id": string,"por": string | null,"tipo": string
@@ -381,6 +407,32 @@ isOneToOne: true
       referencedColumns: ["id"]
     },{
       foreignKeyName: "propuestas_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"reglas_diseno": {
+                  Row: {
+                    "campo": string,"creado_en": string,"diseno_id": string,"empresa_id": string,"id": string,"orden": number,"valor": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "campo": string,"creado_en"?: string,"diseno_id": string,"empresa_id": string,"id"?: string,"orden"?: number,"valor": string
+                  }
+                  Update: {
+                    "campo"?: string,"creado_en"?: string,"diseno_id"?: string,"empresa_id"?: string,"id"?: string,"orden"?: number,"valor"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "reglas_diseno_diseno_id_fkey"
+      columns: ["diseno_id"]
+isOneToOne: false
+      referencedRelation: "disenos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "reglas_diseno_empresa_id_fkey"
       columns: ["empresa_id"]
 isOneToOne: false
       referencedRelation: "empresas"

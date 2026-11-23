@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { claseBotonSecundario, claseEntrada } from "@/components/cuenta/Formulario";
+import { claseBotonSecundario, claseEntrada } from "@/components/cuenta/clases";
 import { GafeteSvg } from "@/components/diseno/GafeteSvg";
 import { camposDe } from "@/lib/cuenta/consultas";
 import { ligasDe } from "@/lib/cuenta/fotos";

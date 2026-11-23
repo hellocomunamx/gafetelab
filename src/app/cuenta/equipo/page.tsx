@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Estatus } from "@/components/cuenta/Entrada";
-import { claseBoton, claseBotonSecundario, claseEntrada } from "@/components/cuenta/Formulario";
+import { claseBoton, claseBotonSecundario, claseEntrada } from "@/components/cuenta/clases";
 import { estatusEmpleado } from "@/lib/cuenta/catalogos";
 import { ligasDeFotos } from "@/lib/cuenta/fotos";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";

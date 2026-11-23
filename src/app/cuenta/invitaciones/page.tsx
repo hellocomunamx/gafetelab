@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { aceptarInvitacion, rechazarInvitacion } from "@/app/cuenta/usuarios/acciones";
 import { Bloque } from "@/components/cuenta/Entrada";
-import { claseBoton } from "@/components/cuenta/Formulario";
+import { claseBoton } from "@/components/cuenta/clases";
 import { roles } from "@/lib/cuenta/roles";
 import { misInvitaciones, type Rol } from "@/lib/cuenta/sesion";
 

@@ -7,6 +7,8 @@ import { palabrasSensibles, textosDeDiseno } from "@/lib/admin/alertas";
 import { constanciaDe, puedePedir } from "@/lib/cuenta/constancia";
 import { miAceptacion, requerirEmpresa } from "@/lib/cuenta/sesion";
 import { type MaterialId, materiales } from "@/lib/materiales";
+import { revisarAviso } from "@/lib/pedidos/abierto";
+import { esRazon, motivoDe } from "@/lib/pedidos/predeterminados";
 import { FUENTE_LISTOS, llevaVuelta, prepararPedido } from "@/lib/pedidos/preparar";
 import {
   type AprobacionPedido,
@@ -39,6 +41,8 @@ export type EntradaPedido = {
   facturacion: string | null;
   /** La casilla "revisé la vista previa y apruebo que se imprima así". */
   aprobado: boolean;
+  /** Por persona, por qué se pide: se perdió, se dañó o cambiaron sus datos. Quien no aparece es alta o reposición según su historial. */
+  razones?: Record<string, string>;
 };
 
 /**
@@ -137,9 +141,13 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
       }
     : null;
   const elegidas = copias.map((x) => x.gafete!.copia);
+  // Con reglas se guarda una copia de cada diseño que sí se usa; cada gafete dice cuál lleva.
+  const usados =
+    fuente.tipo === "reglas" ? [...new Set(copias.map((x) => x.gafete!.disenoId!))].map((id) => fuente.disenos!.get(id)!.fila) : [];
   const alertas = palabrasSensibles([
     empresa.nombre,
     ...(fuente.fila ? textosDeDiseno(fuente.fila) : []),
+    ...usados.flatMap((f) => textosDeDiseno(f)),
     ...elegidas.flatMap((g) => [g.valores?.puesto, g.valores?.departamento]),
   ]);
 
@@ -152,11 +160,16 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
       material: impreso ? material.id : null,
       dos_caras: dosCaras,
       piezas: c.piezas,
-      fuente: fuente.tipo,
+      fuente: fuente.tipo === "reglas" ? "diseno" : fuente.tipo,
       diseno_id: fuente.fila?.id ?? null,
       diseno: fuente.fila
         ? ({ nombre: fuente.fila.nombre, orientacion: fuente.fila.orientacion, frente: fuente.fila.frente, vuelta: fuente.fila.vuelta } as Json)
-        : null,
+        : usados.length
+          ? ({
+              nombre: "Por reglas",
+              reglas: Object.fromEntries(usados.map((f) => [f.id, { nombre: f.nombre, orientacion: f.orientacion, frente: f.frente, vuelta: f.vuelta }])),
+            } as Json)
+          : null,
       por_pieza: c.porPieza,
       conceptos: c.conceptos as unknown as Json,
       gafetes_de_saldo: c.deSaldo,
@@ -174,7 +187,13 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
     })
     .select("*")
     .single();
-  if (error || !pedido) return { error: "No pudimos guardar tu pedido. Intenta de nuevo." };
+  if (error || !pedido) {
+    return {
+      error: usados.length > 3 && error?.message.includes("diseno")
+        ? "Tu pedido junta demasiados diseños distintos. Divídelo en dos pedidos."
+        : "No pudimos guardar tu pedido. Intenta de nuevo.",
+    };
+  }
 
   // Se aparta el saldo, todo o nada. Si otro pedido lo usó al mismo tiempo, se deshace.
   if (c.plan.length) {
@@ -194,18 +213,26 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
     .neq("estado", "cancelado")
     .limit(20000);
   const conGafete = new Set((previos ?? []).map((g) => `${g.tipo}:${g.empleado_id}`));
+  const razones = entrada.razones && typeof entrada.razones === "object" ? entrada.razones : {};
   const tipos = [...(impreso ? ["impreso"] : []), ...(digital ? ["digital"] : [])];
   const renglones = tipos.flatMap((tipo) =>
-    copias.map((x) => ({
-      empresa_id: empresa.id,
-      empleado_id: x.id,
-      tipo,
-      motivo: conGafete.has(`${tipo}:${x.id}`) ? "reposicion" : "alta",
-      estado: "en_pedido",
-      datos: x.gafete!.copia as unknown as NonNullable<Json>,
-      diseno_id: fuente.fila?.id ?? null,
-      pedido_id: pedido.id,
-    })),
+    copias.map((x) => {
+      // La razón de una reposición (se perdió, se dañó, cambiaron sus datos) habla del gafete impreso.
+      const pedida = tipo === "impreso" ? razones[x.id] : null;
+      const razon = esRazon(pedida) ? pedida : null;
+      const motivo = motivoDe(razon, conGafete.has(`${tipo}:${x.id}`));
+      return {
+        empresa_id: empresa.id,
+        empleado_id: x.id,
+        tipo,
+        motivo,
+        razon: motivo === "alta" ? "alta" : razon,
+        estado: "en_pedido",
+        datos: x.gafete!.copia as unknown as NonNullable<Json>,
+        diseno_id: fuente.fila?.id ?? x.gafete!.disenoId ?? null,
+        pedido_id: pedido.id,
+      };
+    }),
   );
   for (let i = 0; i < renglones.length; i += 500) {
     const { error: falla } = await servicio.from("gafetes").insert(renglones.slice(i, i + 500));
@@ -221,6 +248,11 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
     { piezas: c.piezas, modalidad, total: c.total, de_saldo: c.deSaldo, digitales_de_saldo: c.digitalesDeSaldo, envio_de_saldo: c.envioDeSaldo, fuente: fuente.id === FUENTE_LISTOS ? "listos" : fuente.nombre },
     usuario.id,
   );
+  // Lo que estaba apartado en el pedido abierto ya va en este pedido.
+  for (let i = 0; i < ids.length; i += 500) {
+    await servicio.from("pedido_abierto").delete().eq("empresa_id", empresa.id).in("empleado_id", ids.slice(i, i + 500));
+  }
+  await revisarAviso(empresa.id);
   revalidatePath("/cuenta", "layout");
 
   // Cubierto completo con saldo: no hay nada que cobrar.
