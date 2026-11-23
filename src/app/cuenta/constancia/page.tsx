@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Bloque } from "@/components/cuenta/Entrada";
+import { PorQueConstancia } from "@/components/cuenta/PorQueConstancia";
 import { SubirConstancia } from "@/components/cuenta/SubirConstancia";
 import { constanciaDe, fechaLarga, ventanaDeEmision } from "@/lib/cuenta/constancia";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
@@ -25,6 +26,7 @@ export default async function PaginaConstancia({ searchParams }: { searchParams:
         <p className="mt-2 text-gris">
           {textos.corto} {textos.motivo}
         </p>
+        <PorQueConstancia className="mt-3" />
       </div>
 
       {actual?.estado === "aprobada" ? (

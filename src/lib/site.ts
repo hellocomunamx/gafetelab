@@ -43,6 +43,29 @@ export const constancia = {
   corto: `Para abrir la cuenta de tu empresa te pedimos su Constancia de Situación Fiscal, con no más de ${site.constanciaMeses} meses de antigüedad.`,
   motivo:
     "Así comprobamos que los gafetes y credenciales son de tu propia empresa: el RFC y la razón social de la constancia deben coincidir con la empresa que aparece en los gafetes, y son los mismos datos con los que te facturamos.",
+  /** Desplegable «¿Por qué necesitan mi constancia?». */
+  pregunta: "¿Por qué necesitan mi constancia?",
+  respuesta: "Por el bien y la seguridad de tu empresa.",
+  razones: [
+    {
+      titulo: "Para que nadie se haga pasar por tu empresa.",
+      texto:
+        "Un gafete abre puertas. Con la constancia comprobamos que quien pide los gafetes y credenciales de tu empresa es de verdad tu empresa, y que nadie más puede mandarlos a hacer con tu nombre o tu logo.",
+    },
+    {
+      titulo: "Para que tus gafetes valgan.",
+      texto: "Quien ve un gafete hecho aquí sabe que detrás hay una empresa real y verificada.",
+    },
+    {
+      titulo: "Para facturarte sin vueltas.",
+      texto: "De ahí salen tu RFC, tu razón social, tu régimen y tu código postal, tal como los tiene el SAT.",
+    },
+    {
+      titulo: "Y no te compromete.",
+      texto:
+        "La constancia no trae contraseñas ni datos bancarios. Solo la ve nuestro equipo de revisión, no se comparte con nadie y se pide una sola vez.",
+    },
+  ],
 } as const;
 
 /** Empresa detrás de LaGafetería: aparece en el "Powered by" y en el aviso de privacidad. */

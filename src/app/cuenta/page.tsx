@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PorQueConstancia } from "@/components/cuenta/PorQueConstancia";
 import { BotonPlantilla } from "@/components/cuenta/BotonPlantilla";
 import { Bloque } from "@/components/cuenta/Entrada";
 import { constanciaDe } from "@/lib/cuenta/constancia";
@@ -43,17 +44,20 @@ export default async function Resumen() {
     <div className="space-y-6">
       <h1 className="text-3xl font-extrabold">Hola, {empresa.nombre}</h1>
       {!constancia || constancia.estado === "rechazada" ? (
-        <p role={constancia ? "alert" : undefined} className="rounded-tarjeta bg-resaltador/30 p-4 text-sm">
-          <strong>
-            {constancia
-              ? "No pudimos aceptar tu Constancia de Situación Fiscal."
-              : "Falta la Constancia de Situación Fiscal de tu empresa."}
-          </strong>{" "}
-          {constancia ? (constancia.motivo ?? "") : "La necesitas antes de tu primer pedido."}{" "}
-          <Link href="/cuenta/constancia" className="font-semibold underline underline-offset-4">
-            {constancia ? "Subir una nueva" : "Subirla ahora"}
-          </Link>
-        </p>
+        <div role={constancia ? "alert" : undefined} className="rounded-tarjeta bg-resaltador/30 p-4 text-sm">
+          <p>
+            <strong>
+              {constancia
+                ? "No pudimos aceptar tu Constancia de Situación Fiscal."
+                : "Falta la Constancia de Situación Fiscal de tu empresa."}
+            </strong>{" "}
+            {constancia ? (constancia.motivo ?? "") : "La necesitas antes de tu primer pedido."}{" "}
+            <Link href="/cuenta/constancia" className="font-semibold underline underline-offset-4">
+              {constancia ? "Subir una nueva" : "Subirla ahora"}
+            </Link>
+          </p>
+          <PorQueConstancia className="mt-2" />
+        </div>
       ) : null}
       <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[
