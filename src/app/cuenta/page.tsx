@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { PorQueConstancia } from "@/components/cuenta/PorQueConstancia";
 import { BotonPlantilla } from "@/components/cuenta/BotonPlantilla";
 import { Bloque } from "@/components/cuenta/Entrada";
+import { constanciaDe } from "@/lib/cuenta/constancia";
 import { camposDe } from "@/lib/cuenta/consultas";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
 import { claveDe } from "@/lib/cuenta/texto";
@@ -12,18 +14,25 @@ export default async function Resumen() {
   const base = () =>
     supabase.from("empleados").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id);
 
-  const [campos, activos, bajas, sinFoto, gafetes, direcciones, fiscales, disenos] = await Promise.all([
+  const [constancia, campos, activos, bajas, sinFoto, gafetes, direcciones, fiscales, disenos] = await Promise.all([
+    constanciaDe(supabase, empresa.id),
     camposDe(supabase, empresa.id),
     contar((q) => q.eq("estatus", "activo")),
     contar((q) => q.eq("estatus", "baja")),
     contar((q) => q.neq("estatus", "baja").is("foto_path", null)),
-    supabase.from("gafetes").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).then((r) => r.count ?? 0),
+    supabase.from("gafetes").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).neq("estado", "cancelado").then((r) => r.count ?? 0),
     supabase.from("direcciones").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).then((r) => r.count ?? 0),
     supabase.from("datos_fiscales").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).then((r) => r.count ?? 0),
     supabase.from("disenos").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).then((r) => r.count ?? 0),
   ]);
 
   const pasos = [
+    {
+      hecho: constancia?.estado === "aprobada",
+      texto: constancia?.estado === "pendiente" ? "Tu Constancia de Situación Fiscal está en revisión" : "Sube la Constancia de Situación Fiscal de tu empresa",
+      href: "/cuenta/constancia",
+      accion: constancia?.estado === "pendiente" ? "Ver" : constancia ? "Subir una nueva" : "Subir constancia",
+    },
     { hecho: activos + bajas > 0, texto: "Sube a tu equipo", href: "/cuenta/equipo/importar", accion: "Importar con Excel" },
     { hecho: activos > 0 && sinFoto === 0, texto: "Sube las fotos", href: "/cuenta/equipo/fotos", accion: "Subir fotos" },
     { hecho: disenos > 0, texto: "Crea el diseño de tu gafete", href: "/cuenta/disenos/nuevo", accion: "Crear diseño" },
@@ -34,6 +43,22 @@ export default async function Resumen() {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-extrabold">Hola, {empresa.nombre}</h1>
+      {!constancia || constancia.estado === "rechazada" ? (
+        <div role={constancia ? "alert" : undefined} className="rounded-tarjeta bg-resaltador/30 p-4 text-sm">
+          <p>
+            <strong>
+              {constancia
+                ? "No pudimos aceptar tu Constancia de Situación Fiscal."
+                : "Falta la Constancia de Situación Fiscal de tu empresa."}
+            </strong>{" "}
+            {constancia ? (constancia.motivo ?? "") : "La necesitas antes de tu primer pedido."}{" "}
+            <Link href="/cuenta/constancia" className="font-semibold underline underline-offset-4">
+              {constancia ? "Subir una nueva" : "Subirla ahora"}
+            </Link>
+          </p>
+          <PorQueConstancia className="mt-2" />
+        </div>
+      ) : null}
       <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[
           { dato: activos, detalle: "personas activas", href: "/cuenta/equipo?estatus=activo" },
@@ -97,9 +122,11 @@ export default async function Resumen() {
           ))}
         </ul>
         <p className="mt-4 text-sm text-gris">
-          Los pedidos desde tu plataforma se activan pronto. Mientras, puedes{" "}
-          ver tu precio al momento en el{" "}
-          <Link href="/cotizar" className="underline">cotizador en línea</Link>.
+          ¿Ya está todo?{" "}
+          <Link href="/cuenta/pedidos/nuevo" className="font-semibold text-rojo underline underline-offset-4">
+            Haz tu pedido
+          </Link>{" "}
+          y ve tu total con envío e IVA antes de pagar.
         </p>
       </Bloque>
     </div>

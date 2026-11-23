@@ -13,21 +13,27 @@ export const medidorAproximado: Medidor = (texto, fuente, negrita) =>
 let medidorReal: Medidor | null = null;
 const oyentes = new Set<() => void>();
 
-/** Mide con las letras reales del navegador. Se prepara una sola vez por página. */
-function prepararMedidor() {
-  if (medidorReal || typeof document === "undefined") return;
-  const estilos = getComputedStyle(document.body);
-  const familias = Object.fromEntries(
-    fuentes.map((f) => [f.id, estilos.getPropertyValue(f.variable).trim() || "sans-serif"]),
-  ) as Record<FuenteId, string>;
-  const cargas = fuentes.flatMap((f) =>
-    [400, 700].map((peso) => document.fonts.load(`${peso} 20px ${familias[f.id]}`).catch(() => null)),
-  );
-  void Promise.all(cargas).then(() => {
+/** Las letras del gafete ya cargadas en el navegador: su familia real y un medidor exacto. */
+export type Letras = { familias: Record<FuenteId, string>; medir: Medidor };
+let letras: Promise<Letras | null> | null = null;
+
+/** Carga las letras una sola vez por página. Devuelve null si no hay navegador o lienzo. */
+export function letrasListas(): Promise<Letras | null> {
+  if (typeof document === "undefined") return Promise.resolve(null);
+  letras ??= (async () => {
+    const estilos = getComputedStyle(document.body);
+    const familias = Object.fromEntries(
+      fuentes.map((f) => [f.id, estilos.getPropertyValue(f.variable).trim() || "sans-serif"]),
+    ) as Record<FuenteId, string>;
+    await Promise.all(
+      fuentes.flatMap((f) =>
+        [400, 700].map((peso) => document.fonts.load(`${peso} 20px ${familias[f.id]}`).catch(() => null)),
+      ),
+    );
     const ctx = document.createElement("canvas").getContext("2d");
-    if (!ctx) return;
+    if (!ctx) return null;
     const memoria = new Map<string, number>();
-    medidorReal = (texto, fuente, negrita) => {
+    const medir: Medidor = (texto, fuente, negrita) => {
       const clave = `${fuente}|${negrita ? 1 : 0}|${texto}`;
       let ancho = memoria.get(clave);
       if (ancho === undefined) {
@@ -38,6 +44,17 @@ function prepararMedidor() {
       }
       return ancho;
     };
+    return { familias, medir };
+  })();
+  return letras;
+}
+
+/** Mide con las letras reales del navegador. Se prepara una sola vez por página. */
+function prepararMedidor() {
+  if (medidorReal || typeof document === "undefined") return;
+  void letrasListas().then((listas) => {
+    if (!listas || medidorReal) return;
+    medidorReal = listas.medir;
     oyentes.forEach((avisar) => avisar());
   });
 }

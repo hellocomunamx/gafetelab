@@ -32,3 +32,28 @@ export async function enviarCorreo(opts: {
     text: opts.texto,
   });
 }
+
+export type Correo = { para: string; asunto: string; html: string; texto: string; responderA?: string };
+
+const pausa = (ms: number) => new Promise((listo) => setTimeout(listo, ms));
+
+/**
+ * Envía muchos correos distintos de una vez, en lotes de 100 (lo que admite
+ * Resend por solicitud). Si un lote falla se detiene: `enviados` dice cuántos
+ * sí salieron, en el mismo orden en que venían.
+ */
+export async function enviarCorreos(correos: Correo[]): Promise<{ enviados: number; error?: string }> {
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const de = process.env.RESEND_FROM ?? `${site.nombre} <${site.correo}>`;
+  let enviados = 0;
+  for (let i = 0; i < correos.length; i += 100) {
+    if (i) await pausa(600);
+    const lote = correos.slice(i, i + 100);
+    const { error } = await resend.batch
+      .send(lote.map((c) => ({ from: de, to: c.para, replyTo: c.responderA ?? site.correo, subject: c.asunto, html: c.html, text: c.texto })))
+      .catch((falla: unknown) => ({ error: { message: falla instanceof Error ? falla.message : "sin respuesta" } }));
+    if (error) return { enviados, error: error.message };
+    enviados += lote.length;
+  }
+  return { enviados };
+}

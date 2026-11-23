@@ -27,7 +27,7 @@ export async function middleware(solicitud: NextRequest) {
   });
 
   const { data } = await supabase.auth.getUser();
-  if (!data.user && solicitud.nextUrl.pathname.startsWith("/cuenta")) {
+  if (!data.user && (/^\/cuenta(\/|$)/.test(solicitud.nextUrl.pathname) || solicitud.nextUrl.pathname === "/aceptar")) {
     const destino = solicitud.nextUrl.clone();
     destino.pathname = "/entrar";
     destino.search = "";
@@ -36,4 +36,4 @@ export async function middleware(solicitud: NextRequest) {
   return respuesta;
 }
 
-export const config = { matcher: ["/cuenta/:path*", "/entrar"] };
+export const config = { matcher: ["/cuenta/:path*", "/8admins/:path*", "/entrar", "/aceptar"] };

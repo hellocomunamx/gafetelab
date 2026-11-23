@@ -1,16 +1,20 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { estadosMexico, regimenesFiscales, usosCfdi } from "@/lib/cuenta/catalogos";
-import { COOKIE_EMPRESA, requerirEmpresa, requerirUsuario } from "@/lib/cuenta/sesion";
+import { constanciaDe, ventanaDeEmision } from "@/lib/cuenta/constancia";
+import { CLAVES_DE_CORREO, correoValido } from "@/lib/cuenta/ligas";
+import { datosVerificables, modosQr } from "@/lib/cuenta/qr";
+import { recordarEmpresa, requerirEmpresa, requerirUsuario } from "@/lib/cuenta/sesion";
 import { claveDe, normalizar } from "@/lib/cuenta/texto";
 import type { FilaImportada, Resultado } from "@/lib/cuenta/tipos";
+import { site } from "@/lib/site";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const ERROR_GENERAL = "No pudimos guardar. Intenta de nuevo.";
+const SOLO_ADMIN = "Solo quien administra la empresa puede cambiar estos datos.";
 
 const texto = (d: FormData, clave: string, max = 200) =>
   String(d.get(clave) ?? "").trim().slice(0, max);
@@ -20,15 +24,6 @@ const id = (d: FormData, clave = "id") => {
   return UUID.test(v) ? v : null;
 };
 const refrescar = () => revalidatePath("/cuenta", "layout");
-
-async function recordarEmpresa(empresaId: string) {
-  (await cookies()).set(COOKIE_EMPRESA, empresaId, {
-    path: "/",
-    httpOnly: true,
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 365,
-  });
-}
 
 // --- Empresa ---------------------------------------------------------------
 
@@ -43,7 +38,29 @@ export async function crearEmpresa(_: Resultado, d: FormData): Promise<Resultado
   if (error || !data) return { error: error?.code === "P0001" ? error.message : ERROR_GENERAL };
   await recordarEmpresa(data);
   refrescar();
-  redirect("/cuenta");
+  // Lo primero que se le pide a una empresa nueva es su constancia; puede dejarla para después.
+  redirect("/cuenta/constancia?nueva=1");
+}
+
+/** Registra la constancia que la empresa acaba de subir al almacenamiento. Queda en revisión. */
+export async function guardarConstancia(entrada: { ruta: string; fecha: string }): Promise<Resultado> {
+  const { supabase, empresa, administra } = await requerirEmpresa();
+  if (!administra) return { error: "Solo quien administra la empresa puede subir la constancia." };
+  const ruta = String(entrada?.ruta ?? "");
+  const fecha = String(entrada?.fecha ?? "");
+  if (!new RegExp(`^${empresa.id}/[0-9a-f-]{36}\\.(pdf|jpg|png)$`).test(ruta) || !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+    return { error: ERROR_GENERAL };
+  }
+  const { desde, hasta } = ventanaDeEmision();
+  if (fecha > hasta) return { error: "La fecha de emisión no puede ser futura." };
+  if (fecha < desde) return { error: `La constancia debe tener máximo ${site.constanciaMeses} meses de antigüedad.` };
+  const actual = await constanciaDe(supabase, empresa.id);
+  if (actual?.estado === "aprobada") return { error: "Tu constancia ya está aprobada." };
+  if (actual?.estado === "pendiente") return { error: "Ya tienes una constancia en revisión." };
+  const { error } = await supabase.from("constancias").insert({ empresa_id: empresa.id, ruta, fecha_emision: fecha });
+  if (error) return { error: error.code === "P0001" ? error.message : ERROR_GENERAL };
+  refrescar();
+  return { ok: "Recibimos tu constancia." };
 }
 
 export async function elegirEmpresa(d: FormData) {
@@ -67,7 +84,7 @@ export async function guardarEmpresa(_: Resultado, d: FormData): Promise<Resulta
     .eq("id", empresa.id)
     .select("id");
   if (error) return { error: ERROR_GENERAL };
-  if (!data.length) return { error: "Solo quien administra la empresa puede cambiar estos datos." };
+  if (!data.length) return { error: SOLO_ADMIN };
   refrescar();
   return { ok: "Guardado." };
 }
@@ -75,7 +92,8 @@ export async function guardarEmpresa(_: Resultado, d: FormData): Promise<Resulta
 // --- Datos de envío --------------------------------------------------------
 
 export async function guardarDireccion(_: Resultado, d: FormData): Promise<Resultado> {
-  const { supabase, empresa } = await requerirEmpresa();
+  const { supabase, empresa, administra } = await requerirEmpresa();
+  if (!administra) return { error: SOLO_ADMIN };
   const fila = {
     alias: opcional(d, "alias", 60),
     destinatario: texto(d, "destinatario", 120),
@@ -137,7 +155,8 @@ export async function predeterminarDireccion(d: FormData) {
 // --- Datos de facturación --------------------------------------------------
 
 export async function guardarDatosFiscales(_: Resultado, d: FormData): Promise<Resultado> {
-  const { supabase, empresa } = await requerirEmpresa();
+  const { supabase, empresa, administra } = await requerirEmpresa();
+  if (!administra) return { error: SOLO_ADMIN };
   const fila = {
     rfc: texto(d, "rfc", 13).toUpperCase().replace(/[\s-]/g, ""),
     razon_social: texto(d, "razon_social", 200),
@@ -212,9 +231,13 @@ export async function guardarEmpleado(_: Resultado, d: FormData): Promise<Result
     else delete datos[c.clave];
   }
 
+  const correo = texto(d, "correo", 200);
+  if (correo && !correoValido(correo)) return { error: "Revisa el correo de la persona: no parece válido." };
+
   const estatus = ESTATUS.includes(texto(d, "estatus")) ? texto(d, "estatus") : "activo";
   const fila = {
     nombre,
+    correo: correoValido(correo),
     numero_empleado: opcional(d, "numero_empleado", 40),
     puesto: opcional(d, "puesto", 120),
     departamento: opcional(d, "departamento", 120),
@@ -262,6 +285,13 @@ export async function borrarEmpleado(d: FormData) {
   if (fila) {
     const { data } = await supabase.from("empleados").select("foto_path").eq("id", fila).maybeSingle();
     if (data?.foto_path) await supabase.storage.from("fotos").remove([data.foto_path]);
+    const { data: listo } = await supabase
+      .from("gafetes_listos")
+      .select("frente_path, vuelta_path")
+      .eq("empleado_id", fila)
+      .maybeSingle();
+    const caras = [listo?.frente_path, listo?.vuelta_path].filter((r): r is string => Boolean(r));
+    if (caras.length) await supabase.storage.from("gafetes").remove(caras);
     await supabase.from("empleados").delete().eq("id", fila);
   }
   refrescar();
@@ -292,7 +322,7 @@ export async function importarEmpleados(
 
   const { data: existentes } = await supabase
     .from("empleados")
-    .select("id, nombre, numero_empleado, datos")
+    .select("id, nombre, numero_empleado, correo, datos")
     .eq("empresa_id", empresa.id);
   type Previa = NonNullable<typeof existentes>[number];
   const porNumero = new Map<string, Previa>();
@@ -326,6 +356,12 @@ export async function importarEmpleados(
       puesto: corto(f.puesto, 120),
       departamento: corto(f.departamento, 120),
       tipo_contrato: corto(f.tipo_contrato, 60),
+      // El correo llega en su columna o, si la empresa lo tiene como campo propio, de ahí.
+      correo:
+        correoValido(f.correo) ??
+        CLAVES_DE_CORREO.map((clave) => correoValido(f.datos?.[clave])).find(Boolean) ??
+        previa?.correo ??
+        null,
       datos,
     };
     if (previa) cambios.set(previa.id, { ...fila, id: previa.id });
@@ -439,6 +475,53 @@ export async function guardarCampos(_: Resultado, d: FormData): Promise<Resultad
   );
   refrescar();
   return fallas.some(Boolean) ? { error: ERROR_GENERAL } : { ok: "Campos guardados." };
+}
+
+/** Guarda a dónde lleva el código QR de los gafetes de la empresa. */
+export async function guardarQr(_: Resultado, d: FormData): Promise<Resultado> {
+  const { supabase, empresa, administra } = await requerirEmpresa();
+  if (!administra) return { error: "Solo quien administra la empresa puede cambiar qué muestra el QR." };
+  const modo = modosQr.find((m) => m.id === d.get("qr_modo"))?.id;
+  if (!modo) return { error: "Elige qué muestra tu QR." };
+  const { data: campos } = await supabase.from("campos").select("clave, tipo").eq("empresa_id", empresa.id);
+  const claves = (tipos: string[]) => (campos ?? []).filter((c) => tipos.includes(c.tipo)).map((c) => c.clave);
+
+  const cambios: {
+    qr_modo: string;
+    qr_mostrar?: string[];
+    qr_vigencia?: string | null;
+    qr_liga?: string;
+    qr_dato?: string;
+  } = { qr_modo: modo };
+  if (modo === "verificacion") {
+    const mostrar = datosVerificables.map((v) => v.clave).filter((clave) => d.get(`mostrar_${clave}`) === "on");
+    if (!mostrar.some((clave) => clave !== "empresa")) {
+      return { error: "Elige al menos un dato de la persona para mostrar." };
+    }
+    cambios.qr_mostrar = mostrar;
+    const vigencia = texto(d, "qr_vigencia", 40);
+    cambios.qr_vigencia = claves(["fecha"]).includes(vigencia) ? vigencia : null;
+  } else if (modo === "liga") {
+    const liga = texto(d, "qr_liga", 300);
+    let valida = false;
+    try {
+      valida = new URL(liga.replaceAll("{numero}", "1").replaceAll("{codigo}", "1")).protocol === "https:";
+    } catch {
+      valida = false;
+    }
+    if (!valida || /\s/.test(liga)) return { error: "Escribe una liga completa que empiece con https://" };
+    cambios.qr_liga = liga;
+  } else {
+    const dato = texto(d, "qr_dato", 40);
+    if (!claves(["texto", "fecha"]).includes(dato)) return { error: "Elige qué dato lleva el código." };
+    cambios.qr_dato = dato;
+  }
+
+  const { data, error } = await supabase.from("empresas").update(cambios).eq("id", empresa.id).select("id");
+  if (error) return { error: ERROR_GENERAL };
+  if (!data.length) return { error: SOLO_ADMIN };
+  refrescar();
+  return { ok: "Guardado. Tus gafetes ya usan este código QR." };
 }
 
 export async function borrarCampo(d: FormData) {

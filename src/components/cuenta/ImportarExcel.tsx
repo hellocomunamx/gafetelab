@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { type ChangeEvent, useState } from "react";
 import { importarEmpleados } from "@/app/cuenta/acciones";
-import { COLUMNA_FOTO, type CampoExcel, columnasDe, type Lectura, leerFilas } from "@/lib/cuenta/excel";
+import { COLUMNA_CORREO, COLUMNA_FOTO, type CampoExcel, columnasDe, columnasExtra, type Lectura, leerFilas } from "@/lib/cuenta/excel";
+import { correoValido } from "@/lib/cuenta/ligas";
 import { esColumnaSistema } from "@/lib/cuenta/tipos";
 import { BotonPlantilla } from "./BotonPlantilla";
 import { claseBoton, claseBotonSecundario } from "./Formulario";
@@ -54,6 +55,9 @@ export function ImportarExcel({ campos, empresa }: { campos: CampoExcel[]; empre
   const valor = (fila: Lectura["filas"][number], clave: string) =>
     esColumnaSistema(clave) ? fila[clave] : fila.datos?.[clave];
 
+  const conCorreo = Boolean(lectura?.filas.some((f) => f.correo));
+  const correosMalos = lectura?.filas.filter((f) => f.correo && !correoValido(f.correo)).length ?? 0;
+
   return (
     <div className="space-y-5">
       <ol className="grid gap-4 lg:grid-cols-3">
@@ -63,7 +67,7 @@ export function ImportarExcel({ campos, empresa }: { campos: CampoExcel[]; empre
             Tu plantilla trae una columna por cada campo de tu empresa. Hoy son:
           </p>
           <ul className="mt-3 flex flex-wrap gap-1.5">
-            {[...columnas.map((c) => c.etiqueta), COLUMNA_FOTO].map((c) => (
+            {[...columnas.map((c) => c.etiqueta), ...columnasExtra(campos)].map((c) => (
               <li key={c} className="rounded-full bg-papel px-2.5 py-1 text-xs font-semibold">
                 {c}
               </li>
@@ -130,6 +134,12 @@ export function ImportarExcel({ campos, empresa }: { campos: CampoExcel[]; empre
                 queda el último renglón de cada uno.
               </li>
             ) : null}
+            {correosMalos ? (
+              <li className="text-rojo-oscuro">
+                {correosMalos === 1 ? "1 correo no parece válido y no se guarda" : `${correosMalos} correos no parecen válidos y no se guardan`}.
+                Revísalos en el archivo o corrígelos después en la ficha de cada persona.
+              </li>
+            ) : null}
             {lectura.ignoradas.length ? (
               <li className="text-gris">
                 Columnas que no se importan: {lectura.ignoradas.join(", ")}. Para guardarlas,{" "}
@@ -144,6 +154,7 @@ export function ImportarExcel({ campos, empresa }: { campos: CampoExcel[]; empre
                   {columnas.map((c) => (
                     <th key={c.clave} scope="col" className="px-3 py-2 font-semibold">{c.etiqueta}</th>
                   ))}
+                  {conCorreo ? <th scope="col" className="px-3 py-2 font-semibold">{COLUMNA_CORREO}</th> : null}
                   <th scope="col" className="px-3 py-2 font-semibold">{COLUMNA_FOTO}</th>
                 </tr>
               </thead>
@@ -153,6 +164,7 @@ export function ImportarExcel({ campos, empresa }: { campos: CampoExcel[]; empre
                     {columnas.map((c) => (
                       <td key={c.clave} className="px-3 py-2">{valor(f, c.clave)}</td>
                     ))}
+                    {conCorreo ? <td className="px-3 py-2">{f.correo}</td> : null}
                     <td className="px-3 py-2">{f.foto_archivo}</td>
                   </tr>
                 ))}

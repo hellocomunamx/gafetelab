@@ -3,7 +3,7 @@ import { Apartado, fechaLegal } from "@/components/Legal";
 import { Contenedor, Portada } from "@/components/ui";
 import { migas } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
-import { figalo, legal, site } from "@/lib/site";
+import { afiliados, figalo, legal, site } from "@/lib/site";
 
 const ruta = "/aviso-de-privacidad";
 const rutaMigas = [{ nombre: "Aviso de privacidad", ruta }];
@@ -61,12 +61,15 @@ export default function AvisoDePrivacidad() {
               <li>
                 <strong>De quien compra o crea una cuenta:</strong> nombre, correo electrónico,
                 teléfono, empresa, domicilio de entrega y datos de facturación (RFC, nombre o razón
-                social, régimen fiscal, código postal y uso del comprobante).
+                social, régimen fiscal, código postal y uso del comprobante). También la Constancia
+                de Situación Fiscal de la empresa, con los datos que trae impresos.
               </li>
               <li>
                 <strong>De las personas que aparecen en los gafetes y credenciales:</strong> los
                 datos que tu empresa decida incluir, como nombre, puesto, número de empleado, área,
-                vigencia y fotografía.
+                vigencia y fotografía. Si tu empresa registra tu correo electrónico, lo usamos solo
+                para enviarte, a nombre de tu empresa, la liga personal donde revisas tus datos y
+                subes tu fotografía; no se imprime en el gafete.
               </li>
               <li>
                 <strong>Datos técnicos:</strong> al navegar el sitio, nuestros proveedores de
@@ -104,12 +107,16 @@ export default function AvisoDePrivacidad() {
               <li>Responder los mensajes que nos envíes desde el formulario de contacto.</li>
               <li>Diseñar, producir, imprimir y entregar tus gafetes y credenciales.</li>
               <li>
-                Generar los gafetes digitales y mostrar, a quien escanee su código QR, la información
-                que tu empresa haya decidido incluir y si el gafete está vigente.
+                Generar los gafetes, impresos y digitales, y mostrar, a quien escanee su código QR,
+                la información que tu empresa haya decidido incluir y si el gafete está vigente.
               </li>
               <li>
                 Crear y administrar tu cuenta y tu plataforma: altas, bajas, reposiciones,
                 desactivaciones y reactivaciones.
+              </li>
+              <li>
+                Comprobar, con la Constancia de Situación Fiscal, que la empresa que pide los
+                gafetes y credenciales es la misma que aparece en ellos.
               </li>
               <li>Cobrar tu pedido, emitir tu factura y cumplir obligaciones fiscales.</li>
               <li>Atender dudas, aclaraciones y solicitudes de soporte.</li>
@@ -118,10 +125,20 @@ export default function AvisoDePrivacidad() {
 
           <Apartado numero={5} titulo="Finalidades secundarias">
             <p>
-              No usamos tus datos para finalidades secundarias: no te suscribimos a boletines, no
-              hacemos publicidad con tus datos ni con los de tu personal, y no los usamos con fines
-              distintos a los descritos. Si esto llegara a cambiar, actualizaríamos este aviso y te
-              daríamos la opción de negarte escribiendo a <Correo />.
+              Solo hay una, y es opcional: si al crear tu cuenta marcas la casilla de novedades y
+              promociones, usamos tu nombre y tu correo para enviarte noticias y ofertas de{" "}
+              {site.nombre} y de sus negocios afiliados
+              {afiliados.length ? ` (por ejemplo, ${afiliados.map((a) => a.nombre).join(" y ")})` : ""}. Esa casilla va
+              aparte de la de los términos y nace sin marcar: decir que no, no cambia en nada tu
+              cuenta ni tus pedidos.
+            </p>
+            <p>
+              Los mensajes te los enviamos nosotros: no entregamos tu correo a los negocios afiliados.
+              Puedes retirar tu consentimiento cuando quieras, sin costo, desde «Mi acceso» en tu
+              cuenta o escribiendo a <Correo />.
+            </p>
+            <p>
+              Los datos de tu personal (nombres, puestos, fotografías) nunca se usan para publicidad.
             </p>
           </Apartado>
 
@@ -167,6 +184,12 @@ export default function AvisoDePrivacidad() {
               Este sitio no usa cookies de publicidad ni herramientas de rastreo publicitario. Al
               iniciar sesión en tu cuenta se usan cookies estrictamente necesarias para mantener tu
               sesión.
+            </p>
+            <p>
+              Para saber cuántas visitas recibe el sitio llevamos un conteo propio y anónimo de
+              páginas vistas. No usa cookies, no guarda tu dirección IP y no permite identificarte:
+              solo registra la página, el sitio desde el que llegaste, el tipo de dispositivo y el
+              país y estado aproximados. Si tu navegador pide no ser rastreado, no te contamos.
             </p>
           </Apartado>
 

@@ -31,7 +31,7 @@ import { GafeteSvg, textoDe, useMedidor } from "./GafeteSvg";
 import { PanelElemento } from "./PanelElemento";
 
 type CampoEditor = { clave: string; etiqueta: string; tipo: string };
-type PersonaMuestra = { id: string; nombre: string; datos: Record<string, string>; foto: string | null };
+type PersonaMuestra = { id: string; nombre: string; datos: Record<string, string>; foto: string | null; qr?: string };
 type Esquina = "nw" | "ne" | "sw" | "se";
 type Arrastre = {
   id: string;
@@ -63,6 +63,7 @@ export function EditorDiseno({
   campos,
   personas,
   muestra,
+  qrMuestra,
   imagenesIniciales,
 }: {
   inicial: Diseno;
@@ -72,6 +73,8 @@ export function EditorDiseno({
   personas: PersonaMuestra[];
   /** Datos de ejemplo para cuando no hay equipo. */
   muestra: Record<string, string>;
+  /** Lo que lleva el código QR cuando se ve con los datos de ejemplo. */
+  qrMuestra: string;
   imagenesIniciales: Record<string, string>;
 }) {
   const [nombre, setNombre] = useState(inicial.nombre);
@@ -550,6 +553,7 @@ export function EditorDiseno({
               datos={datos}
               etiquetas={etiquetas}
               foto={persona?.foto}
+              qr={persona ? persona.qr : qrMuestra}
               imagenes={imagenes}
               modo="completo"
               titulo={`Diseño, ${lado}`}

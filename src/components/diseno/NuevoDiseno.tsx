@@ -5,6 +5,7 @@ import { crearDiseno } from "@/app/cuenta/disenos/acciones";
 import { claseEntrada, Formulario } from "@/components/cuenta/Formulario";
 import { type CampoPlantilla, crearDesdePlantilla, type PlantillaId, plantillas } from "@/lib/diseno/plantillas";
 import type { Cara, Orientacion } from "@/lib/diseno/tipos";
+import { CODIGO_MUESTRA, ligaVerificacion } from "@/lib/cuenta/qr";
 import { GafeteSvg } from "./GafeteSvg";
 
 const COLORES = [
@@ -76,6 +77,7 @@ export function NuevoDiseno({
                   orientacion={orientacion}
                   datos={datos}
                   etiquetas={etiquetas}
+                  qr={ligaVerificacion(CODIGO_MUESTRA)}
                   imagenes={{}}
                   titulo={`Plantilla ${p.nombre}`}
                   className="max-h-full max-w-full drop-shadow"

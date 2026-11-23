@@ -12,7 +12,7 @@ export const site = {
   lema: "Hola, soy ___",
   titulo: "Gafetes y credenciales para empleados en todo México",
   descripcion:
-    "Gafetes y credenciales para tu equipo, impresos en PVC o digitales, sin vueltas: diseña tu gafete, sube a tu equipo y revisa cada uno antes de pagar. Plataforma incluida, sin costo extra. Envíos a todo México.",
+    "Gafetes y credenciales para todo tu equipo o asistentes a eventos, impresos en PVC o digitales. Automático y simplificado: diseña tu gafete, sube a tu equipo y revisa cada uno antes de pagar. Plataforma incluida, sin costo extra. Envíos a todo México.",
   descripcionCorta:
     "Tienda en línea para administrar e imprimir gafetes y credenciales de empleados o de asistentes a eventos, impresos y digitales, con envíos a todo México.",
   correo: `hola@${dominio}`,
@@ -43,6 +43,29 @@ export const constancia = {
   corto: `Para abrir la cuenta de tu empresa te pedimos su Constancia de Situación Fiscal, con no más de ${site.constanciaMeses} meses de antigüedad.`,
   motivo:
     "Así comprobamos que los gafetes y credenciales son de tu propia empresa: el RFC y la razón social de la constancia deben coincidir con la empresa que aparece en los gafetes, y son los mismos datos con los que te facturamos.",
+  /** Desplegable «¿Por qué necesitan mi constancia?». */
+  pregunta: "¿Por qué necesitan mi constancia?",
+  respuesta: "Por el bien y la seguridad de tu empresa.",
+  razones: [
+    {
+      titulo: "Para que nadie se haga pasar por tu empresa.",
+      texto:
+        "Un gafete abre puertas. Con la constancia comprobamos que quien pide los gafetes y credenciales de tu empresa es de verdad tu empresa, y que nadie más puede mandarlos a hacer con tu nombre o tu logo.",
+    },
+    {
+      titulo: "Para que tus gafetes valgan.",
+      texto: "Quien ve un gafete hecho aquí sabe que detrás hay una empresa real y verificada.",
+    },
+    {
+      titulo: "Para facturarte sin vueltas.",
+      texto: "De ahí salen tu RFC, tu razón social, tu régimen y tu código postal, tal como los tiene el SAT.",
+    },
+    {
+      titulo: "Y no te compromete.",
+      texto:
+        "La constancia no trae contraseñas ni datos bancarios. Solo la ve nuestro equipo de revisión, no se comparte con nadie y se pide una sola vez.",
+    },
+  ],
 } as const;
 
 /** Empresa detrás de LaGafetería: aparece en el "Powered by" y en el aviso de privacidad. */
@@ -55,7 +78,15 @@ export const figalo = {
  * Negocios afiliados: de ellos puede llegar publicidad a quien la haya aceptado.
  * Con `url` y `texto`, el afiliado aparece con una mención discreta en la landing.
  */
-export const afiliados: { nombre: string; url?: string; texto?: string }[] = [{ nombre: "Talentu" }];
+export const afiliados: { nombre: string; url?: string; texto?: string; logo?: string }[] = [
+  {
+    nombre: "Talentu",
+    url: "https://talentu.work/?utm_source=lagafeteria&utm_medium=referido",
+    texto:
+      "Software de recursos humanos para PyMEs en México: checador desde el celular, expedientes, vacaciones y recibos de nómina para el mismo equipo que ya trae su gafete.",
+    logo: "/marca/talentu-isotipo.svg",
+  },
+];
 
 /** Responsable legal del tratamiento de datos (aviso de privacidad). */
 export const legal = {
@@ -64,9 +95,9 @@ export const legal = {
   domicilio: "Cajeme, Sonora, México",
   correo: "hola@figalo.mx",
   horario: "lunes a viernes de 09:00 a 15:00 horas (hora del centro de México)",
-  avisoVersion: "1.1",
-  avisoFecha: "2026-11-22",
-  terminosVersion: "1.0",
+  avisoVersion: "1.6",
+  avisoFecha: "2026-11-23",
+  terminosVersion: "1.1",
   terminosFecha: "2026-11-22",
   /** Días naturales, desde la entrega, para reportar un gafete con defecto. */
   plazoDefectosDias: 10,

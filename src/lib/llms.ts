@@ -6,6 +6,7 @@
 import { faqsGenerales } from "./faqs";
 import { giros } from "./giros";
 import { pasos } from "./pasos";
+import { pago } from "./pedidos/reglas";
 import {
   envio,
   extraDosCaras,
@@ -42,13 +43,15 @@ const funciones = (pronto: boolean) =>
 
 const datosClave = () =>
   [
-    `- Producto: gafetes y credenciales para empleados en tres modalidades: impreso (PVC rígido tamaño CR80, 8.6 × 5.4 cm, a una cara o por frente y vuelta), digital (en el celular, con código QR verificable) o impreso + digital.`,
+    `- Producto: gafetes y credenciales para empleados en tres modalidades: impreso (PVC rígido tamaño CR80, 8.6 × 5.4 cm, a una cara o por frente y vuelta), digital (en el celular) o impreso + digital. Todos pueden llevar un código QR con página de verificación (vigente o expirado), incluida sin costo extra; la empresa decide qué datos muestra, o si el código lleva a una liga propia o contiene solo un dato.`,
     `- Precio impreso: de ${pesos(precioMinimo)} a ${pesos(precioMaximo)} MXN por pieza a una cara, ${notaIva}, según la cantidad. Frente y vuelta: ${extraDosCarasRango} MXN más por pieza, según la cantidad (${extraDosCarasDetalle}).`,
-    `- Precio digital: ${pesos(precioDigital)} MXN por pieza, ${notaIva}, en cualquier cantidad, solo o sumado a un gafete impreso.`,
+    `- Precio digital: ${pesos(precioDigital)} MXN por pieza, ${notaIva}, en cualquier cantidad, solo o sumado a un gafete impreso. Es un pago único por gafete, no un cobro recurrente, y sigue activo mientras la cuenta de la empresa esté activa y no lo desactive.`,
     `- Materiales: ${materiales.filter((m) => m.disponible).map((m) => `${m.nombre} de ${grosorTexto(m)}${m.extra ? `, ${pesos(m.extra)} más por pieza` : ""}`).join("; ")}.`,
     `- Paquetes prepagados: ${paquetes.map((p) => `${p.piezas} gafetes por ${pesos(p.piezas * p.porPieza)} MXN con ${p.envios} envíos incluidos`).join("; ")}. Vigencia de ${paqueteVigenciaMeses} meses.`,
     `- Archivo de diseño: gafete de ${medidas.ancho} × ${medidas.alto} mm; archivo con margen de corte (sangrado) de ${zonas[0].medida} a ${medidas.resolucionDpi} dpi; textos a ${medidas.margenSeguro} mm o más del corte.`,
     `- Forma de pago: pago único por gafete. No hay suscripción, mensualidad ni costo por usar la plataforma.`,
+    `- Medios de pago: tarjeta de crédito o débito, efectivo en OXXO o transferencia (SPEI), en línea desde la plataforma. Los pedidos de ${pago.soloTransferenciaDesdePiezas} gafetes o más, o de ${pesos(pago.soloTransferenciaDesdeTotal)} MXN o más, se pagan solo por transferencia.`,
+    `- Cancelación: con tarjeta hay ${pago.minutosDeGracia} minutos después de pagar para cancelar desde la plataforma sin que se haga el cargo; con OXXO o SPEI se cancela sin costo mientras no se haya pagado. Después, y antes de que el pedido entre a producción, se cancela por correo con devolución completa.`,
     `- Pedido mínimo: ninguno, desde 1 pieza.`,
     `- Entrega: ${entregaTexto}. Entrega exprés: próximamente.`,
     `- Envío: a todo México desde ${site.estadoBase}, con tarifa única de ${pesos(envio.tarifa)} MXN; gratis en pedidos desde ${pesos(envio.gratisDesde)} MXN antes de IVA.`,
@@ -128,7 +131,7 @@ ${datosClave()}
 
 ${tabla}
 
-Gafete digital: ${pesos(precioDigital)} MXN por pieza, solo o sumado al impreso. La plataforma para diseñar, cargar datos, revisar la vista previa y administrar al equipo no tiene costo. Envío: ${pesos(envio.tarifa)} MXN a todo México, gratis en pedidos desde ${pesos(envio.gratisDesde)} MXN antes de IVA.
+Gafete digital: ${pesos(precioDigital)} MXN por pieza, solo o sumado al impreso, en un pago único y no recurrente. La plataforma para diseñar, cargar datos, revisar la vista previa y administrar al equipo no tiene costo. Envío: ${pesos(envio.tarifa)} MXN a todo México, gratis en pedidos desde ${pesos(envio.gratisDesde)} MXN antes de IVA.
 
 ## Cómo se pide
 

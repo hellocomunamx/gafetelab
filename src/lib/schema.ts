@@ -108,7 +108,7 @@ export function productoDigital() {
     "@id": `${site.url}/#producto-digital`,
     name: "Gafetes y credenciales digitales para empleados",
     description:
-      "Gafete o credencial digital para el celular de cada empleado, con código QR que permite verificar que la persona sigue vigente. La empresa decide qué información muestra y puede desactivarlo o reactivarlo.",
+      "Gafete o credencial digital para el celular de cada empleado, con el mismo código QR de verificación que el impreso: al escanearlo se ve si el gafete está vigente. La empresa decide qué información muestra. Se paga una sola vez por gafete, sin cobros recurrentes.",
     category: "Gafetes y credenciales de identificación",
     image: urlAbsoluta("/marca/og-image.png"),
     brand: { "@type": "Brand", name: site.nombre },
@@ -229,7 +229,8 @@ export const videoPitch = {
     "Cómo pasar de fotos por chat y un Excel a los gafetes y credenciales de todo tu equipo: eliges una plantilla, subes a tu equipo, cada quien manda su foto y cotizas en línea al momento.",
   duracion: "50 segundos",
   duracionIso: "PT50S",
-  publicado: "2026-11-22",
+  /** Fecha y hora de publicación, con zona horaria (Sonora, UTC-7): Google la pide completa. */
+  publicado: "2026-11-22T12:00:00-07:00",
 };
 
 export function video() {

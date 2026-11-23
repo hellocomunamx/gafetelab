@@ -27,7 +27,7 @@ export default async function Datos({
 }: {
   searchParams: Promise<{ dir?: string; rfc?: string }>;
 }) {
-  const { supabase, empresa } = await requerirEmpresa();
+  const { supabase, empresa, administra } = await requerirEmpresa();
   const q = await searchParams;
   const [{ data: direcciones }, { data: fiscales }] = await Promise.all([
     supabase.from("direcciones").select("*").eq("empresa_id", empresa.id).order("predeterminada", { ascending: false }).order("creado_en"),
@@ -44,13 +44,28 @@ export default async function Datos({
         quién se factura.
       </p>
 
+      {administra ? null : (
+        <p className="rounded-tarjeta-chica bg-resaltador/30 p-4 text-sm">
+          Puedes ver estos datos, pero solo quien administra la empresa puede cambiarlos. Si hace
+          falta un cambio, pídeselo a alguien con rol de dueño o administrador en{" "}
+          <Link href="/cuenta/usuarios" className="font-semibold underline underline-offset-4">Usuarios</Link>.
+        </p>
+      )}
+
       <Bloque titulo="Tu empresa">
-        <Formulario accion={guardarEmpresa} boton="Guardar">
-          <div className="space-y-5">
-            <Entrada etiqueta="Nombre de la empresa" name="nombre" required maxLength={120} defaultValue={empresa.nombre} className="max-w-md" />
-            <GiroChips opciones={opcionesGiro} inicial={empresa.giro ?? ""} />
-          </div>
-        </Formulario>
+        {administra ? (
+          <Formulario accion={guardarEmpresa} boton="Guardar">
+            <div className="space-y-5">
+              <Entrada etiqueta="Nombre de la empresa" name="nombre" required maxLength={120} defaultValue={empresa.nombre} className="max-w-md" />
+              <GiroChips opciones={opcionesGiro} inicial={empresa.giro ?? ""} />
+            </div>
+          </Formulario>
+        ) : (
+          <p>
+            <strong>{empresa.nombre}</strong>
+            {empresa.giro ? <span className="text-gris"> · {empresa.giro}</span> : null}
+          </p>
+        )}
       </Bloque>
 
       <Bloque titulo="Direcciones de envío">
@@ -66,7 +81,7 @@ export default async function Datos({
                   {d.alias ? `${d.destinatario}. ` : ""}
                   {d.calle}, {d.colonia}, {d.ciudad}, {d.estado}, C.P. {d.cp}. Tel. {d.telefono}
                 </p>
-                <div className="mt-3 flex flex-wrap items-start gap-x-4 gap-y-2">
+                <div className={administra ? "mt-3 flex flex-wrap items-start gap-x-4 gap-y-2" : "hidden"}>
                   <Link href={`/cuenta/datos?dir=${d.id}#direccion`} className="font-semibold underline underline-offset-4">Editar</Link>
                   {d.predeterminada ? null : (
                     <form action={predeterminarDireccion}>
@@ -79,8 +94,12 @@ export default async function Datos({
               </li>
             ))}
           </ul>
-        ) : null}
+        ) : administra ? null : (
+          <p className="text-sm text-gris">Todavía no hay direcciones guardadas.</p>
+        )}
 
+        {administra ? (
+        <>
         <h3 id="direccion" className="scroll-mt-28 font-titulos text-lg font-bold">
           {dir ? "Editar dirección" : "Agregar dirección"}
         </h3>
@@ -108,6 +127,8 @@ export default async function Datos({
           </label>
         </Formulario>
         {dir ? <p className="mt-3 text-sm"><Link href="/cuenta/datos" className="underline">Cancelar</Link></p> : null}
+        </>
+        ) : null}
       </Bloque>
 
       <section id="facturacion" className="scroll-mt-28 rounded-tarjeta border border-linea bg-white p-5 sm:p-6">
@@ -115,7 +136,8 @@ export default async function Datos({
         <p className="mb-5 rounded-tarjeta-chica bg-resaltador/30 p-4 text-sm">
           <strong>Revisa bien tus datos.</strong> La factura (CFDI) se pide dentro de los{" "}
           {site.plazoFacturaDias} días posteriores a tu pedido y, una vez emitida, no se puede
-          modificar. Captúralos tal como aparecen en tu Constancia de Situación Fiscal.
+          modificar. Captúralos tal como aparecen en tu{" "}
+          <Link href="/cuenta/constancia" className="underline">Constancia de Situación Fiscal</Link>.
         </p>
 
         {fiscales?.length ? (
@@ -129,15 +151,19 @@ export default async function Datos({
                 <p className="mt-1 text-gris">
                   RFC {f.rfc}. Régimen {f.regimen_fiscal}, uso {f.uso_cfdi}, C.P. {f.cp_fiscal}. {f.correo}
                 </p>
-                <div className="mt-3 flex flex-wrap items-start gap-x-4 gap-y-2">
+                <div className={administra ? "mt-3 flex flex-wrap items-start gap-x-4 gap-y-2" : "hidden"}>
                   <Link href={`/cuenta/datos?rfc=${f.id}#facturacion-forma`} className="font-semibold underline underline-offset-4">Editar</Link>
                   <Confirmar accion={borrarDatosFiscales} id={f.id} texto="Borrar" confirmar="Sí, borrar" />
                 </div>
               </li>
             ))}
           </ul>
-        ) : null}
+        ) : administra ? null : (
+          <p className="text-sm text-gris">Todavía no hay datos de facturación guardados.</p>
+        )}
 
+        {administra ? (
+        <>
         <h3 id="facturacion-forma" className="scroll-mt-28 font-titulos text-lg font-bold">
           {rfc ? "Editar datos de facturación" : "Agregar datos de facturación"}
         </h3>
@@ -166,6 +192,8 @@ export default async function Datos({
           </label>
         </Formulario>
         {rfc ? <p className="mt-3 text-sm"><Link href="/cuenta/datos#facturacion" className="underline">Cancelar</Link></p> : null}
+        </>
+        ) : null}
       </section>
     </div>
   );

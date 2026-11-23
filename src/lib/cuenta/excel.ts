@@ -4,6 +4,15 @@ import { esColumnaSistema, type FilaImportada } from "./tipos";
 /** Columna del Excel que guarda el nombre del archivo de la foto. */
 export const COLUMNA_FOTO = "Foto (archivo)";
 
+/** Columna del Excel con el correo de la persona, para mandarle su liga. */
+export const COLUMNA_CORREO = "Correo";
+/** Títulos de las columnas extra de la plantilla, después de los campos de la empresa. */
+export function columnasExtra(campos: CampoExcel[]): string[] {
+  // Si la empresa ya tiene un campo propio que se llama igual, no se repite la columna.
+  const yaEsta = columnasDe(campos).some((c) => normalizar(c.etiqueta) === normalizar(COLUMNA_CORREO));
+  return yaEsta ? [COLUMNA_FOTO] : [COLUMNA_CORREO, COLUMNA_FOTO];
+}
+
 export type CampoExcel = { clave: string; etiqueta: string; tipo: string };
 
 /** Otras formas comunes de llamar a las columnas de siempre. */
@@ -14,6 +23,7 @@ const ALIAS: Record<string, string[]> = {
   departamento: ["departamento", "depto", "area"],
   tipo_contrato: ["tipo de contrato", "contrato", "tipo contrato", "temporalidad"],
 };
+const ALIAS_CORREO = ["correo", "correo electronico", "email", "e mail", "mail", "correo e"];
 const ALIAS_FOTO = ["foto archivo", "foto", "archivo de foto", "nombre de la foto", "fotografia"];
 
 /** Los campos que se capturan en Excel: los de texto y fecha, con los de siempre primero. */
@@ -25,7 +35,7 @@ export function columnasDe(campos: CampoExcel[]): CampoExcel[] {
   ];
 }
 
-/** Para cada encabezado del archivo, la clave del campo al que corresponde (o null). */
+/** Para cada encabezado del archivo, la clave del campo al que corresponde, "correo", "foto_archivo" o null. */
 export function mapearEncabezados(encabezados: string[], campos: CampoExcel[]): (string | null)[] {
   const columnas = columnasDe(campos);
   const usadas = new Set<string>();
@@ -35,7 +45,7 @@ export function mapearEncabezados(encabezados: string[], campos: CampoExcel[]): 
     const campo =
       columnas.find((c) => normalizar(c.etiqueta) === n || c.clave.replace(/_/g, " ") === n) ??
       columnas.find((c) => ALIAS[c.clave]?.includes(n));
-    const clave = campo?.clave ?? (ALIAS_FOTO.includes(n) ? "foto_archivo" : null);
+    const clave = campo?.clave ?? (ALIAS_FOTO.includes(n) ? "foto_archivo" : ALIAS_CORREO.includes(n) ? "correo" : null);
     if (!clave || usadas.has(clave)) return null;
     usadas.add(clave);
     return clave;
@@ -87,6 +97,7 @@ export function leerFilas(hoja: unknown[][], campos: CampoExcel[]): Lectura {
       if (!clave || !valor) return;
       conAlgo = true;
       if (clave === "foto_archivo") fila.foto_archivo = valor;
+      else if (clave === "correo") fila.correo = valor;
       else if (esColumnaSistema(clave)) fila[clave] = valor;
       else fila.datos![clave] = valor;
     });

@@ -3,6 +3,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { Apartado, fechaLegal } from "@/components/Legal";
 import { Contenedor, Portada } from "@/components/ui";
 import { envio, notaIva, paqueteVigenciaMeses, pesos } from "@/lib/precios";
+import { pago } from "@/lib/pedidos/reglas";
 import { migas } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
 import { figalo, legal, site } from "@/lib/site";
@@ -59,7 +60,8 @@ export default function Terminos() {
             </p>
             <p>
               Guardamos la versión de los términos y del aviso que aceptaste y la fecha en que lo
-              hiciste.
+              hiciste. Recibir novedades y promociones es opcional: tiene su propia casilla, aparte
+              de esta aceptación, y puedes cambiarla cuando quieras.
             </p>
           </Apartado>
 
@@ -144,6 +146,17 @@ export default function Terminos() {
                 los datos de tu tarjeta.
               </li>
               <li>
+                Puedes pagar con tarjeta de crédito o débito, en efectivo en OXXO o por transferencia
+                (SPEI). Los pedidos de {pago.soloTransferenciaDesdePiezas} gafetes o más, o de{" "}
+                {pesos(pago.soloTransferenciaDesdeTotal)} o más, se pagan solo por transferencia. Con
+                OXXO y con transferencia, tu pedido queda confirmado cuando el pago se acredita.
+              </li>
+              <li>
+                Si pagas con tarjeta, durante los primeros {pago.minutosDeGracia} minutos el cargo
+                solo queda autorizado. Pasado ese tiempo, si no cancelaste, se hace el cargo y tu
+                pedido queda confirmado.
+              </li>
+              <li>
                 Emitimos factura electrónica (CFDI) con los datos fiscales que captures. Puedes
                 pedirla dentro de los {site.plazoFacturaDias} días posteriores a tu pedido. Revisa
                 bien tus datos: una factura ya emitida no se puede modificar.
@@ -181,6 +194,12 @@ export default function Terminos() {
                 Puedes cancelar tu pedido o cambiar sus datos sin costo mientras no haya entrado a
                 producción. Si ya lo pagaste, te devolvemos el importe completo por el mismo medio de
                 pago.
+              </li>
+              <li>
+                Si pagaste con tarjeta, tienes {pago.minutosDeGracia} minutos después de pagar para
+                cancelar tú mismo el pedido desde tu plataforma: el cargo se libera y no se te cobra
+                nada. Con OXXO o con transferencia puedes cancelarlo de la misma forma mientras no
+                hayas hecho el pago.
               </li>
               <li>
                 Los gafetes y credenciales se fabrican con el diseño de tu empresa y los datos de tu
@@ -221,6 +240,11 @@ export default function Terminos() {
 
           <Apartado numero={11} titulo="Gafetes digitales y verificación con código QR">
             <ul>
+              <li>
+                El gafete digital se paga una sola vez por pieza. No es un cobro recurrente y no
+                genera cargos posteriores. Sigue activo mientras la cuenta de tu empresa esté
+                activa y no lo desactives ni des de baja a la persona.
+              </li>
               <li>
                 Al escanear el código QR de un gafete se muestra la información que tu empresa
                 decidió hacer visible y si el gafete está vigente. Tú eliges esos datos y eres

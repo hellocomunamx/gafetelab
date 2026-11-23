@@ -51,9 +51,10 @@ export type Diseno = {
   vuelta: Cara | null;
 };
 
+/** Las dos primeras son copias con el tamaño óptico fijo (ver src/app/layout.tsx). */
 export const fuentes: { id: FuenteId; nombre: string; css: string; variable: string }[] = [
-  { id: "inter", nombre: "Inter (clara)", css: "var(--font-inter), system-ui, sans-serif", variable: "--font-inter" },
-  { id: "bricolage", nombre: "Bricolage (títulos)", css: "var(--font-bricolage), system-ui, sans-serif", variable: "--font-bricolage" },
+  { id: "inter", nombre: "Inter (clara)", css: "var(--font-gafete-inter), system-ui, sans-serif", variable: "--font-gafete-inter" },
+  { id: "bricolage", nombre: "Bricolage (títulos)", css: "var(--font-gafete-bricolage), system-ui, sans-serif", variable: "--font-gafete-bricolage" },
   { id: "gochi", nombre: "Gochi (a mano)", css: "var(--font-gochi), cursive", variable: "--font-gochi" },
 ];
 export const fuenteCss = (id: FuenteId) => (fuentes.find((f) => f.id === id) ?? fuentes[0]).css;

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { camposDe } from "@/lib/cuenta/consultas";
+import { type CaraLista, revisarGafete } from "@/lib/cuenta/listos";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
 import type { Resultado } from "@/lib/cuenta/tipos";
 import { limpiarCara, rutasDe } from "@/lib/diseno/limpiar";
@@ -171,4 +172,96 @@ export async function borrarDiseno(d: FormData) {
   }
   refrescar();
   redirect("/cuenta/disenos");
+}
+
+// --- Gafetes listos ---------------------------------------------------------
+
+export type CaraSubida = { empleadoId: string; cara: CaraLista; ruta: string; ancho: number; alto: number };
+
+const medida = (n: unknown): n is number => Number.isInteger(n) && (n as number) > 0 && (n as number) <= 20000;
+
+/**
+ * Registra los gafetes terminados que el navegador ya subió al almacenamiento.
+ * Cada renglón es una cara de una persona; si ya tenía esa cara, se reemplaza.
+ */
+export async function guardarGafetesListos(caras: CaraSubida[]): Promise<Resultado> {
+  const { supabase, empresa } = await requerirEmpresa();
+  if (!Array.isArray(caras) || !caras.length || caras.length > 200) return { error: "Demasiados gafetes a la vez." };
+  const vistos = new Set<string>();
+  for (const c of caras) {
+    const valida =
+      UUID.test(c?.empleadoId) &&
+      (c.cara === "frente" || c.cara === "vuelta") &&
+      (c.ruta === `${empresa.id}/${c.empleadoId}-${c.cara}.jpg` || c.ruta === `${empresa.id}/${c.empleadoId}-${c.cara}.png`) &&
+      medida(c.ancho) &&
+      medida(c.alto) &&
+      !revisarGafete(c.ancho, c.alto).bloquea &&
+      !vistos.has(`${c.empleadoId}-${c.cara}`);
+    if (!valida) return { error: "Gafete no válido." };
+    vistos.add(`${c.empleadoId}-${c.cara}`);
+  }
+
+  const personas = [...new Set(caras.map((c) => c.empleadoId))];
+  const { data: previos } = await supabase
+    .from("gafetes_listos")
+    .select("empleado_id, frente_path, vuelta_path")
+    .in("empleado_id", personas);
+  const previo = new Map((previos ?? []).map((g) => [g.empleado_id, g]));
+
+  // Se guarda por cara para no borrar la otra: cada tanda lleva las mismas columnas.
+  const fallas = await Promise.all(
+    (["frente", "vuelta"] as const).map(async (cara) => {
+      const filas = caras
+        .filter((c) => c.cara === cara)
+        .map((c) => {
+          const base = { empleado_id: c.empleadoId, empresa_id: empresa.id };
+          return cara === "frente"
+            ? { ...base, frente_path: c.ruta, frente_ancho: c.ancho, frente_alto: c.alto }
+            : { ...base, vuelta_path: c.ruta, vuelta_ancho: c.ancho, vuelta_alto: c.alto };
+        });
+      if (!filas.length) return null;
+      const { error } = await supabase.from("gafetes_listos").upsert(filas, { onConflict: "empleado_id" });
+      return error;
+    }),
+  );
+  if (fallas.some(Boolean)) return { error: "Algunos gafetes no se pudieron guardar." };
+
+  // Si la cara anterior tenía otra extensión, su archivo ya no se usa.
+  const sobran = caras.flatMap((c) => {
+    const fila = previo.get(c.empleadoId);
+    const antes = c.cara === "frente" ? fila?.frente_path : fila?.vuelta_path;
+    return antes && antes !== c.ruta ? [antes] : [];
+  });
+  if (sobran.length) await supabase.storage.from("gafetes").remove(sobran);
+  refrescar();
+  return { ok: "Gafetes guardados." };
+}
+
+/** Quita el gafete terminado de una persona: una cara o las dos. */
+export async function quitarGafeteListo(d: FormData) {
+  const { supabase, empresa } = await requerirEmpresa();
+  const empleado = idDe(d);
+  const cara = String(d.get("cara") ?? "");
+  if (!empleado) return;
+  const { data: actual } = await supabase
+    .from("gafetes_listos")
+    .select("frente_path, vuelta_path")
+    .eq("empleado_id", empleado)
+    .eq("empresa_id", empresa.id)
+    .maybeSingle();
+  if (!actual) return;
+  const soloVuelta = cara === "vuelta" && actual.frente_path;
+  if (soloVuelta) {
+    await supabase
+      .from("gafetes_listos")
+      .update({ vuelta_path: null, vuelta_ancho: null, vuelta_alto: null })
+      .eq("empleado_id", empleado);
+  } else {
+    await supabase.from("gafetes_listos").delete().eq("empleado_id", empleado);
+  }
+  const rutas = (soloVuelta ? [actual.vuelta_path] : [actual.frente_path, actual.vuelta_path]).filter(
+    (r): r is string => Boolean(r),
+  );
+  if (rutas.length) await supabase.storage.from("gafetes").remove(rutas);
+  refrescar();
 }

@@ -5,6 +5,7 @@ import { claseBotonSecundario, claseEntrada } from "@/components/cuenta/Formular
 import { GafeteSvg } from "@/components/diseno/GafeteSvg";
 import { camposDe } from "@/lib/cuenta/consultas";
 import { ligasDe } from "@/lib/cuenta/fotos";
+import { contenidoQr, resumenQr } from "@/lib/cuenta/qr";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
 import { datosDePersona, disenoDeFila, faltantes } from "@/lib/diseno/datos";
 import { rutasDe } from "@/lib/diseno/limpiar";
@@ -29,7 +30,7 @@ export default async function VistaPrevia({
 
   let consulta = supabase
     .from("empleados")
-    .select("id, nombre, numero_empleado, puesto, departamento, tipo_contrato, datos, foto_path")
+    .select("id, codigo, nombre, numero_empleado, puesto, departamento, tipo_contrato, datos, foto_path")
     .eq("empresa_id", empresa.id)
     .neq("estatus", "baja")
     .order("nombre")
@@ -53,7 +54,8 @@ export default async function VistaPrevia({
 
   const personas = (equipo ?? []).map((p) => {
     const datos = datosDePersona(p, campos);
-    return { ...p, datos, faltan: faltantes(diseno, datos, Boolean(p.foto_path), campos) };
+    const qr = contenidoQr(empresa, { codigo: p.codigo, valores: datos });
+    return { ...p, datos, qr, faltan: faltantes(diseno, datos, Boolean(p.foto_path), campos, qr) };
   });
   const incompletas = personas.filter((p) => p.faltan.length);
   const soloIncompletas = f.ver === "incompletos";
@@ -148,6 +150,7 @@ export default async function VistaPrevia({
                   datos={p.datos}
                   etiquetas={etiquetas}
                   foto={(p.foto_path && fotos.get(p.foto_path)) || null}
+                  qr={p.qr}
                   imagenes={ligasImagenes}
                   titulo={`Gafete de ${p.nombre}, frente`}
                   className="w-full drop-shadow"
@@ -159,6 +162,7 @@ export default async function VistaPrevia({
                     datos={p.datos}
                     etiquetas={etiquetas}
                     foto={(p.foto_path && fotos.get(p.foto_path)) || null}
+                  qr={p.qr}
                     imagenes={ligasImagenes}
                     titulo={`Gafete de ${p.nombre}, vuelta`}
                     className="w-full drop-shadow"
@@ -168,7 +172,7 @@ export default async function VistaPrevia({
               <Link href={`/cuenta/equipo/${p.id}`} className="mt-2 font-semibold hover:underline">{p.nombre}</Link>
               {p.faltan.length ? (
                 <p className="mt-1 rounded-tarjeta-chica bg-resaltador/30 px-2.5 py-1.5 text-sm">
-                  Le falta: {p.faltan.join(", ").toLocaleLowerCase("es-MX")}.{" "}
+                  Le falta: {p.faltan.join(", ").toLocaleLowerCase("es-MX").replaceAll("código qr", "código QR")}.{" "}
                   <Link href={`/cuenta/equipo/${p.id}`} className="font-semibold underline underline-offset-4">Completar</Link>
                 </p>
               ) : (
@@ -207,7 +211,8 @@ export default async function VistaPrevia({
       ) : null}
 
       <p className="text-sm text-gris">
-        El código QR es una muestra: el de cada persona se genera al emitir su gafete. Si un texto largo no cabe, la
+        El código QR de cada gafete ya es el de esa persona. {resumenQr(empresa, etiquetas)} Lo cambias en{" "}
+        <Link href="/cuenta/campos#qr" className="underline">Qué muestra tu QR</Link>. Si un texto largo no cabe, la
         letra se reduce sola para que entre.
       </p>
     </div>

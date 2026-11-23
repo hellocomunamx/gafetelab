@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { EditorDiseno } from "@/components/diseno/EditorDiseno";
 import { camposDe } from "@/lib/cuenta/consultas";
 import { ligasDe } from "@/lib/cuenta/fotos";
+import { CODIGO_MUESTRA, contenidoQr } from "@/lib/cuenta/qr";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
 import { datosDeMuestra, datosDePersona, disenoDeFila } from "@/lib/diseno/datos";
 import { rutasDe } from "@/lib/diseno/limpiar";
@@ -21,7 +22,7 @@ export default async function EditarDiseno({ params }: { params: Promise<{ id: s
     camposDe(supabase, empresa.id),
     supabase
       .from("empleados")
-      .select("id, nombre, numero_empleado, puesto, departamento, tipo_contrato, datos, foto_path")
+      .select("id, codigo, nombre, numero_empleado, puesto, departamento, tipo_contrato, datos, foto_path")
       .eq("empresa_id", empresa.id)
       .neq("estatus", "baja")
       .order("nombre")
@@ -34,6 +35,8 @@ export default async function EditarDiseno({ params }: { params: Promise<{ id: s
     ligasDe(supabase, "fotos", (equipo ?? []).map((p) => p.foto_path)),
   ]);
 
+  const muestra = datosDeMuestra(campos);
+
   return (
     <div className="space-y-4">
       <p className="text-sm"><Link href="/cuenta/disenos" className="underline">Diseños</Link> / {diseno.nombre}</p>
@@ -43,13 +46,18 @@ export default async function EditarDiseno({ params }: { params: Promise<{ id: s
         inicial={diseno}
         empresaId={empresa.id}
         campos={campos.map(({ clave, etiqueta, tipo }) => ({ clave, etiqueta, tipo }))}
-        personas={(equipo ?? []).map((p) => ({
-          id: p.id,
-          nombre: p.nombre,
-          datos: datosDePersona(p, campos),
-          foto: (p.foto_path && fotos.get(p.foto_path)) || null,
-        }))}
-        muestra={datosDeMuestra(campos)}
+        personas={(equipo ?? []).map((p) => {
+          const datos = datosDePersona(p, campos);
+          return {
+            id: p.id,
+            nombre: p.nombre,
+            datos,
+            foto: (p.foto_path && fotos.get(p.foto_path)) || null,
+            qr: contenidoQr(empresa, { codigo: p.codigo, valores: datos }),
+          };
+        })}
+        muestra={muestra}
+        qrMuestra={contenidoQr(empresa, { codigo: CODIGO_MUESTRA, valores: muestra })}
         imagenesIniciales={Object.fromEntries(imagenes)}
       />
     </div>

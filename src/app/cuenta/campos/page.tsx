@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { agregarCampo, borrarCampo, guardarCampos } from "@/app/cuenta/acciones";
+import { AjusteQrForm } from "@/components/cuenta/AjusteQrForm";
 import { BotonPlantilla } from "@/components/cuenta/BotonPlantilla";
 import { Bloque, Entrada, Seleccion } from "@/components/cuenta/Entrada";
 import { claseBoton, Formulario } from "@/components/cuenta/Formulario";
 import { camposDe } from "@/lib/cuenta/consultas";
+import { modosQr, resumenQr, rutaVerificacion } from "@/lib/cuenta/qr";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
 import { claveDe } from "@/lib/cuenta/texto";
 
@@ -14,8 +16,13 @@ const TIPOS: Record<string, string> = { texto: "Texto", fecha: "Fecha", foto: "F
 const entradaChica = "w-full rounded-tarjeta-chica border border-linea bg-white px-2.5 py-1.5";
 
 export default async function Campos() {
-  const { supabase, empresa } = await requerirEmpresa();
-  const campos = await camposDe(supabase, empresa.id);
+  const { supabase, empresa, administra } = await requerirEmpresa();
+  const [campos, { data: ejemplo }] = await Promise.all([
+    camposDe(supabase, empresa.id),
+    supabase.from("empleados").select("nombre, codigo").eq("empresa_id", empresa.id).eq("estatus", "activo").order("nombre").limit(1).maybeSingle(),
+  ]);
+  const opciones = (tipos: string[]) =>
+    campos.filter((c) => tipos.includes(c.tipo)).map(({ clave, etiqueta }) => ({ clave, etiqueta }));
   const enCara = (cara: string) => campos.filter((c) => c.en_gafete && c.cara === cara);
 
   return (
@@ -153,6 +160,41 @@ export default async function Campos() {
           ) : null}
         </div>
       </div>
+      <section id="qr" className="scroll-mt-28 rounded-tarjeta border border-linea bg-white p-5 sm:p-6">
+        <h2 className="text-xl font-extrabold">Qué muestra tu QR</h2>
+        <p className="mt-1 mb-5 max-w-2xl text-sm text-gris">
+          Decide a dónde lleva el código QR de tus gafetes. Aplica a todos los gafetes de{" "}
+          {empresa.nombre} que lleven QR en su diseño.
+        </p>
+        {administra ? (
+          <AjusteQrForm
+            ajuste={empresa}
+            empresa={empresa.nombre}
+            camposTexto={opciones(["texto", "fecha"])}
+            camposFecha={opciones(["fecha"])}
+            conFoto={Boolean(process.env.SUPABASE_SECRET_KEY)}
+          />
+        ) : (
+          <p className="rounded-tarjeta-chica bg-papel p-4 text-sm">
+            <strong>{modosQr.find((m) => m.id === empresa.qr_modo)?.titulo}.</strong>{" "}
+            {resumenQr(empresa, Object.fromEntries(campos.map((c) => [c.clave, c.etiqueta])))} Solo quien
+            administra la empresa puede cambiarlo.
+          </p>
+        )}
+        {empresa.qr_modo === "verificacion" && ejemplo ? (
+          <p className="mt-5 border-t border-linea pt-4 text-sm">
+            <a
+              href={rutaVerificacion(ejemplo.codigo)}
+              target="_blank"
+              rel="noopener"
+              className="font-semibold text-rojo underline underline-offset-4"
+            >
+              Ver la página de verificación de {ejemplo.nombre}
+            </a>
+            <span className="text-gris"> · Así la ve cualquiera que escanee su gafete.</span>
+          </p>
+        ) : null}
+      </section>
     </div>
   );
 }

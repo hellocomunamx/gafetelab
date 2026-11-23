@@ -14,7 +14,7 @@ export const accionesPlataforma = [
   },
   {
     titulo: "Desactivaciones",
-    texto: "Desactiva un gafete digital al momento: su código QR deja de mostrarlo como vigente.",
+    texto: "Desactiva un gafete al momento: quien escanee su código QR ya no lo ve como vigente.",
   },
   {
     titulo: "Reactivaciones",
@@ -56,12 +56,12 @@ export const modalidadesDetalle = [
   {
     titulo: "Digital",
     texto:
-      "El gafete en el celular de cada persona, con un código QR que cualquiera puede escanear para comprobar que sigue vigente.",
+      "El mismo gafete en el celular de cada persona, para mostrarlo sin traer la tarjeta, con su código QR de verificación. Se paga una sola vez por gafete.",
   },
   {
     titulo: "Impreso + digital",
     texto:
-      "Las dos versiones del mismo gafete: la tarjeta para portar y la digital para verificar.",
+      "Las dos versiones del mismo gafete: la tarjeta para portar y la digital para llevar en el celular.",
   },
 ];
 
@@ -116,6 +116,10 @@ export const funcionesPlataforma: { grupo: string; resumen: string; funciones: F
         texto: "Cuántos gafetes se le han emitido, cuándo y por qué: alta, reposición o cambio de datos.",
       },
       {
+        titulo: "Usuarios con roles",
+        texto: "Invita a quien te ayuda con los gafetes y decide qué puede hacer: dueño, administrador o editor.",
+      },
+      {
         titulo: "Liga para cada persona",
         texto: "Cada quien sube sus datos y su foto desde su celular, y tú apruebas o rechazas.",
       },
@@ -131,8 +135,18 @@ export const funcionesPlataforma: { grupo: string; resumen: string; funciones: F
           "Arrastra tu logo, los campos, la foto y el código QR a donde quieras, por frente y vuelta. Parte de una plantilla, de tu propio fondo o de cero.",
       },
       {
+        titulo: "Sube tus gafetes ya listos",
+        texto:
+          "Si ya tienes el gafete terminado de cada persona, súbelos de forma masiva. Cada uno se asigna solo por el nombre del archivo y revisamos su medida y su calidad.",
+      },
+      {
         titulo: "Campos a tu medida",
         texto: "Tú decides qué lleva tu gafete: puesto, área, tipo de sangre, vigencia o lo que tu empresa necesite.",
+      },
+      {
+        titulo: "Tú decides qué muestra tu QR",
+        texto:
+          "Una página de verificación que dice si el gafete está vigente o expirado, una liga tuya o un dato. Va incluida en todos los gafetes, sin costo extra.",
       },
       {
         titulo: "Vista previa de cada gafete",

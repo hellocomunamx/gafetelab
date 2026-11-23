@@ -1,5 +1,6 @@
 import { materiales } from "./materiales";
 import { adicionalesPendientes } from "./contacto";
+import { pago } from "./pedidos/reglas";
 import { constancia, entregaTexto, legal, site } from "./site";
 import {
   cotizar,
@@ -36,16 +37,21 @@ export const faqsGenerales: Faq[] = [
   },
   {
     pregunta: "¿Cuánto cuesta un gafete o credencial para empleado?",
-    respuesta: `Entre ${pesos(precioMinimo)} y ${pesos(precioMaximo)} pesos por pieza a una cara (${notaIva}), según cuántos pidas: ${tramosDetalle}. Por frente y vuelta se suman ${extraDosCarasDetalle}. El PVC estándar ya está incluido; ${materialesConExtra}. El gafete digital cuesta ${pesos(precioDigital)} por pieza en cualquier cantidad, solo o sumado al impreso. El envío cuesta ${pesos(envio.tarifa)} a todo México y es gratis en pedidos desde ${pesos(envio.gratisDesde)} antes de IVA. Por ejemplo, ${ejemplo.piezas} gafetes a una cara cuestan ${pesos(ejemplo.subtotal)} ${notaIva}, ${ejemplo.envioGratis ? "con envío gratis" : `más ${pesos(ejemplo.envio)} de envío`}. No hay suscripción ni pedido mínimo, y la plataforma para diseñar, cargar datos y administrar a tu equipo no tiene costo. Si vas a pedir de a poquitos, te conviene un paquete prepagado.`,
+    respuesta: `Entre ${pesos(precioMinimo)} y ${pesos(precioMaximo)} pesos por pieza a una cara (${notaIva}), según cuántos pidas: ${tramosDetalle}. Por frente y vuelta se suman ${extraDosCarasDetalle}. El PVC estándar ya está incluido; ${materialesConExtra}. El gafete digital cuesta ${pesos(precioDigital)} por pieza, que se pagan una sola vez y no de forma recurrente, en cualquier cantidad, solo o sumado al impreso. El envío cuesta ${pesos(envio.tarifa)} a todo México y es gratis en pedidos desde ${pesos(envio.gratisDesde)} antes de IVA. Por ejemplo, ${ejemplo.piezas} gafetes a una cara cuestan ${pesos(ejemplo.subtotal)} ${notaIva}, ${ejemplo.envioGratis ? "con envío gratis" : `más ${pesos(ejemplo.envio)} de envío`}. No hay suscripción ni pedido mínimo, y la plataforma para diseñar, cargar datos y administrar a tu equipo no tiene costo. Si vas a pedir de a poquitos, te conviene un paquete prepagado.`,
   },
   {
     pregunta: "¿Hay que pagar una suscripción o mensualidad?",
     respuesta:
-      "No. Pagas una sola vez por cada gafete, sea impreso, digital o los dos. No hay mensualidades, anualidades ni costo por usuario, y tu plataforma para administrar altas, bajas y reposiciones viene incluida.",
+      "No. Pagas una sola vez por cada gafete, sea impreso, digital o los dos. El gafete digital tampoco es un cobro recurrente: se paga una vez y sigue activo mientras tu cuenta esté activa y tú no lo desactives. No hay mensualidades, anualidades ni costo por usuario, y tu plataforma para administrar altas, bajas y reposiciones viene incluida.",
   },
   {
     pregunta: "¿Qué es un gafete digital?",
-    respuesta: `Es la versión del gafete que cada persona lleva en su celular, con un código QR que cualquiera puede escanear para comprobar que esa persona sigue vigente en tu empresa. Tú decides qué información muestra: nombre, puesto, fotografía, número de empleado, área o vigencia. Cuesta ${pesos(precioDigital)} por pieza, lo pidas solo o junto con el gafete impreso.`,
+    respuesta: `Es la versión del gafete que cada persona lleva en su celular, para mostrarla sin traer la tarjeta. Lleva el mismo código QR de verificación que el impreso. Cuesta ${pesos(precioDigital)} por pieza, lo pidas solo o junto con el gafete impreso, y se paga una sola vez: no es un cobro mensual ni anual.`,
+  },
+  {
+    pregunta: "¿Qué pasa cuando alguien escanea el código QR de un gafete?",
+    respuesta:
+      "Tú lo decides en tu plataforma, en «Qué muestra tu QR». Por omisión abre una página de verificación que dice si el gafete está vigente o expirado, con los datos que elijas mostrar: nombre, puesto, número de empleado, departamento, fotografía y el nombre de tu empresa. Si das de baja a la persona, su página deja de mostrar sus datos. También puedes hacer que el código lleve a una liga tuya o que contenga solo un dato, como el número de empleado. Va incluido en todos los gafetes, impresos y digitales, sin costo extra.",
   },
   {
     pregunta: "¿Hay pedido mínimo?",
@@ -97,7 +103,7 @@ export const faqsGenerales: Faq[] = [
   {
     pregunta: "¿Puedo usar el diseño que ya tiene mi empresa?",
     respuesta:
-      "Sí. Hay tres formas de empezar: subir tu propio diseño, elegir una plantilla y ponerle tu logo y colores, o crear el gafete desde cero. En las tres marcas qué partes cambian de un empleado a otro.",
+      "Sí. Hay tres formas de empezar: subir tu propio diseño, elegir una plantilla y ponerle tu logo y colores, o crear el gafete desde cero. En las tres marcas qué partes cambian de un empleado a otro. Y si ya tienes el gafete terminado de cada persona, con su nombre y su foto, los subes de forma masiva en tu cuenta y se imprimen tal cual.",
   },
   {
     pregunta: "¿Qué datos puede llevar cada gafete?",
@@ -124,6 +130,14 @@ export const faqsGenerales: Faq[] = [
   {
     pregunta: "¿Imprimen por un lado o por los dos?",
     respuesta: `Las dos opciones. A una cara es lo más común y económico; frente y vuelta suma ${extraDosCarasRango} por pieza según la cantidad (${extraDosCarasDetalle}) y sirve para poner datos de emergencia, reglamento o un código QR al reverso.`,
+  },
+  {
+    pregunta: "¿Cómo puedo pagar mi pedido?",
+    respuesta: `Con tarjeta de crédito o débito, en efectivo en OXXO o por transferencia (SPEI). Pagas en línea desde tu plataforma, en la página segura de Stripe; nosotros no vemos ni guardamos los datos de tu tarjeta. Con OXXO te damos una ficha que dura ${pago.diasFichaOxxo} días y con SPEI, una CLABE y una referencia; en ambos casos tu pedido entra a producción cuando el pago se acredita. Los pedidos de ${pago.soloTransferenciaDesdePiezas} gafetes o más, o de ${pesos(pago.soloTransferenciaDesdeTotal)} o más, se pagan solo por transferencia.`,
+  },
+  {
+    pregunta: "¿Puedo cancelar mi pedido después de pagarlo?",
+    respuesta: `Sí. Si pagaste con tarjeta, tienes ${pago.minutosDeGracia} minutos para cancelarlo tú mismo desde tu plataforma: en ese rato el cargo solo queda autorizado, así que al cancelar se libera y no se te cobra nada. Pasados los ${pago.minutosDeGracia} minutos se hace el cargo. Con OXXO o SPEI puedes cancelar sin costo mientras no hayas pagado la ficha o hecho la transferencia. Después de eso, y mientras tu pedido no haya entrado a producción, escríbenos y lo cancelamos con la devolución completa de tu pago. Una vez en producción ya no se puede cancelar, porque cada gafete se hace con los datos de tu personal.`,
   },
   {
     pregunta: "¿Dan factura?",

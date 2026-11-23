@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { COLUMNA_FOTO, type CampoExcel, columnasDe } from "@/lib/cuenta/excel";
+import { COLUMNA_CORREO, COLUMNA_FOTO, type CampoExcel, columnasDe, columnasExtra } from "@/lib/cuenta/excel";
 import { claseBotonSecundario } from "./Formulario";
 
 /** Arma y descarga la plantilla de Excel con una columna por cada campo de la empresa. */
@@ -19,7 +19,7 @@ export function BotonPlantilla({
 }) {
   async function descargar() {
     const { default: escribir } = await import("write-excel-file/browser");
-    const titulos = [...columnasDe(campos).map((c) => c.etiqueta), COLUMNA_FOTO];
+    const titulos = [...columnasDe(campos).map((c) => c.etiqueta), ...columnasExtra(campos)];
     const negrita = (value: string) => ({ value, fontWeight: "bold" as const });
     await escribir([
       {
@@ -36,8 +36,9 @@ export function BotonPlantilla({
           ["2. El nombre es obligatorio. Lo demás puede ir vacío."],
           ["3. Con número de empleado, si la persona ya existe se actualiza en lugar de duplicarse."],
           [`4. En "${COLUMNA_FOTO}" puedes escribir el nombre del archivo de su foto (por ejemplo 0042.jpg) para asignarla sola al subir las fotos.`],
-          ["5. Las fechas van como AAAA-MM-DD o con formato de fecha de Excel."],
-          ["6. Guarda el archivo y súbelo en tu plataforma: Equipo, Importar Excel."],
+          [`5. En "${COLUMNA_CORREO}" escribe el correo de cada persona si quieres mandarle su liga para que llene sus datos y suba su foto. No se imprime en el gafete.`],
+          ["6. Las fechas van como AAAA-MM-DD o con formato de fecha de Excel."],
+          ["7. Guarda el archivo y súbelo en tu plataforma: Equipo, Importar Excel."],
         ],
         columns: [{ width: 110 }],
       },

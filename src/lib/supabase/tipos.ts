@@ -23,7 +23,21 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "campos": {
+            "aceptaciones": {
+                  Row: {
+                    "aceptado_en": string,"aviso_version": string,"id": string,"terminos_version": string,"usuario_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "aceptado_en"?: string,"aviso_version": string,"id"?: string,"terminos_version": string,"usuario_id"?: string
+                  }
+                  Update: {
+                    "aceptado_en"?: string,"aviso_version"?: string,"id"?: string,"terminos_version"?: string,"usuario_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"campos": {
                   Row: {
                     "actualizado_en": string,"cara": string,"clave": string,"creado_en": string,"de_sistema": boolean,"empresa_id": string,"en_gafete": boolean,"etiqueta": string,"id": string,"obligatorio": boolean,"orden": number,"tipo": string
                   }
@@ -37,6 +51,26 @@ export type Database = {
                   Relationships: [
                     {
       foreignKeyName: "campos_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"constancias": {
+                  Row: {
+                    "creado_en": string,"empresa_id": string,"estado": string,"fecha_emision": string,"id": string,"motivo": string | null,"revisada_en": string | null,"ruta": string,"subida_por": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "creado_en"?: string,"empresa_id": string,"estado"?: string,"fecha_emision": string,"id"?: string,"motivo"?: string | null,"revisada_en"?: string | null,"ruta": string,"subida_por"?: string | null
+                  }
+                  Update: {
+                    "creado_en"?: string,"empresa_id"?: string,"estado"?: string,"fecha_emision"?: string,"id"?: string,"motivo"?: string | null,"revisada_en"?: string | null,"ruta"?: string,"subida_por"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "constancias_empresa_id_fkey"
       columns: ["empresa_id"]
 isOneToOne: false
       referencedRelation: "empresas"
@@ -105,14 +139,14 @@ isOneToOne: false
                   ]
                 },"empleados": {
                   Row: {
-                    "actualizado_en": string,"creado_en": string,"datos": NonNullable<Json>,"departamento": string | null,"empresa_id": string,"estatus": string,"fecha_baja": string | null,"foto_path": string | null,"id": string,"nombre": string,"numero_empleado": string | null,"puesto": string | null,"tipo_contrato": string | null
+                    "actualizado_en": string,"codigo": string,"correo": string | null,"creado_en": string,"datos": NonNullable<Json>,"departamento": string | null,"empresa_id": string,"estatus": string,"fecha_baja": string | null,"foto_path": string | null,"id": string,"liga": string,"liga_enviada_en": string | null,"nombre": string,"numero_empleado": string | null,"puesto": string | null,"tipo_contrato": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "actualizado_en"?: string,"creado_en"?: string,"datos"?: NonNullable<Json>,"departamento"?: string | null,"empresa_id": string,"estatus"?: string,"fecha_baja"?: string | null,"foto_path"?: string | null,"id"?: string,"nombre": string,"numero_empleado"?: string | null,"puesto"?: string | null,"tipo_contrato"?: string | null
+                    "actualizado_en"?: string,"codigo"?: string,"correo"?: string | null,"creado_en"?: string,"datos"?: NonNullable<Json>,"departamento"?: string | null,"empresa_id": string,"estatus"?: string,"fecha_baja"?: string | null,"foto_path"?: string | null,"id"?: string,"liga"?: string,"liga_enviada_en"?: string | null,"nombre": string,"numero_empleado"?: string | null,"puesto"?: string | null,"tipo_contrato"?: string | null
                   }
                   Update: {
-                    "actualizado_en"?: string,"creado_en"?: string,"datos"?: NonNullable<Json>,"departamento"?: string | null,"empresa_id"?: string,"estatus"?: string,"fecha_baja"?: string | null,"foto_path"?: string | null,"id"?: string,"nombre"?: string,"numero_empleado"?: string | null,"puesto"?: string | null,"tipo_contrato"?: string | null
+                    "actualizado_en"?: string,"codigo"?: string,"correo"?: string | null,"creado_en"?: string,"datos"?: NonNullable<Json>,"departamento"?: string | null,"empresa_id"?: string,"estatus"?: string,"fecha_baja"?: string | null,"foto_path"?: string | null,"id"?: string,"liga"?: string,"liga_enviada_en"?: string | null,"nombre"?: string,"numero_empleado"?: string | null,"puesto"?: string | null,"tipo_contrato"?: string | null
                   }
                   Relationships: [
                     {
@@ -125,14 +159,14 @@ isOneToOne: false
                   ]
                 },"empresas": {
                   Row: {
-                    "actualizado_en": string,"creado_en": string,"creado_por": string | null,"giro": string | null,"id": string,"nombre": string,"predeterminados": NonNullable<Json>
+                    "actualizado_en": string,"creado_en": string,"creado_por": string | null,"giro": string | null,"id": string,"liga_campos": (string)[],"liga_foto": boolean,"nombre": string,"predeterminados": NonNullable<Json>,"qr_dato": string,"qr_liga": string | null,"qr_modo": string,"qr_mostrar": (string)[],"qr_vigencia": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "actualizado_en"?: string,"creado_en"?: string,"creado_por"?: string | null,"giro"?: string | null,"id"?: string,"nombre": string,"predeterminados"?: NonNullable<Json>
+                    "actualizado_en"?: string,"creado_en"?: string,"creado_por"?: string | null,"giro"?: string | null,"id"?: string,"liga_campos"?: (string)[],"liga_foto"?: boolean,"nombre": string,"predeterminados"?: NonNullable<Json>,"qr_dato"?: string,"qr_liga"?: string | null,"qr_modo"?: string,"qr_mostrar"?: (string)[],"qr_vigencia"?: string | null
                   }
                   Update: {
-                    "actualizado_en"?: string,"creado_en"?: string,"creado_por"?: string | null,"giro"?: string | null,"id"?: string,"nombre"?: string,"predeterminados"?: NonNullable<Json>
+                    "actualizado_en"?: string,"creado_en"?: string,"creado_por"?: string | null,"giro"?: string | null,"id"?: string,"liga_campos"?: (string)[],"liga_foto"?: boolean,"nombre"?: string,"predeterminados"?: NonNullable<Json>,"qr_dato"?: string,"qr_liga"?: string | null,"qr_modo"?: string,"qr_mostrar"?: (string)[],"qr_vigencia"?: string | null
                   }
                   Relationships: [
                     
@@ -167,6 +201,58 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "empresas"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "gafetes_pedido_id_fkey"
+      columns: ["pedido_id"]
+isOneToOne: false
+      referencedRelation: "pedidos"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"gafetes_listos": {
+                  Row: {
+                    "actualizado_en": string,"creado_en": string,"empleado_id": string,"empresa_id": string,"frente_alto": number | null,"frente_ancho": number | null,"frente_path": string | null,"vuelta_alto": number | null,"vuelta_ancho": number | null,"vuelta_path": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actualizado_en"?: string,"creado_en"?: string,"empleado_id": string,"empresa_id": string,"frente_alto"?: number | null,"frente_ancho"?: number | null,"frente_path"?: string | null,"vuelta_alto"?: number | null,"vuelta_ancho"?: number | null,"vuelta_path"?: string | null
+                  }
+                  Update: {
+                    "actualizado_en"?: string,"creado_en"?: string,"empleado_id"?: string,"empresa_id"?: string,"frente_alto"?: number | null,"frente_ancho"?: number | null,"frente_path"?: string | null,"vuelta_alto"?: number | null,"vuelta_ancho"?: number | null,"vuelta_path"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "gafetes_listos_empleado_id_fkey"
+      columns: ["empleado_id"]
+isOneToOne: true
+      referencedRelation: "empleados"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "gafetes_listos_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"invitaciones": {
+                  Row: {
+                    "correo": string,"creado_en": string,"empresa_id": string,"id": string,"invitado_por": string | null,"rol": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "correo": string,"creado_en"?: string,"empresa_id": string,"id"?: string,"invitado_por"?: string | null,"rol"?: string
+                  }
+                  Update: {
+                    "correo"?: string,"creado_en"?: string,"empresa_id"?: string,"id"?: string,"invitado_por"?: string | null,"rol"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "invitaciones_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
     }
                   ]
                 },"miembros": {
@@ -189,16 +275,136 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"perfiles": {
+                },"pedido_eventos": {
                   Row: {
-                    "actualizado_en": string,"creado_en": string,"id": string,"nombre": string | null,"telefono": string | null
+                    "creado_en": string,"detalle": NonNullable<Json>,"id": number,"pedido_id": string,"por": string | null,"tipo": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "actualizado_en"?: string,"creado_en"?: string,"id": string,"nombre"?: string | null,"telefono"?: string | null
+                    "creado_en"?: string,"detalle"?: NonNullable<Json>,"id"?: never,"pedido_id": string,"por"?: string | null,"tipo": string
                   }
                   Update: {
-                    "actualizado_en"?: string,"creado_en"?: string,"id"?: string,"nombre"?: string | null,"telefono"?: string | null
+                    "creado_en"?: string,"detalle"?: NonNullable<Json>,"id"?: never,"pedido_id"?: string,"por"?: string | null,"tipo"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pedido_eventos_pedido_id_fkey"
+      columns: ["pedido_id"]
+isOneToOne: false
+      referencedRelation: "pedidos"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"pedidos": {
+                  Row: {
+                    "actualizado_en": string,"alertas": (string)[],"aprobacion": NonNullable<Json>,"cancelado_en": string | null,"creado_en": string,"creado_por": string | null,"direccion": Json | null,"diseno": Json | null,"diseno_id": string | null,"disputa": string | null,"dos_caras": boolean,"empresa_id": string,"entregado_en": string | null,"enviado_en": string | null,"envio": number,"estado": string,"facturacion": Json | null,"ficha_url": string | null,"folio": string,"fuente": string,"gracia_hasta": string | null,"guia": string | null,"id": string,"intento": number,"iva": number,"material": string | null,"metodo": string | null,"modalidad": string,"notas": string | null,"pagado_en": string | null,"paqueteria": string | null,"piezas": number,"por_pieza": number,"primer_pedido": boolean,"produccion_en": string | null,"revisado_en": string | null,"revisado_por": string | null,"solo_transferencia": boolean,"stripe_pago": string | null,"stripe_sesion": string | null,"stripe_url": string | null,"subtotal": number,"total": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actualizado_en"?: string,"alertas"?: (string)[],"aprobacion": NonNullable<Json>,"cancelado_en"?: string | null,"creado_en"?: string,"creado_por"?: string | null,"direccion"?: Json | null,"diseno"?: Json | null,"diseno_id"?: string | null,"disputa"?: string | null,"dos_caras"?: boolean,"empresa_id": string,"entregado_en"?: string | null,"enviado_en"?: string | null,"envio"?: number,"estado"?: string,"facturacion"?: Json | null,"ficha_url"?: string | null,"folio"?: string,"fuente": string,"gracia_hasta"?: string | null,"guia"?: string | null,"id"?: string,"intento"?: number,"iva": number,"material"?: string | null,"metodo"?: string | null,"modalidad"?: string,"notas"?: string | null,"pagado_en"?: string | null,"paqueteria"?: string | null,"piezas": number,"por_pieza": number,"primer_pedido"?: boolean,"produccion_en"?: string | null,"revisado_en"?: string | null,"revisado_por"?: string | null,"solo_transferencia"?: boolean,"stripe_pago"?: string | null,"stripe_sesion"?: string | null,"stripe_url"?: string | null,"subtotal": number,"total": number
+                  }
+                  Update: {
+                    "actualizado_en"?: string,"alertas"?: (string)[],"aprobacion"?: NonNullable<Json>,"cancelado_en"?: string | null,"creado_en"?: string,"creado_por"?: string | null,"direccion"?: Json | null,"diseno"?: Json | null,"diseno_id"?: string | null,"disputa"?: string | null,"dos_caras"?: boolean,"empresa_id"?: string,"entregado_en"?: string | null,"enviado_en"?: string | null,"envio"?: number,"estado"?: string,"facturacion"?: Json | null,"ficha_url"?: string | null,"folio"?: string,"fuente"?: string,"gracia_hasta"?: string | null,"guia"?: string | null,"id"?: string,"intento"?: number,"iva"?: number,"material"?: string | null,"metodo"?: string | null,"modalidad"?: string,"notas"?: string | null,"pagado_en"?: string | null,"paqueteria"?: string | null,"piezas"?: number,"por_pieza"?: number,"primer_pedido"?: boolean,"produccion_en"?: string | null,"revisado_en"?: string | null,"revisado_por"?: string | null,"solo_transferencia"?: boolean,"stripe_pago"?: string | null,"stripe_sesion"?: string | null,"stripe_url"?: string | null,"subtotal"?: number,"total"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pedidos_diseno_id_fkey"
+      columns: ["diseno_id"]
+isOneToOne: false
+      referencedRelation: "disenos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pedidos_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"perfiles": {
+                  Row: {
+                    "actualizado_en": string,"creado_en": string,"id": string,"nombre": string | null,"publicidad": boolean,"publicidad_en": string | null,"telefono": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actualizado_en"?: string,"creado_en"?: string,"id": string,"nombre"?: string | null,"publicidad"?: boolean,"publicidad_en"?: string | null,"telefono"?: string | null
+                  }
+                  Update: {
+                    "actualizado_en"?: string,"creado_en"?: string,"id"?: string,"nombre"?: string | null,"publicidad"?: boolean,"publicidad_en"?: string | null,"telefono"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"propuestas": {
+                  Row: {
+                    "datos": NonNullable<Json>,"empleado_id": string,"empresa_id": string,"enviado_en": string,"estado": string,"foto_path": string | null,"motivo": string | null,"resuelto_en": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "datos"?: NonNullable<Json>,"empleado_id": string,"empresa_id": string,"enviado_en"?: string,"estado"?: string,"foto_path"?: string | null,"motivo"?: string | null,"resuelto_en"?: string | null
+                  }
+                  Update: {
+                    "datos"?: NonNullable<Json>,"empleado_id"?: string,"empresa_id"?: string,"enviado_en"?: string,"estado"?: string,"foto_path"?: string | null,"motivo"?: string | null,"resuelto_en"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "propuestas_empleado_id_fkey"
+      columns: ["empleado_id"]
+isOneToOne: true
+      referencedRelation: "empleados"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "propuestas_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"stripe_clientes": {
+                  Row: {
+                    "cliente": string,"creado_en": string,"empresa_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cliente": string,"creado_en"?: string,"empresa_id": string
+                  }
+                  Update: {
+                    "cliente"?: string,"creado_en"?: string,"empresa_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "stripe_clientes_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: true
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"stripe_eventos": {
+                  Row: {
+                    "id": string,"recibido_en": string,"tipo": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "id": string,"recibido_en"?: string,"tipo": string
+                  }
+                  Update: {
+                    "id"?: string,"recibido_en"?: string,"tipo"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"visitas": {
+                  Row: {
+                    "dispositivo": string,"en": string,"entrada": boolean,"id": number,"origen": string | null,"pais": string | null,"region": string | null,"ruta": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "dispositivo": string,"en"?: string,"entrada"?: boolean,"id"?: never,"origen"?: string | null,"pais"?: string | null,"region"?: string | null,"ruta": string
+                  }
+                  Update: {
+                    "dispositivo"?: string,"en"?: string,"entrada"?: boolean,"id"?: never,"origen"?: string | null,"pais"?: string | null,"region"?: string | null,"ruta"?: string
                   }
                   Relationships: [
                     
@@ -209,8 +415,44 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "crear_empresa":
+            "aceptar_invitacion":
+{ Args: { "p_invitacion": string }; Returns: string
+                           },
+"admin_empresas":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "activos": number,"creado_en": string,"disenos": number,"id": string,"listos": number,"nombre": string
+            }[]
+                           },
+"cambiar_rol_usuario":
+{ Args: { "p_empresa": string,"p_rol": string,"p_usuario": string }; Returns: undefined
+                           },
+"crear_empresa":
 { Args: { "p_giro"?: string,"p_nombre": string }; Returns: string
+                           },
+"es_admin_plataforma":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"invitar_usuario":
+{ Args: { "p_correo": string,"p_empresa": string,"p_rol"?: string }; Returns: string
+                           },
+"mis_invitaciones":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "creado_en": string,"empresa": string,"empresa_id": string,"id": string,"rol": string
+            }[]
+                           },
+"quitar_usuario":
+{ Args: { "p_empresa": string,"p_usuario": string }; Returns: undefined
+                           },
+"resumen_visitas":
+{ Args: { "p_desde": string,"p_hasta": string }; Returns: Json
+                           },
+"usuarios_de":
+{ Args: { "p_empresa": string }; Returns: {
+              "correo": string,"desde": string,"nombre": string,"rol": string,"usuario_id": string
+            }[]
+                           },
+"verificar_gafete":
+{ Args: { "p_codigo": string }; Returns: Json
                            }
           }
           Enums: {

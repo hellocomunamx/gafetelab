@@ -33,9 +33,10 @@ export default async function Equipo({
   const q = f.q?.trim().replace(/[%,()]/g, " ").slice(0, 60);
   if (q) consulta = consulta.or(`nombre.ilike.%${q}%,numero_empleado.ilike.%${q}%,puesto.ilike.%${q}%`);
 
-  const [{ data: personas, count }, { data: todas }] = await Promise.all([
+  const [{ data: personas, count }, { data: todas }, { count: porAprobar }] = await Promise.all([
     consulta,
     supabase.from("empleados").select("departamento, tipo_contrato").eq("empresa_id", empresa.id),
+    supabase.from("propuestas").select("empleado_id", { count: "exact", head: true }).eq("empresa_id", empresa.id).eq("estado", "pendiente"),
   ]);
   const unicos = (valores: (string | null)[]) =>
     [...new Set(valores.filter((v): v is string => Boolean(v)))].sort((a, b) => a.localeCompare(b, "es"));
@@ -51,9 +52,18 @@ export default async function Equipo({
         <div className="flex flex-wrap gap-2">
           <Link href="/cuenta/equipo/importar" className={claseBotonSecundario}>Importar Excel</Link>
           <Link href="/cuenta/equipo/fotos" className={claseBotonSecundario}>Subir fotos</Link>
+          <Link href="/cuenta/equipo/ligas" className={claseBotonSecundario}>Liga por persona</Link>
           <Link href="/cuenta/equipo/nuevo" className={claseBoton}>Agregar persona</Link>
         </div>
       </div>
+
+      {porAprobar ? (
+        <p className="rounded-tarjeta border border-linea bg-resaltador/30 px-4 py-3 text-sm">
+          {porAprobar === 1 ? "1 persona mandó" : `${porAprobar.toLocaleString("es-MX")} personas mandaron`} sus datos desde su liga y{" "}
+          {porAprobar === 1 ? "espera" : "esperan"} tu aprobación.{" "}
+          <Link href="/cuenta/equipo/ligas" className="font-semibold underline underline-offset-4">Revisar</Link>
+        </p>
+      ) : null}
 
       <form className="grid gap-3 rounded-tarjeta border border-linea bg-white p-4 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_auto] lg:items-end">
         <label className="block">

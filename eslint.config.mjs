@@ -15,6 +15,8 @@ const eslintConfig = defineConfig([
     // Salida de OpenNext y Wrangler:
     ".open-next/**",
     ".wrangler/**",
+    // Bibliotecas de terceros que se sirven tal cual:
+    "public/vendor/**",
   ]),
 ]);
 
