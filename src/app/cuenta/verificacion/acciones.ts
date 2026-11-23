@@ -39,7 +39,7 @@ export async function guardarIne(entrada: {
   const { sesion, error: noPuede } = await revisarQuePuede();
   if (noPuede) return { error: noPuede };
   const { supabase, empresa } = sesion;
-  if (entrada?.carta !== true) return { error: "Acepta la carta de responsabilidad." };
+  if (entrada?.carta !== true) return { error: "Para continuar, debes aceptar la carta de responsabilidad: léela y marca la casilla «Acepto la carta de responsabilidad»." };
   const patron = rutaDe(empresa.id);
   const ruta = String(entrada?.ruta ?? "");
   const reverso = entrada?.reverso ? String(entrada.reverso) : null;
@@ -101,7 +101,7 @@ export async function enviarCodigoCorreo(entrada: { correo: string; negocio: str
 export async function confirmarCodigoCorreo(entrada: { codigo: string; carta: boolean }): Promise<Resultado> {
   const { sesion, error: noPuede } = await revisarQuePuede();
   if (noPuede) return { error: noPuede };
-  if (entrada?.carta !== true) return { error: "Acepta la carta de responsabilidad." };
+  if (entrada?.carta !== true) return { error: "Para continuar, debes aceptar la carta de responsabilidad: léela y marca la casilla «Acepto la carta de responsabilidad»." };
   const almacen = await cookies();
   const datos = await revisarCodigo(almacen.get(COOKIE_CODIGO)?.value, String(entrada?.codigo ?? "").replace(/\D/g, ""));
   if (!datos || datos.empresa !== sesion.empresa.id) return { error: "El código no coincide o ya venció. Pide uno nuevo." };

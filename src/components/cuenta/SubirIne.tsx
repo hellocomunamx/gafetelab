@@ -5,7 +5,8 @@ import { type FormEvent, useState } from "react";
 import { guardarIne } from "@/app/cuenta/verificacion/acciones";
 import { CartaResponsabilidad } from "@/components/cuenta/CartaResponsabilidad";
 import { claseBoton, claseEntrada } from "@/components/cuenta/Formulario";
-import { ligaValida, PESO_MAXIMO_CONSTANCIA, rutaConstancia, TIPOS_CONSTANCIA, type TipoConstancia } from "@/lib/cuenta/constancia";
+import { ACEPTA_VERIFICACION, extensionDe, FORMATOS_VERIFICACION, prepararArchivo } from "@/lib/cuenta/archivo-verificacion";
+import { ligaValida, rutaConstancia } from "@/lib/cuenta/constancia";
 import { crearClienteNavegador } from "@/lib/supabase/client";
 
 const claseArchivo =
@@ -22,11 +23,12 @@ export function SubirIne({ empresaId, nombreEmpresa }: { empresaId: string; nomb
     const a = d.get(clave);
     return a instanceof File && a.size ? a : null;
   };
-  const revisar = (a: File | null, nombre: string) => {
-    if (!a) return "";
-    if (!(a.type in TIPOS_CONSTANCIA)) return `Sube ${nombre} en JPG, PNG o PDF.`;
-    if (a.size > PESO_MAXIMO_CONSTANCIA) return `${nombre[0].toUpperCase()}${nombre.slice(1)} pesa más de 5 MB. Sube un archivo más ligero.`;
-    return "";
+  // Convierte HEIC a JPG y achica fotos pesadas; null si no hay archivo.
+  const preparar = async (a: File | null, nombre: string) => {
+    if (!a) return null;
+    const listo = await prepararArchivo(a, nombre);
+    if ("error" in listo) throw new Error(listo.error);
+    return listo.archivo;
   };
 
   async function enviar(evento: FormEvent<HTMLFormElement>) {
@@ -40,22 +42,25 @@ export function SubirIne({ empresaId, nombreEmpresa }: { empresaId: string; nomb
     setError("");
     if (!negocio) return setError("Escribe el nombre de tu negocio como aparece en los gafetes.");
     if (!frente) return setError("Sube la foto de tu INE por el frente.");
-    const malo = revisar(frente, "tu INE") || revisar(reverso, "el reverso de tu INE") || revisar(foto, "la foto de tu negocio");
-    if (malo) return setError(malo);
     if (textoLiga && !ligaValida(textoLiga)) return setError("Revisa la liga: cópiala completa desde tu navegador.");
     if (!textoLiga && !foto) return setError("Agrega la liga a tus redes o a Google Maps, o una foto de tu negocio.");
-    if (!cartaAceptada) return setError("Acepta la carta de responsabilidad.");
+    if (!cartaAceptada) return setError("Para continuar, debes aceptar la carta de responsabilidad: léela y marca la casilla «Acepto la carta de responsabilidad».");
     setSubiendo(true);
     try {
+      const listos = [
+        await preparar(frente, "tu INE"),
+        await preparar(reverso, "el reverso de tu INE"),
+        await preparar(foto, "la foto de tu negocio"),
+      ];
       const almacen = crearClienteNavegador().storage.from("constancias");
       const subir = async (a: File | null) => {
         if (!a) return null;
-        const ruta = rutaConstancia(empresaId, TIPOS_CONSTANCIA[a.type as TipoConstancia]);
+        const ruta = rutaConstancia(empresaId, extensionDe(a));
         const { error: falla } = await almacen.upload(ruta, a, { contentType: a.type });
         if (falla) throw new Error("No pudimos subir tus archivos. Intenta de nuevo.");
         return ruta;
       };
-      const [ruta, rutaReverso, rutaFoto] = await Promise.all([subir(frente), subir(reverso), subir(foto)]);
+      const [ruta, rutaReverso, rutaFoto] = await Promise.all(listos.map(subir));
       const resultado = await guardarIne({
         ruta: ruta as string,
         reverso: rutaReverso,
@@ -84,13 +89,13 @@ export function SubirIne({ empresaId, nombreEmpresa }: { empresaId: string; nomb
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
             <span className="font-semibold">Tu INE, por el frente</span>
-            <span className="block text-sm text-gris">Foto o PDF, de hasta 5 MB.</span>
-            <input type="file" name="frente" accept="image/jpeg,image/png,application/pdf" className={claseArchivo} />
+            <span className="block text-sm text-gris">{FORMATOS_VERIFICACION}.</span>
+            <input type="file" name="frente" accept={ACEPTA_VERIFICACION} className={claseArchivo} />
           </label>
           <label className="block">
             <span className="font-semibold">Reverso <span className="font-normal text-gris">(opcional)</span></span>
-            <span className="block text-sm text-gris">Si lo tienes a la mano, mejor.</span>
-            <input type="file" name="reverso" accept="image/jpeg,image/png,application/pdf" className={claseArchivo} />
+            <span className="block text-sm text-gris">Si lo tienes a la mano, mejor. {FORMATOS_VERIFICACION}.</span>
+            <input type="file" name="reverso" accept={ACEPTA_VERIFICACION} className={claseArchivo} />
           </label>
         </div>
 
@@ -106,7 +111,8 @@ export function SubirIne({ empresaId, nombreEmpresa }: { empresaId: string; nomb
           <p className="my-3 text-center text-sm text-gris">o</p>
           <label className="block">
             <span className="text-sm font-semibold">Foto de tu local, fachada, menú o uniforme</span>
-            <input type="file" name="foto" accept="image/jpeg,image/png,application/pdf" className={claseArchivo} />
+            <span className="block text-sm text-gris">{FORMATOS_VERIFICACION}.</span>
+            <input type="file" name="foto" accept={ACEPTA_VERIFICACION} className={claseArchivo} />
           </label>
         </div>
       </fieldset>

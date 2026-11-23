@@ -46,10 +46,16 @@ export async function crearEmpresa(_: Resultado, d: FormData): Promise<Resultado
 }
 
 /** Registra la constancia que la empresa acaba de subir al almacenamiento. Queda en revisión. */
-export async function guardarConstancia(entrada: { ruta: string; fecha: string; carta: boolean }): Promise<Resultado> {
+export async function guardarConstancia(entrada: {
+  ruta: string;
+  fecha: string;
+  /** true si la fecha salió del PDF del SAT; false si la escribió la persona. */
+  fechaLeida: boolean;
+  carta: boolean;
+}): Promise<Resultado> {
   const { supabase, empresa, administra } = await requerirEmpresa();
   if (!administra) return { error: "Solo quien administra la empresa puede verificarla." };
-  if (entrada?.carta !== true) return { error: "Acepta la carta de responsabilidad." };
+  if (entrada?.carta !== true) return { error: "Para continuar, debes aceptar la carta de responsabilidad: léela y marca la casilla «Acepto la carta de responsabilidad»." };
   const ruta = String(entrada?.ruta ?? "");
   const fecha = String(entrada?.fecha ?? "");
   if (!new RegExp(`^${empresa.id}/[0-9a-f-]{36}\\.(pdf|jpg|png)$`).test(ruta) || !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
@@ -63,7 +69,14 @@ export async function guardarConstancia(entrada: { ruta: string; fecha: string; 
   if (actual?.estado === "pendiente") return { error: "Ya tienes una verificación en revisión." };
   const { error } = await supabase
     .from("constancias")
-    .insert({ empresa_id: empresa.id, metodo: "constancia", ruta, fecha_emision: fecha, carta_version: carta.version });
+    .insert({
+      empresa_id: empresa.id,
+      metodo: "constancia",
+      ruta,
+      fecha_emision: fecha,
+      fecha_leida: entrada?.fechaLeida === true,
+      carta_version: carta.version,
+    });
   if (error) return { error: error.code === "P0001" ? error.message : ERROR_GENERAL };
   refrescar();
   return { ok: "Recibimos tu constancia." };

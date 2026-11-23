@@ -38,7 +38,7 @@ export function VerificarCorreo({ nombreEmpresa, correoSugerido }: { nombreEmpre
     evento.preventDefault();
     setError("");
     if (!/^\d{6}$/.test(codigo.trim())) return setError("El código lleva 6 números.");
-    if (!cartaAceptada) return setError("Acepta la carta de responsabilidad.");
+    if (!cartaAceptada) return setError("Para continuar, debes aceptar la carta de responsabilidad: léela y marca la casilla «Acepto la carta de responsabilidad».");
     setOcupado(true);
     const r = await confirmarCodigoCorreo({ codigo: codigo.trim(), carta: true }).catch(() => ({ error: "No pudimos confirmar. Intenta de nuevo." }));
     if (r.error) {
