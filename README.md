@@ -133,6 +133,10 @@ Hoy la verificación responde por cualquier persona activa del equipo. Cuando ex
 
 Al crear una empresa, lo primero que se le pide es su Constancia de Situación Fiscal (`/cuenta/constancia`), en PDF, JPG o PNG de hasta 5 MB y con no más de 3 meses de antigüedad (`site.constanciaMeses`). Puede dejarla para después, pero debe estar **aprobada antes del primer pedido**: `puedePedir()` en `src/lib/cuenta/constancia.ts` es la comprobación que usan los pedidos. La sube quien es dueño o administrador de la empresa; queda «en revisión» y se aprueba o se rechaza (con motivo) desde el panel de administración. La empresa no puede cambiarla ni borrarla; si se rechaza, sube una nueva. Tabla `constancias` y almacenamiento privado `constancias`.
 
+**Datos prellenados.** Si el archivo es el PDF original del SAT, el navegador lee su texto (`src/lib/cuenta/leer-pdf.ts`, con pdf.js servido desde `public/vendor/pdfjs`, fuera del paquete del sitio) y `leerConstancia` (`src/lib/cuenta/constancia-datos.ts`) saca RFC, nombre o razón social, régimen, código postal y fecha de emisión. Se muestran prellenados para que la persona los revise, los corrija y los confirme; al subir la constancia se guardan como datos de facturación (`guardarFiscalesDeConstancia`), salvo que quite la casilla o ya exista ese RFC. Con fotos, escaneos o un PDF que no se pueda leer, todo sigue como antes: solo se pide la fecha. El archivo no sale del navegador hasta que se sube.
+
+**Por qué se pide.** El desplegable «¿Por qué necesitan mi constancia?» (`PorQueConstancia`, textos en `constancia` de `src/lib/site.ts`) aparece en el aviso del resumen y en la página de la constancia.
+
 ### Pedidos y pago
 
 Quien es dueño o administrador de una empresa con la constancia aprobada pide desde `/cuenta/pedidos/nuevo`: elige el diseño (o sus gafetes listos), a quién incluir, el material, la dirección y si quiere factura, revisa el resumen, marca que aprobó la vista previa y pasa a pagar. El precio se vuelve a calcular en el servidor con `cotizar()`; lo que mande el navegador no cuenta.
