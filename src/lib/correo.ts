@@ -20,6 +20,8 @@ export async function enviarCorreo(opts: {
   copiaOculta?: string;
   /** A quién llega la respuesta. Por omisión, al correo del sitio. */
   responderA?: string;
+  /** Archivos adjuntos, con su contenido en base64. */
+  adjuntos?: { nombre: string; contenido: string }[];
 }) {
   const resend = new Resend(process.env.RESEND_API_KEY);
   return resend.emails.send({
@@ -30,6 +32,7 @@ export async function enviarCorreo(opts: {
     subject: opts.asunto,
     html: opts.html,
     text: opts.texto,
+    attachments: opts.adjuntos?.map((a) => ({ filename: a.nombre, content: a.contenido })),
   });
 }
 

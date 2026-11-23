@@ -5,6 +5,7 @@ import { cancelarPedido, pagarPedido } from "@/app/cuenta/pedidos/acciones";
 import { Confirmar } from "@/components/cuenta/Confirmar";
 import { Bloque } from "@/components/cuenta/Entrada";
 import { EstadoPedido } from "@/components/cuenta/EstadoPedido";
+import { FacturaDelPedido } from "@/components/cuenta/FacturaDelPedido";
 import { claseBoton, claseBotonSecundario } from "@/components/cuenta/Formulario";
 import { fechaLarga } from "@/lib/cuenta/constancia";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
@@ -245,15 +246,7 @@ export default async function Pedido({
               {direccion.referencias ? <span className="block text-gris">{direccion.referencias}</span> : null}
             </p>
           ) : null}
-          <p className="mt-3 text-sm">
-            {facturacion ? (
-              <>
-                Factura a nombre de <strong>{facturacion.razon_social}</strong> ({facturacion.rfc}), enviada a {facturacion.correo}.
-              </>
-            ) : (
-              "Sin factura."
-            )}
-          </p>
+          <FacturaDelPedido pedido={pedido} datos={facturacion} />
         </Bloque>
       </div>
 
