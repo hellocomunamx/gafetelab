@@ -291,23 +291,25 @@ export const avisarDisputa = (pedido: Pedido) =>
 export const aprobacionDe = (pedido: Pick<Pedido, "aprobacion">) => pedido.aprobacion as unknown as AprobacionPedido;
 
 /** Avisa a quien hizo el pedido que ya va en camino. Si falla o no hay correo configurado, no pasa nada. */
-export async function avisarEnvio(pedido: Pedido) {
+export async function avisarEnvio(pedido: Pedido, rastreo?: string | null) {
   const para = aprobacionDe(pedido).correo;
   if (!para || !correoActivo()) return;
   const liga = urlAbsoluta(`/cuenta/pedidos/${pedido.id}`);
   const guia = [pedido.paqueteria, pedido.guia ? `guía ${pedido.guia}` : null].filter(Boolean).join(", ");
   const lineas = [
     `Tu pedido ${pedido.folio} de ${pedido.piezas} gafetes y credenciales ya va en camino${guia ? ` por ${guia}` : ""}.`,
-    "Puedes ver su avance en tu plataforma.",
+    rastreo ? "Puedes seguirlo con la liga de rastreo de la paquetería." : "Puedes ver su avance en tu plataforma.",
   ];
   try {
     await enviarCorreo({
       para,
       asunto: `Tu pedido ${pedido.folio} va en camino`,
-      texto: [...lineas, "", liga].join("\n"),
+      texto: [...lineas, ...(rastreo ? ["", `Rastreo: ${rastreo}`] : []), "", liga].join("\n"),
       html: `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#1B1F3B;">${lineas
         .map((l) => `<p style="margin:0 0 10px;">${escapar(l)}</p>`)
-        .join("")}<p style="margin:16px 0 0;"><a href="${escapar(liga)}">Ver mi pedido</a></p></div>`,
+        .join("")}${
+        rastreo ? `<p style="margin:16px 0 0;"><a href="${escapar(rastreo)}">Rastrear mi envío</a></p>` : ""
+      }<p style="margin:16px 0 0;"><a href="${escapar(liga)}">Ver mi pedido</a></p></div>`,
     });
   } catch {
     // El aviso es una cortesía: el pedido ya quedó marcado como enviado.

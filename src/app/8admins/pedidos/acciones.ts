@@ -1,9 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { RUTA_ADMIN } from "@/lib/admin/ruta";
 import { requerirAdmin } from "@/lib/admin/sesion";
-import { requiereRevision } from "@/lib/pedidos/reglas";
+import { ErrorEnvia, generarGuia } from "@/lib/envios/envia";
+import { armarSobres } from "@/lib/envios/sobres";
+import { aprobacionDe } from "@/lib/pedidos/servidor";
+import { type DireccionCopiada, requiereRevision } from "@/lib/pedidos/reglas";
 import { anotar, avisarEnvio, cancelarAutorizado, cerrarCobro, type Pedido, type Servicio } from "@/lib/pedidos/servidor";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -70,6 +74,66 @@ export async function enviarPedido(d: FormData) {
     "enviado",
   );
   if (enviado) await avisarEnvio(enviado);
+  refrescar(x.pedido.id);
+}
+
+/**
+ * Compra la guía en Envia con la paquetería y el servicio elegidos, marca el
+ * pedido como enviado y le manda al cliente el número de guía con la liga de
+ * rastreo. La guía se cobra del saldo de Envia.
+ */
+export async function generarGuiaPedido(d: FormData) {
+  const x = await abrir(d);
+  if (!x || x.pedido.estado !== "en_produccion") return;
+  const [paqueteria, servicio] = String(d.get("tarifa") ?? "").split("|");
+  const direccion = x.pedido.direccion as DireccionCopiada | null;
+  const volver = `${RUTA_ADMIN}/pedidos/${x.pedido.id}`;
+  if (!paqueteria || !servicio || !direccion) redirect(`${volver}?envia=${encodeURIComponent("Elige una tarifa.")}#envio`);
+
+  const { data: empresa } = await x.servicio.from("empresas").select("nombre").eq("id", x.pedido.empresa_id).maybeSingle();
+  let guia;
+  try {
+    guia = await generarGuia(
+      { ...direccion, correo: aprobacionDe(x.pedido).correo, empresa: empresa?.nombre ?? null },
+      armarSobres(x.pedido.piezas),
+      Number(x.pedido.subtotal),
+      paqueteria,
+      servicio,
+      x.pedido.folio,
+    );
+  } catch (e) {
+    const mensaje = e instanceof ErrorEnvia ? e.message : "No se pudo generar la guía.";
+    redirect(`${volver}?envia=${encodeURIComponent(mensaje.slice(0, 300))}#envio`);
+  }
+
+  await anotar(
+    x.servicio,
+    x.pedido.id,
+    "guia_generada",
+    {
+      paqueteria: guia.paqueteria,
+      servicio: guia.servicio,
+      guias: guia.guias,
+      etiqueta: guia.etiqueta,
+      rastreo: guia.rastreo,
+      costo: guia.costo,
+      envio_id: guia.envioId,
+    },
+    x.usuario,
+  );
+  const enviado = await mover(
+    x,
+    "en_produccion",
+    {
+      estado: "enviado",
+      enviado_en: new Date().toISOString(),
+      paqueteria: guia.paqueteria.slice(0, 60),
+      guia: guia.guias.join(", ").slice(0, 80),
+    },
+    "enviado",
+    "enviado",
+  );
+  if (enviado) await avisarEnvio(enviado, guia.rastreo);
   refrescar(x.pedido.id);
 }
 

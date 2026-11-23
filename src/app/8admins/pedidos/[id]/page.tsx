@@ -21,6 +21,7 @@ import {
 } from "@/lib/pedidos/reglas";
 import { aprobacionDe, cobrarAutorizados } from "@/lib/pedidos/servidor";
 import { pesos } from "@/lib/precios";
+import { EnvioEnvia } from "./EnvioEnvia";
 import { cancelarPedidoAdmin, entregarPedido, enviarPedido, guardarNotas, producirPedido, revisarPedido } from "../acciones";
 
 export const metadata: Metadata = { title: "Pedido" };
@@ -42,6 +43,7 @@ const EVENTOS: Record<string, string> = {
   importe_distinto: "Stripe avisó de un pago por un importe distinto al del pedido",
   revisado: "Revisaste el pedido",
   en_produccion: "Pasó a producción",
+  guia_generada: "Se generó la guía en Envia",
   enviado: "Se envió",
   entregado: "Se entregó",
   cancelado: "Se canceló",
@@ -52,8 +54,15 @@ const EVENTOS: Record<string, string> = {
 };
 const PAGADOS = ["pagado", "en_produccion", "enviado", "entregado"];
 
-export default async function Pedido({ params }: { params: Promise<{ id: string }> }) {
+export default async function Pedido({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ cotizar?: string; envia?: string }>;
+}) {
   const { id } = await params;
+  const { cotizar, envia } = await searchParams;
   if (!UUID.test(id)) notFound();
   const { servicio } = await requerirAdmin();
   if (!servicio) notFound();
@@ -78,6 +87,9 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
   const pagado = PAGADOS.includes(pedido.estado);
   const sinCobrar = ["por_pagar", "pago_en_proceso", "autorizado"].includes(pedido.estado);
   const oculto = <input type="hidden" name="id" value={pedido.id} />;
+  const guiaEnvia = [...(eventos ?? [])].reverse().find((e) => e.tipo === "guia_generada")?.detalle as
+    | { etiqueta?: string | null; rastreo?: string | null; costo?: number }
+    | undefined;
 
   return (
     <div className="space-y-5">
@@ -157,18 +169,28 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
             <Link href={`${RUTA_ADMIN}/imprimir/${pedido.empresa_id}?pedido=${pedido.id}`} className={claseBotonSecundario}>
               PDF de impresión
             </Link>
-            <form action={enviarPedido} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
-              {oculto}
-              <label className="block">
-                <span className="text-sm font-semibold">Paquetería</span>
-                <input name="paqueteria" required maxLength={60} placeholder="Por ejemplo: Estafeta" className={claseEntrada} />
-              </label>
-              <label className="block">
-                <span className="text-sm font-semibold">Número de guía</span>
-                <input name="guia" maxLength={80} className={claseEntrada} />
-              </label>
-              <button type="submit" className={claseBoton}>Marcar como enviado</button>
-            </form>
+            <EnvioEnvia
+              pedido={pedido}
+              empresa={empresa?.nombre ?? null}
+              correo={aprobacion.correo ?? null}
+              cotizar={cotizar === "1"}
+              error={envia ? envia.slice(0, 300) : null}
+            />
+            <details className="text-sm">
+              <summary className="cursor-pointer font-semibold underline underline-offset-4">¿Lo mandaste por fuera de Envia?</summary>
+              <form action={enviarPedido} className="mt-3 grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+                {oculto}
+                <label className="block">
+                  <span className="text-sm font-semibold">Paquetería</span>
+                  <input name="paqueteria" required maxLength={60} placeholder="Por ejemplo: Estafeta" className={claseEntrada} />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-semibold">Número de guía</span>
+                  <input name="guia" maxLength={80} className={claseEntrada} />
+                </label>
+                <button type="submit" className={claseBoton}>Marcar como enviado</button>
+              </form>
+            </details>
           </div>
         ) : null}
         {pedido.estado === "enviado" ? (
@@ -176,7 +198,18 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
             <p className="text-sm">
               Va por <strong>{pedido.paqueteria}</strong>
               {pedido.guia ? `, guía ${pedido.guia}` : ""}.
+              {guiaEnvia?.costo ? ` La guía costó ${pesos(Number(guiaEnvia.costo))}.` : ""}
             </p>
+            {guiaEnvia?.etiqueta ? (
+              <a href={guiaEnvia.etiqueta} target="_blank" rel="noreferrer" className={claseBotonSecundario}>
+                Imprimir etiqueta
+              </a>
+            ) : null}
+            {guiaEnvia?.rastreo ? (
+              <a href={guiaEnvia.rastreo} target="_blank" rel="noreferrer" className="text-sm underline underline-offset-4">
+                Rastreo
+              </a>
+            ) : null}
             <form action={entregarPedido}>
               {oculto}
               <button type="submit" className={claseBoton}>Marcar como entregado</button>
