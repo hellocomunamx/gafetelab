@@ -573,6 +573,11 @@ isOneToOne: true
 "quitar_usuario":
 { Args: { "p_empresa": string,"p_usuario": string }; Returns: undefined
                            },
+"ver_invitacion":
+{ Args: { "p_invitacion": string }; Returns: {
+              "correo": string,"empresa": string,"empresa_id": string,"id": string,"invita": string | null,"rol": string,"tiene_cuenta": boolean
+            }[]
+                           },
 "resumen_visitas":
 { Args: { "p_desde": string,"p_hasta": string }; Returns: Json
                            },

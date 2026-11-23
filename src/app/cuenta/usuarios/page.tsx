@@ -3,6 +3,7 @@ import { cambiarRol, cancelarInvitacion, invitarUsuario, quitarUsuario } from "@
 import { Confirmar } from "@/components/cuenta/Confirmar";
 import { Bloque, Entrada } from "@/components/cuenta/Entrada";
 import { Formulario } from "@/components/cuenta/Formulario";
+import { empresasParaInvitar } from "@/lib/cuenta/invitar";
 import { roles, rolesInvitables } from "@/lib/cuenta/roles";
 import { type Rol, requerirEmpresa } from "@/lib/cuenta/sesion";
 
@@ -26,6 +27,10 @@ export default async function Usuarios() {
       : Promise.resolve({ data: [] }),
   ]);
   const invitables = rolesInvitables(rol);
+  // Quien administra varias empresas elige a cuáles invita y con qué rol en cada una.
+  const variasEmpresas = administra ? await empresasParaInvitar() : [];
+  const chip =
+    "block rounded-full border border-linea px-3 py-1.5 text-sm font-semibold transition-colors peer-checked:border-tinta peer-checked:bg-tinta peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-rojo";
 
   return (
     <div className="space-y-6">
@@ -98,8 +103,44 @@ export default async function Usuarios() {
                 placeholder="persona@empresa.com"
                 autoComplete="off"
                 className="max-w-md"
-                ayuda="Le llega un correo con la liga para entrar. Si todavía no tiene cuenta, se crea sola."
+                ayuda="Le llega un correo con la liga para crear su cuenta o entrar con la que ya tiene."
               />
+              {variasEmpresas.length > 1 ? (
+                <fieldset>
+                  <legend className="text-sm font-semibold">¿A qué empresas entra y qué podrá hacer en cada una?</legend>
+                  <ul className="mt-2 divide-y divide-linea rounded-tarjeta-chica border border-linea">
+                    {variasEmpresas.map((e) => (
+                      <li key={e.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+                        <label className="flex cursor-pointer items-center gap-3 font-semibold">
+                          <input
+                            type="checkbox"
+                            name="empresa"
+                            value={e.id}
+                            defaultChecked={e.id === empresa.id}
+                            className="size-5 accent-rojo"
+                          />
+                          {e.nombre}
+                        </label>
+                        <div className="flex gap-2 pl-8 sm:pl-0">
+                          {e.roles.map((r, i) => (
+                            <label key={r} className="cursor-pointer" title={roles[r].puede}>
+                              <input type="radio" name={`rol_${e.id}`} value={r} defaultChecked={i === 0} className="peer sr-only" />
+                              <span className={chip}>{roles[r].nombre}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-2 text-sm text-gris">
+                    Le llega un solo correo con todas.
+                    {variasEmpresas.some((e) => e.roles.length === 1)
+                      ? " Donde eres administrador y no dueño, solo puedes invitar editores."
+                      : ""}{" "}
+                    Lo que puede hacer cada rol está abajo.
+                  </p>
+                </fieldset>
+              ) : (
               <fieldset>
                 <legend className="text-sm font-semibold">¿Qué podrá hacer?</legend>
                 <div className="mt-2 grid gap-2 sm:grid-cols-2">
@@ -114,6 +155,7 @@ export default async function Usuarios() {
                   ))}
                 </div>
               </fieldset>
+              )}
             </div>
           </Formulario>
 

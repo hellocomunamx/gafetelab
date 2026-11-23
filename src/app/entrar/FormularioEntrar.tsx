@@ -24,6 +24,12 @@ const PESTANAS = [
   { id: "crear", texto: "Crear cuenta" },
 ] as const;
 
+/** Desde una invitación casi siempre es la primera vez: "Crear cuenta" va primero. */
+const PESTANAS_INVITACION = [
+  { id: "crear", texto: "Crear cuenta" },
+  { id: "entrar", texto: "Ya tengo cuenta" },
+] as const;
+
 const AVISO_CODIGO = {
   liga: "Abre la liga o escribe aquí el código para entrar.",
   olvido: "Abre la liga o escribe aquí el código para entrar; después podrás crear una contraseña nueva.",
@@ -57,6 +63,8 @@ export function FormularioEntrar({
   correoInicial,
   siguiente,
   modoInicial = "entrar",
+  correoFijo = false,
+  invitacion = false,
 }: {
   proveedores: (keyof typeof NOMBRES)[];
   aviso?: string;
@@ -66,6 +74,10 @@ export function FormularioEntrar({
   siguiente?: string;
   /** Pestaña abierta al llegar. */
   modoInicial?: Modo;
+  /** El correo no se puede cambiar (la invitación es para ese correo). */
+  correoFijo?: boolean;
+  /** Llega desde la liga de una invitación al equipo. */
+  invitacion?: boolean;
 }) {
   const regreso = siguiente ? <input type="hidden" name="siguiente" value={siguiente} /> : null;
   const [modo, setModo] = useState<Modo>(modoInicial);
@@ -136,8 +148,9 @@ export function FormularioEntrar({
         autoComplete={modo === "liga" ? "email" : "username"}
         value={correo}
         onChange={(e) => setCorreo(e.target.value)}
+        readOnly={correoFijo}
         placeholder="tu@empresa.com"
-        className={entrada}
+        className={`${entrada}${correoFijo ? " bg-papel text-gris" : ""}`}
       />
     </label>
   );
@@ -154,7 +167,7 @@ export function FormularioEntrar({
         aria-label="Iniciar sesión o crear cuenta"
         className="-mx-6 -mt-6 mb-6 flex border-b border-linea sm:-mx-7 sm:-mt-7"
       >
-        {PESTANAS.map((p) => {
+        {(invitacion ? PESTANAS_INVITACION : PESTANAS).map((p) => {
           const activa = p.id === "crear" ? modo === "crear" : modo !== "crear";
           return (
             <button
