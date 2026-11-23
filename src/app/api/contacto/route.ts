@@ -1,5 +1,6 @@
 import { limitesContacto, motivosContacto } from "@/lib/contacto";
 import { correoActivo, enviarCorreo } from "@/lib/correo";
+import { correoAcuse } from "@/lib/correo-acuse";
 import { site } from "@/lib/site";
 import { CORREO_VALIDO, error, esBot, escapar, leerCuerpo, mismoOrigen } from "@/lib/solicitudes";
 
@@ -7,7 +8,9 @@ const recortar = (valor: unknown, maximo: number) => String(valor ?? "").trim().
 
 /**
  * Recibe el formulario de contacto y lo manda al buzón del sitio. La respuesta
- * a ese correo le llega directo a quien escribió (reply-to).
+ * a ese correo le llega directo a quien escribió (reply-to). Después le manda a
+ * quien escribió un acuse de recibo; si el acuse falla, el mensaje ya llegó y
+ * no se le muestra error.
  */
 export async function POST(solicitud: Request) {
   if (!mismoOrigen(solicitud)) return error("Origen no permitido.", 403);
@@ -75,5 +78,10 @@ ${datos.map(([etiqueta, valor]) => `<tr><td style="${celda}color:#5C6178;white-s
     console.error("No se pudo enviar el mensaje de contacto:", resultado.error);
     return error(`No pudimos enviar tu mensaje. Intenta de nuevo o escríbenos a ${site.correo}.`, 502);
   }
+
+  const acuse = correoAcuse({ nombre, motivo });
+  const envioAcuse = await enviarCorreo({ para: correo, ...acuse }).catch((falla: unknown) => ({ error: falla }));
+  if (envioAcuse.error) console.error("No se pudo enviar el acuse de contacto:", envioAcuse.error);
+
   return Response.json({ ok: true });
 }
