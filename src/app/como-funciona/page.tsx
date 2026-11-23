@@ -7,7 +7,7 @@ import { formasDeEmpezar, pasos } from "@/lib/pasos";
 import { accionesPlataforma, ajustesPlataforma, formasDeCargar } from "@/lib/plataforma";
 import { comoHacerlo, migas } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
-import { constancia, entregaTexto, site } from "@/lib/site";
+import { entregaTexto, site, verificacion } from "@/lib/site";
 
 const ruta = "/como-funciona";
 const rutaMigas = [{ nombre: "Cómo funciona", ruta }];
@@ -38,13 +38,20 @@ export default function ComoFunciona() {
         </p>
       </Portada>
 
-      <Seccion id="constancia" titulo="Antes de empezar: ten a la mano tu constancia fiscal" fondo>
+      <Seccion id="verificacion" titulo="Antes de empezar: verifica tu empresa, con RFC o sin RFC" fondo>
         <div className="max-w-3xl space-y-3 text-lg text-gris">
-          <p>{constancia.corto}</p>
-          <p>{constancia.motivo}</p>
+          <p>{verificacion.corto}</p>
+          <p>{verificacion.motivo}</p>
+          <ul className="list-disc space-y-1 pl-6">
+            {Object.values(verificacion.metodos).map((m) => (
+              <li key={m.titulo}>
+                <strong className="text-tinta">{m.titulo}.</strong> {m.texto}
+              </li>
+            ))}
+          </ul>
           <p>
-            La descargas gratis en el portal del SAT y la subes una sola vez. No hacemos gafetes ni
-            credenciales de una empresa distinta a la que hace el pedido.
+            En las tres aceptas una carta de responsabilidad, se hace una sola vez y la revisamos a mano. No
+            hacemos gafetes ni credenciales de una empresa distinta a la que hace el pedido.
           </p>
         </div>
       </Seccion>

@@ -94,7 +94,7 @@ export default async function Clientes({ searchParams }: { searchParams: Promise
                 <th scope="col" className="px-4 py-3 font-semibold">Empresa</th>
                 <th scope="col" className="px-4 py-3 font-semibold">Contacto</th>
                 <th scope="col" className="px-4 py-3 font-semibold">Alta</th>
-                <th scope="col" className="px-4 py-3 font-semibold">Constancia</th>
+                <th scope="col" className="px-4 py-3 font-semibold">Verificación</th>
                 <th scope="col" className="px-4 py-3 text-right font-semibold">Personas</th>
                 <th scope="col" className="px-4 py-3 text-right font-semibold">Pedidos pagados</th>
                 <th scope="col" className="px-4 py-3 text-right font-semibold">Ha pagado</th>

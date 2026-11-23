@@ -69,15 +69,15 @@ export default async function Nuevo() {
       <>
         <p className="font-semibold">
           {constancia?.estado === "pendiente"
-            ? "Tu Constancia de Situación Fiscal está en revisión."
-            : "Antes de tu primer pedido necesitamos la Constancia de Situación Fiscal de tu empresa."}
+            ? "La verificación de tu empresa está en revisión."
+            : "Antes de tu primer pedido necesitamos verificar tu empresa."}
         </p>
         <p className="mt-1 text-gris">
           {constancia?.estado === "pendiente"
             ? "En cuanto la aprobemos vas a poder pedir. Normalmente tarda menos de un día hábil."
-            : "Así comprobamos que los gafetes y credenciales son de tu empresa. Solo se pide una vez."}{" "}
-          <Link href="/cuenta/constancia" className={liga}>
-            {constancia?.estado === "pendiente" ? "Ver mi constancia" : "Subir mi constancia"}
+            : "Así comprobamos que los gafetes y credenciales son de tu empresa. Con RFC o sin RFC, y solo una vez."}{" "}
+          <Link href="/cuenta/verificacion" className={liga}>
+            {constancia?.estado === "pendiente" ? "Ver mi verificación" : "Verificar mi empresa"}
           </Link>
         </p>
       </>

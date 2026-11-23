@@ -9,7 +9,7 @@ import { datosVerificables, modosQr } from "@/lib/cuenta/qr";
 import { recordarEmpresa, requerirEmpresa, requerirUsuario } from "@/lib/cuenta/sesion";
 import { claveDe, normalizar } from "@/lib/cuenta/texto";
 import type { FilaImportada, Resultado } from "@/lib/cuenta/tipos";
-import { site } from "@/lib/site";
+import { carta, site } from "@/lib/site";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -38,14 +38,15 @@ export async function crearEmpresa(_: Resultado, d: FormData): Promise<Resultado
   if (error || !data) return { error: error?.code === "P0001" ? error.message : ERROR_GENERAL };
   await recordarEmpresa(data);
   refrescar();
-  // Lo primero que se le pide a una empresa nueva es su constancia; puede dejarla para después.
-  redirect("/cuenta/constancia?nueva=1");
+  // Lo primero que se le pide a una empresa nueva es verificarla; puede dejarlo para después.
+  redirect("/cuenta/verificacion?nueva=1");
 }
 
 /** Registra la constancia que la empresa acaba de subir al almacenamiento. Queda en revisión. */
-export async function guardarConstancia(entrada: { ruta: string; fecha: string }): Promise<Resultado> {
+export async function guardarConstancia(entrada: { ruta: string; fecha: string; carta: boolean }): Promise<Resultado> {
   const { supabase, empresa, administra } = await requerirEmpresa();
   if (!administra) return { error: "Solo quien administra la empresa puede subir la constancia." };
+  if (entrada?.carta !== true) return { error: "Acepta la carta de responsabilidad." };
   const ruta = String(entrada?.ruta ?? "");
   const fecha = String(entrada?.fecha ?? "");
   if (!new RegExp(`^${empresa.id}/[0-9a-f-]{36}\\.(pdf|jpg|png)$`).test(ruta) || !/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
@@ -55,9 +56,11 @@ export async function guardarConstancia(entrada: { ruta: string; fecha: string }
   if (fecha > hasta) return { error: "La fecha de emisión no puede ser futura." };
   if (fecha < desde) return { error: `La constancia debe tener máximo ${site.constanciaMeses} meses de antigüedad.` };
   const actual = await constanciaDe(supabase, empresa.id);
-  if (actual?.estado === "aprobada") return { error: "Tu constancia ya está aprobada." };
-  if (actual?.estado === "pendiente") return { error: "Ya tienes una constancia en revisión." };
-  const { error } = await supabase.from("constancias").insert({ empresa_id: empresa.id, ruta, fecha_emision: fecha });
+  if (actual?.estado === "aprobada") return { error: "Tu empresa ya está verificada." };
+  if (actual?.estado === "pendiente") return { error: "Ya tienes una verificación en revisión." };
+  const { error } = await supabase
+    .from("constancias")
+    .insert({ empresa_id: empresa.id, metodo: "constancia", ruta, fecha_emision: fecha, carta_version: carta.version });
   if (error) return { error: error.code === "P0001" ? error.message : ERROR_GENERAL };
   refrescar();
   return { ok: "Recibimos tu constancia." };

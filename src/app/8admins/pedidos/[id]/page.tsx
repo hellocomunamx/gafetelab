@@ -7,6 +7,7 @@ import { EstadoPedido } from "@/components/cuenta/EstadoPedido";
 import { claseBoton, claseBotonSecundario, claseEntrada } from "@/components/cuenta/Formulario";
 import { RUTA_ADMIN } from "@/lib/admin/ruta";
 import { requerirAdmin } from "@/lib/admin/sesion";
+import { nombreMetodo } from "@/lib/cuenta/constancia";
 import { materialPara } from "@/lib/materiales";
 import {
   type DireccionCopiada,
@@ -61,10 +62,17 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
 
   const { data: pedido } = await servicio.from("pedidos").select("*").eq("id", id).maybeSingle();
   if (!pedido) notFound();
-  const [{ data: empresa }, { data: gafetes }, { data: eventos }] = await Promise.all([
+  const [{ data: empresa }, { data: gafetes }, { data: eventos }, { data: verificada }] = await Promise.all([
     servicio.from("empresas").select("id, nombre").eq("id", pedido.empresa_id).maybeSingle(),
     servicio.from("gafetes").select("id, motivo, datos").eq("pedido_id", id).limit(5000),
     servicio.from("pedido_eventos").select("id, tipo, detalle, creado_en").eq("pedido_id", id).order("creado_en").limit(500),
+    servicio
+      .from("constancias")
+      .select("metodo, negocio, estado")
+      .eq("empresa_id", pedido.empresa_id)
+      .order("creado_en", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   const aprobacion = aprobacionDe(pedido);
@@ -114,8 +122,9 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
       ) : null}
       {pedido.primer_pedido && pagado ? (
         <p className="rounded-tarjeta bg-resaltador/30 p-4 text-sm">
-          <strong>Es el primer pedido de esta empresa.</strong> Revisa que los gafetes correspondan a la empresa de su constancia antes de
-          producir.
+          <strong>Es el primer pedido de esta empresa.</strong> Revisa que los gafetes correspondan a la empresa que verificó
+          {verificada ? ` (${nombreMetodo(verificada.metodo).toLowerCase()}${verificada.negocio ? `: «${verificada.negocio}»` : ""})` : ""} antes
+          de producir.
         </p>
       ) : null}
 
@@ -287,7 +296,7 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
         </dl>
         <p className="mt-3 text-sm text-gris">
           La empresa marcó la casilla «Revisé la vista previa de mis gafetes y credenciales, los datos son correctos y apruebo que se
-          impriman tal como se ven». Su constancia fiscal aprobada y la guía de envío completan la evidencia.
+          impriman tal como se ven». Su verificación aprobada, la carta de responsabilidad que aceptó y la guía de envío completan la evidencia.
         </p>
       </Bloque>
 

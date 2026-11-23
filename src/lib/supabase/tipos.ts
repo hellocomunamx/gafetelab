@@ -59,14 +59,14 @@ isOneToOne: false
                   ]
                 },"constancias": {
                   Row: {
-                    "creado_en": string,"empresa_id": string,"estado": string,"fecha_emision": string,"id": string,"motivo": string | null,"revisada_en": string | null,"ruta": string,"subida_por": string | null
+                    "carta_aceptada_en": string | null,"carta_version": string | null,"correo": string | null,"correo_confirmado_en": string | null,"metodo": string,"negocio": string | null,"prueba_liga": string | null,"prueba_ruta": string | null,"ruta_reverso": string | null,"creado_en": string,"empresa_id": string,"estado": string,"fecha_emision": string | null,"id": string,"motivo": string | null,"revisada_en": string | null,"ruta": string | null,"subida_por": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "creado_en"?: string,"empresa_id": string,"estado"?: string,"fecha_emision": string,"id"?: string,"motivo"?: string | null,"revisada_en"?: string | null,"ruta": string,"subida_por"?: string | null
+                    "carta_aceptada_en"?: string | null,"carta_version"?: string | null,"correo"?: string | null,"correo_confirmado_en"?: string | null,"metodo"?: string,"negocio"?: string | null,"prueba_liga"?: string | null,"prueba_ruta"?: string | null,"ruta_reverso"?: string | null,"creado_en"?: string,"empresa_id": string,"estado"?: string,"fecha_emision"?: string | null,"id"?: string,"motivo"?: string | null,"revisada_en"?: string | null,"ruta"?: string | null,"subida_por"?: string | null
                   }
                   Update: {
-                    "creado_en"?: string,"empresa_id"?: string,"estado"?: string,"fecha_emision"?: string,"id"?: string,"motivo"?: string | null,"revisada_en"?: string | null,"ruta"?: string,"subida_por"?: string | null
+                    "carta_aceptada_en"?: string | null,"carta_version"?: string | null,"correo"?: string | null,"correo_confirmado_en"?: string | null,"metodo"?: string,"negocio"?: string | null,"prueba_liga"?: string | null,"prueba_ruta"?: string | null,"ruta_reverso"?: string | null,"creado_en"?: string,"empresa_id"?: string,"estado"?: string,"fecha_emision"?: string | null,"id"?: string,"motivo"?: string | null,"revisada_en"?: string | null,"ruta"?: string | null,"subida_por"?: string | null
                   }
                   Relationships: [
                     {

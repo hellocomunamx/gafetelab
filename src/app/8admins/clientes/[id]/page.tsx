@@ -80,7 +80,7 @@ export default async function Cliente({ params }: { params: Promise<{ id: string
           <Dato nombre="Gafetes comprados">{gafetes.toLocaleString("es-MX")}</Dato>
           <Dato nombre="Pedido promedio">{pagados.length ? pesos(total / pagados.length) : "Sin pedidos"}</Dato>
           <Dato nombre="Personas activas">{(activos.count ?? 0).toLocaleString("es-MX")}</Dato>
-          <Dato nombre="Constancia">{nombreConstancia(constancia.data?.estado)}</Dato>
+          <Dato nombre="Verificación">{nombreConstancia(constancia.data?.estado)}</Dato>
         </dl>
         {paraImprimir ? (
           <p className="mt-4 text-sm">

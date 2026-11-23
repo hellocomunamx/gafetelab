@@ -4,7 +4,7 @@ import { claseBoton, claseBotonSecundario, claseEntrada } from "@/components/cue
 import { palabrasSensibles, textosDeDiseno } from "@/lib/admin/alertas";
 import { RUTA_ADMIN } from "@/lib/admin/ruta";
 import { requerirAdmin } from "@/lib/admin/sesion";
-import { fechaLarga } from "@/lib/cuenta/constancia";
+import { fechaLarga, nombreMetodo } from "@/lib/cuenta/constancia";
 import { ligasDe } from "@/lib/cuenta/fotos";
 import { revisarConstancia } from "./acciones";
 
@@ -32,11 +32,11 @@ export default async function Admin() {
   const constanciaDe = new Map<string, NonNullable<typeof constancias>[number]>();
   for (const c of constancias ?? []) if (!constanciaDe.has(c.empresa_id)) constanciaDe.set(c.empresa_id, c);
   const pendientes = [...constanciaDe.values()].filter((c) => c.estado === "pendiente").reverse();
-  const archivos = servicio ? await ligasDe(servicio, "constancias", pendientes.map((c) => c.ruta)) : new Map<string, string>();
+  const archivos = servicio ? await ligasDe(servicio, "constancias", pendientes.flatMap((c) => [c.ruta, c.ruta_reverso, c.prueba_ruta])) : new Map<string, string>();
   const nombreDe = new Map((empresas ?? []).map((e) => [e.id, e.nombre]));
   const estadoConstancia = (empresaId: string) => {
     const estado = constanciaDe.get(empresaId)?.estado;
-    return estado === "aprobada" ? "Aprobada" : estado === "pendiente" ? "Por revisar" : estado === "rechazada" ? "Rechazada" : "Sin subir";
+    return estado === "aprobada" ? "Aprobada" : estado === "pendiente" ? "Por revisar" : estado === "rechazada" ? "Rechazada" : "Sin verificar";
   };
 
   // Palabras que piden revisión, por empresa: su nombre y los textos fijos de sus diseños.
@@ -72,11 +72,12 @@ export default async function Admin() {
       {pendientes.length ? (
         <section className="rounded-tarjeta border border-linea bg-white p-5 sm:p-6">
           <h2 className="text-xl font-extrabold">
-            {pendientes.length === 1 ? "1 constancia por revisar" : `${pendientes.length} constancias por revisar`}
+            {pendientes.length === 1 ? "1 verificación por revisar" : `${pendientes.length} verificaciones por revisar`}
           </h2>
           <p className="mt-1 text-sm text-gris">
-            Comprueba que sea legible, que su fecha de emisión coincida y que el RFC y la razón social sean los
-            de la empresa de la cuenta. Sin constancia aprobada, la empresa no puede hacer su primer pedido.
+            Constancia: que sea legible, reciente y con el RFC y la razón social de la empresa. INE: que se lea y que
+            la liga o la foto muestren el mismo negocio que llevarán los gafetes. Correo: que el dominio sea del
+            negocio. Sin verificación aprobada, la empresa no puede hacer su primer pedido.
           </p>
           <ul className="mt-4 divide-y divide-linea">
             {pendientes.map((c) => {
@@ -86,20 +87,52 @@ export default async function Admin() {
                   <div className="min-w-0 text-sm">
                     <p className="text-base font-semibold">{nombreDe.get(c.empresa_id) ?? "Empresa"}</p>
                     <p className="text-gris">
-                      Emitida el {fechaLarga(c.fecha_emision)} · subida el {fechaLarga(c.creado_en)}
+                      <strong className="text-tinta">{nombreMetodo(c.metodo)}</strong>
+                      {c.fecha_emision ? ` · emitida el ${fechaLarga(c.fecha_emision)}` : ""} · mandada el {fechaLarga(c.creado_en)}
                     </p>
-                    <p className="mt-1">
-                      {datos.length
-                        ? datos.map((f) => `${f.rfc} · ${f.razon_social}`).join(" / ")
-                        : "La empresa todavía no captura sus datos de facturación."}
+                    {c.negocio ? <p className="mt-1">Negocio en los gafetes: <strong>{c.negocio}</strong></p> : null}
+                    {c.metodo === "constancia" ? (
+                      <p className="mt-1">
+                        {datos.length
+                          ? datos.map((f) => `${f.rfc} · ${f.razon_social}`).join(" / ")
+                          : "La empresa todavía no captura sus datos de facturación."}
+                      </p>
+                    ) : null}
+                    {c.correo ? (
+                      <p className="mt-1">
+                        {c.correo} ·{" "}
+                        {c.correo_confirmado_en ? (
+                          <span className="text-[#0a5c3b]">confirmado con código</span>
+                        ) : (
+                          <span className="text-rojo-oscuro">sin confirmar</span>
+                        )}
+                      </p>
+                    ) : null}
+                    <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                      {[
+                        { ruta: c.ruta, nombre: c.metodo === "ine" ? "INE (frente)" : "Abrir constancia" },
+                        { ruta: c.ruta_reverso, nombre: "INE (reverso)" },
+                        { ruta: c.prueba_ruta, nombre: "Foto del negocio" },
+                      ].map((a) =>
+                        a.ruta ? (
+                          archivos.get(a.ruta) ? (
+                            <a key={a.nombre} href={archivos.get(a.ruta)} target="_blank" rel="noopener" className="font-semibold text-rojo underline underline-offset-4">
+                              {a.nombre}
+                            </a>
+                          ) : (
+                            <span key={a.nombre} className="text-rojo-oscuro">{a.nombre}: no se encontró el archivo</span>
+                          )
+                        ) : null,
+                      )}
+                      {c.prueba_liga ? (
+                        <a href={c.prueba_liga} target="_blank" rel="noopener noreferrer nofollow" className="font-semibold text-rojo underline underline-offset-4">
+                          Liga del negocio
+                        </a>
+                      ) : null}
                     </p>
-                    {archivos.get(c.ruta) ? (
-                      <a href={archivos.get(c.ruta)} target="_blank" rel="noopener" className="mt-2 inline-block font-semibold text-rojo underline underline-offset-4">
-                        Abrir constancia
-                      </a>
-                    ) : (
-                      <p className="mt-2 text-rojo-oscuro">No se encontró el archivo.</p>
-                    )}
+                    <p className="mt-1 text-xs text-gris">
+                      {c.carta_aceptada_en ? `Carta de responsabilidad aceptada el ${fechaLarga(c.carta_aceptada_en)}.` : "Sin carta de responsabilidad."}
+                    </p>
                   </div>
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                     <form action={revisarConstancia} className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-end">
@@ -107,7 +140,7 @@ export default async function Admin() {
                       <input type="hidden" name="decision" value="rechazar" />
                       <label className="block flex-1">
                         <span className="text-sm font-semibold">Si la rechazas, dile por qué</span>
-                        <input name="motivo" required maxLength={300} placeholder="Por ejemplo: la constancia es de otra empresa" className={claseEntrada} />
+                        <input name="motivo" required maxLength={300} placeholder="Por ejemplo: la liga es de otro negocio" className={claseEntrada} />
                       </label>
                       <button type="submit" className={claseBotonSecundario}>Rechazar</button>
                     </form>
@@ -131,7 +164,7 @@ export default async function Admin() {
               <tr>
                 <th scope="col" className="px-4 py-3 font-semibold">Empresa</th>
                 <th scope="col" className="px-4 py-3 font-semibold">Alta</th>
-                <th scope="col" className="px-4 py-3 font-semibold">Constancia</th>
+                <th scope="col" className="px-4 py-3 font-semibold">Verificación</th>
                 <th scope="col" className="px-4 py-3 text-right font-semibold">Activos</th>
                 <th scope="col" className="px-4 py-3 text-right font-semibold">Diseños</th>
                 <th scope="col" className="px-4 py-3 text-right font-semibold">Gafetes listos</th>

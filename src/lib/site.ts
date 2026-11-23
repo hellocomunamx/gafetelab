@@ -44,13 +44,13 @@ export const constancia = {
   motivo:
     "Así comprobamos que los gafetes y credenciales son de tu propia empresa: el RFC y la razón social de la constancia deben coincidir con la empresa que aparece en los gafetes, y son los mismos datos con los que te facturamos.",
   /** Desplegable «¿Por qué necesitan mi constancia?». */
-  pregunta: "¿Por qué necesitan mi constancia?",
+  pregunta: "¿Por qué necesitan verificar mi empresa?",
   respuesta: "Por el bien y la seguridad de tu empresa.",
   razones: [
     {
       titulo: "Para que nadie se haga pasar por tu empresa.",
       texto:
-        "Un gafete abre puertas. Con la constancia comprobamos que quien pide los gafetes y credenciales de tu empresa es de verdad tu empresa, y que nadie más puede mandarlos a hacer con tu nombre o tu logo.",
+        "Un gafete abre puertas. Al verificar tu empresa comprobamos que quien pide los gafetes y credenciales de tu empresa es de verdad tu empresa, y que nadie más puede mandarlos a hacer con tu nombre o tu logo.",
     },
     {
       titulo: "Para que tus gafetes valgan.",
@@ -58,13 +58,58 @@ export const constancia = {
     },
     {
       titulo: "Para facturarte sin vueltas.",
-      texto: "De ahí salen tu RFC, tu razón social, tu régimen y tu código postal, tal como los tiene el SAT.",
+      texto: "Si eliges la constancia, de ahí salen tu RFC, tu razón social, tu régimen y tu código postal, tal como los tiene el SAT.",
     },
     {
       titulo: "Y no te compromete.",
       texto:
-        "La constancia no trae contraseñas ni datos bancarios. Solo la ve nuestro equipo de revisión, no se comparte con nadie y se pide una sola vez.",
+        "Lo que subes no trae contraseñas ni datos bancarios. Solo lo ve nuestro equipo de revisión, no se comparte con nadie y se pide una sola vez.",
     },
+  ],
+} as const;
+
+/**
+ * Verificación de la empresa: comprueba que los gafetes son de quien los pide.
+ * La empresa elige cómo; todas se revisan a mano antes del primer pedido.
+ */
+export const verificacion = {
+  nombre: "Verificación de tu empresa",
+  corto:
+    "Antes de tu primer pedido verificamos que los gafetes sean de tu propia empresa. Tú eliges cómo: con tu Constancia de Situación Fiscal, con tu INE y una prueba de tu negocio, o con un correo de tu empresa.",
+  motivo:
+    "Así nadie puede mandar a hacer gafetes y credenciales con el nombre o el logo de tu empresa. Si no tienes RFC no hay problema: con tu INE y la liga a las redes o al Google Maps de tu negocio, o una foto del local, también se puede.",
+  /** Desplegable «¿Por qué necesitan verificar mi empresa?». */
+  pregunta: "¿Por qué necesitan verificar mi empresa?",
+  metodos: {
+    constancia: {
+      titulo: "Constancia de Situación Fiscal",
+      texto: "Si tu empresa o tú tienen RFC. Es la más rápida de revisar y de ahí salen tus datos para facturar.",
+      etiqueta: "Recomendada",
+    },
+    ine: {
+      titulo: "INE y una prueba de tu negocio",
+      texto:
+        "Si no tienes RFC. Tu INE, más la liga a tu Facebook, Instagram o Google Maps, o una foto de tu local, menú o uniforme donde se vea el nombre de tu negocio.",
+      etiqueta: "Sin RFC",
+    },
+    correo: {
+      titulo: "Correo de tu empresa",
+      texto: "Si tienes un correo con el dominio de tu negocio (por ejemplo, tu@tunegocio.com). Te mandamos un código para confirmarlo.",
+      etiqueta: "",
+    },
+  },
+} as const;
+
+/** Carta de responsabilidad que se acepta al verificar la empresa. Cambia la versión si cambia el texto. */
+export const carta = {
+  version: "2026-11-23",
+  titulo: "Carta de responsabilidad",
+  casilla: "Acepto la carta de responsabilidad.",
+  puntos: [
+    "Declaro que represento al negocio o empresa que aparece en los gafetes y credenciales que voy a pedir, y que tengo derecho a usar su nombre, su logo y los datos de las personas que aparecen en ellos.",
+    "Los gafetes y credenciales son solo para identificar internamente a personas de mi propia organización. No los usaré para hacerme pasar por otra empresa, por una autoridad o por una dependencia de gobierno.",
+    "La información y los documentos que subo para verificar mi empresa son verdaderos.",
+    "Si algo de esto no es cierto, respondo yo, y no LaGafetería, por los daños que cause a terceros, y LaGafetería puede cancelar mi pedido sin producirlo.",
   ],
 } as const;
 
