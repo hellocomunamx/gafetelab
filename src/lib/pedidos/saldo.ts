@@ -10,7 +10,7 @@ import { cotizar, extraDosCaras, pesos, tasaIva } from "@/lib/precios";
 
 export type SaldoDisponible = {
   id: string;
-  concepto: "gafetes" | "envios";
+  concepto: "gafetes" | "envios" | "digitales";
   material: MaterialId | null;
   dosCaras: boolean;
   /** Lo que queda por usar. */
@@ -122,4 +122,5 @@ export function cotizarConSaldo(
 export const resumenSaldo = (saldos: SaldoDisponible[]) => ({
   gafetes: saldos.filter((s) => s.concepto === "gafetes").reduce((t, s) => t + s.disponible, 0),
   envios: saldos.filter((s) => s.concepto === "envios").reduce((t, s) => t + s.disponible, 0),
+  digitales: saldos.filter((s) => s.concepto === "digitales").reduce((t, s) => t + s.disponible, 0),
 });

@@ -314,19 +314,16 @@ export function Cotizador() {
         </div>
 
         <div className="mt-6 border-t border-linea pt-5">
-          {c.modalidad !== "impreso" ? (
-            <p className="rounded-tarjeta-chica bg-papel px-4 py-3 text-sm">
-              El gafete digital se activa desde tu plataforma, junto con tus gafetes impresos. Por ahora, en el carrito puedes comprar los impresos.
-            </p>
-          ) : c.piezas > carritoMaximoPiezas ? (
+          {false ? (
+            null          ) : c.piezas > carritoMaximoPiezas ? (
             <p className="rounded-tarjeta-chica bg-papel px-4 py-3 text-sm">
               En línea se compran hasta {carritoMaximoPiezas.toLocaleString("es-MX")} gafetes a la vez. Agrega dos compras al carrito o descarga la cotización.
             </p>
           ) : (
-            <BotonAgregar articulo={{ tipo: "gafetes", piezas: c.piezas, dosCaras: c.dosCaras, material }} />
+            <BotonAgregar articulo={{ tipo: "gafetes", piezas: c.piezas, modalidad: c.modalidad, dosCaras: c.dosCaras, material }} />
           )}
           <p className="mt-2 text-xs text-gris">
-            Pagas ahora y tus gafetes quedan a tu favor: subes a tu equipo y tu diseño cuando quieras, y los pides desde tu plataforma.
+            Pagas ahora y tus gafetes quedan a tu favor: subes a tu equipo y tu diseño cuando quieras, y los pides o activas desde tu plataforma.
           </p>
         </div>
 
