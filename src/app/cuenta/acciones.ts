@@ -45,7 +45,7 @@ export async function crearEmpresa(_: Resultado, d: FormData): Promise<Resultado
 /** Registra la constancia que la empresa acaba de subir al almacenamiento. Queda en revisión. */
 export async function guardarConstancia(entrada: { ruta: string; fecha: string; carta: boolean }): Promise<Resultado> {
   const { supabase, empresa, administra } = await requerirEmpresa();
-  if (!administra) return { error: "Solo quien administra la empresa puede subir la constancia." };
+  if (!administra) return { error: "Solo quien administra la empresa puede verificarla." };
   if (entrada?.carta !== true) return { error: "Acepta la carta de responsabilidad." };
   const ruta = String(entrada?.ruta ?? "");
   const fecha = String(entrada?.fecha ?? "");

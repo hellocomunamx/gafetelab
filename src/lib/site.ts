@@ -37,12 +37,9 @@ export const site = {
 
 export const entregaTexto = site.entrega;
 
-/** Por qué se pide la Constancia de Situación Fiscal. Se dice igual en todo el sitio. */
+/** La constancia y el desplegable «¿Por qué necesitan verificar mi empresa?». Se dice igual en todo el sitio. */
 export const constancia = {
   nombre: "Constancia de Situación Fiscal",
-  corto: `Para abrir la cuenta de tu empresa te pedimos su Constancia de Situación Fiscal, con no más de ${site.constanciaMeses} meses de antigüedad.`,
-  motivo:
-    "Así comprobamos que los gafetes y credenciales son de tu propia empresa: el RFC y la razón social de la constancia deben coincidir con la empresa que aparece en los gafetes, y son los mismos datos con los que te facturamos.",
   /** Desplegable «¿Por qué necesitan mi constancia?». */
   pregunta: "¿Por qué necesitan verificar mi empresa?",
   respuesta: "Por el bien y la seguridad de tu empresa.",
