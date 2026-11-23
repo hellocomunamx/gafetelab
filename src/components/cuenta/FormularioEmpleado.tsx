@@ -30,6 +30,7 @@ export function FormularioEmpleado({
         <Entrada etiqueta={etiqueta("puesto", "Puesto")} name="puesto" maxLength={120} defaultValue={empleado?.puesto ?? ""} />
         <Entrada etiqueta={etiqueta("departamento", "Departamento")} name="departamento" maxLength={120} list="departamentos" defaultValue={empleado?.departamento ?? ""} />
         <Entrada etiqueta={etiqueta("tipo_contrato", "Tipo de contrato")} name="tipo_contrato" maxLength={60} list="contratos" defaultValue={empleado?.tipo_contrato ?? ""} ayuda="Por ejemplo: Planta, Temporal o Visitante." />
+        <Entrada etiqueta="Correo" name="correo" type="email" maxLength={200} defaultValue={empleado?.correo ?? ""} ayuda="Para mandarle su liga. No se imprime en el gafete." />
         {propios.map((c) => (
           <Entrada
             key={c.id}

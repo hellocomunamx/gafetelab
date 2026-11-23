@@ -103,6 +103,18 @@ En `/cuenta/disenos/listos` una empresa sube de forma masiva los gafetes que ya 
 - **Revisión.** `revisarGafete` en `src/lib/cuenta/listos.ts` compara la proporción con la del gafete con margen de corte y sin él, y calcula los dpi. Bloquea lo que no tiene proporción de gafete o trae menos de 150 dpi; lo demás se sube con su aviso (sin margen de corte, proporción no exacta, resolución baja o justa, frente y vuelta con distinta orientación).
 - **Dónde quedan.** Tabla `gafetes_listos` (un renglón por persona, con ruta, ancho y alto de cada cara) y bucket privado `gafetes`, en `<empresa>/<empleado>-<cara>.<jpg|png>`. Subir otra vez la misma cara la reemplaza. Las imágenes de más de 3000 px o de 8 MB se reducen a JPEG de 2400 px antes de subir.
 
+### Liga por persona
+
+Cada persona del equipo tiene una liga propia (`/mi-gafete/<liga>`) para revisar sus datos y subir su foto desde el celular, sin crear cuenta. Lo que manda no cambia su ficha: queda como propuesta hasta que la empresa la aprueba en `/cuenta/equipo/ligas`. Migración `20261123060000_liga_por_persona.sql`.
+
+- **La liga.** `empleados.liga`, 24 caracteres al azar que pone la base de datos. Es distinta del código del QR (que es público). No vence, deja de funcionar si la persona se da de baja y se puede cambiar por una nueva desde su ficha.
+- **Qué se pide.** La empresa elige con chips qué campos de texto y fecha ve cada quien y si se pide fotografía (`empresas.liga_campos` y `empresas.liga_foto`; por omisión, nombre y foto). Lo que no se elige no se muestra ni se puede cambiar.
+- **Lo que manda la persona.** Una fila por persona en `propuestas` (si vuelve a mandar, se reemplaza) y su foto en `fotos/<empresa>/pendientes/<persona>.jpg`, ya recortada a 600 × 800 en el navegador. La página pública lee y escribe con `SUPABASE_SECRET_KEY` (`src/lib/cuenta/liga-publica.ts`, `src/app/mi-gafete/acciones.ts`).
+- **Aprobar o pedir corrección.** Al aprobar, los datos y la foto pasan a la ficha. Al pedir una corrección se guarda el motivo, y la persona lo ve al abrir su liga.
+- **Cómo se manda.** El correo de cada persona (`empleados.correo`) se captura en su ficha o en la columna «Correo» de la plantilla de Excel. Con un botón se manda la liga por correo a todas las personas que tienen correo y todavía no la reciben (`enviarCorreos` en `src/lib/correo.ts`, en lotes de 100 con Resend; hasta 1,000 por clic; la respuesta le llega a quien oprimió el botón). Cada persona trae además su botón para copiar la liga, otro de WhatsApp con el mensaje ya escrito y otro para mandar o reenviar su correo, y todas las ligas se bajan en un Excel.
+- **Contra el abuso.** Mandar correos desde la plataforma pide `RESEND_API_KEY` y la constancia aprobada; copiar la liga, WhatsApp y el Excel funcionan siempre. El plan gratuito de Resend deja mandar 100 correos al día: si se acaba, se avisa cuántos salieron y los demás quedan pendientes.
+- La liga no se indexa (`robots.ts` y `noindex`), no manda referente y no entra al conteo de visitas.
+
 ### Qué muestra tu QR
 
 Cada empresa decide en `/cuenta/campos#qr` qué lleva el código QR de sus gafetes (columnas `qr_*` de `empresas`). Solo lo cambia quien administra.
@@ -180,7 +192,7 @@ Y para quitarla: `delete from privado.administradores where usuario_id = '<id>';
 Las visitas se cuentan en casa, sin servicios externos y sin cookies: el componente `Visita` (en el layout) avisa de cada página vista a `/api/visita`, que guarda un renglón en la tabla `visitas` (migración `20261123050000_visitas.sql`) con la página, si es la primera de la visita, de dónde llegó (el sitio que la mandó o `utm_source`), el tipo de dispositivo y el país y estado que informa Cloudflare. No se guarda la dirección IP ni el navegador. Las reglas están en `src/lib/visitas.ts`:
 
 - Una **visita** empieza cuando alguien llega de fuera o entra directo; recargar o navegar dentro del sitio suma páginas vistas, no visitas.
-- No se cuentan `/cuenta`, el panel, `/api` ni los rastreadores y navegadores automáticos, ni a quien tiene activado Do Not Track o Global Privacy Control.
+- No se cuentan `/cuenta`, el panel, `/api`, las ligas personales (`/mi-gafete`) ni los rastreadores y navegadores automáticos, ni a quien tiene activado Do Not Track o Global Privacy Control.
 - Las verificaciones de QR (`/v/<código>`) se guardan todas como `/v`, sin el código de la persona, y se muestran aparte como «escaneos de QR».
 
 Necesita `SUPABASE_SECRET_KEY`; sin ella no se cuenta nada y el sitio funciona igual. El aviso de privacidad (versión 1.5) lo explica en el apartado de cookies.
@@ -236,6 +248,7 @@ Los correos de acceso locales llegan a http://127.0.0.1:54324.
 | Tarifa de envío y monto para envío gratis | `src/lib/precios.ts` (`envio`) |
 | Cotizador | `src/components/Cotizador.tsx` |
 | Qué muestra el QR, generador del código y página de verificación | `src/lib/cuenta/qr.ts`, `src/lib/qr.ts`, `src/app/v/[codigo]/page.tsx` |
+| Liga por persona: reglas, correo, página pública y pantalla de la empresa | `src/lib/cuenta/ligas.ts`, `src/lib/cuenta/correo-liga.ts`, `src/app/mi-gafete/`, `src/app/cuenta/equipo/ligas/` |
 | Panel de administración, alerta de palabras y PDF de impresión | `src/app/8admins/`, `src/lib/admin/`, `src/components/admin/ImprimirGafetes.tsx` |
 | Letras de los diseños de gafete, con tamaño óptico fijo | `src/fonts/*-Gafete.woff2`, `src/app/layout.tsx`, `src/lib/diseno/tipos.ts` |
 | Video de la página de inicio (archivo, portada, título y datos estructurados) | `public/video/`, `videoPitch` en `src/lib/schema.ts`, `src/components/VideoPitch.tsx` |

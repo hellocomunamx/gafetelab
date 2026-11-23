@@ -20,6 +20,8 @@ export type FilaImportada = {
   tipo_contrato?: string;
   /** Campos propios de la empresa, por clave. */
   datos?: Record<string, string>;
+  /** Correo de la persona, para mandarle su liga. */
+  correo?: string;
   /** Nombre del archivo de su foto, si el Excel lo trae. */
   foto_archivo?: string;
 };

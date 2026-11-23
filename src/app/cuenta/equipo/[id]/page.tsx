@@ -2,11 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { borrarEmpleado, cambiarEstatus, quitarFoto } from "@/app/cuenta/acciones";
+import { renovarLiga } from "@/app/cuenta/equipo/ligas/acciones";
 import { Confirmar } from "@/components/cuenta/Confirmar";
 import { Bloque, Estatus } from "@/components/cuenta/Entrada";
 import { claseBotonSecundario } from "@/components/cuenta/Formulario";
 import { FormularioEmpleado } from "@/components/cuenta/FormularioEmpleado";
 import { FotoEmpleado } from "@/components/cuenta/FotoEmpleado";
+import { AccionesLiga } from "@/components/cuenta/Ligas";
+import { correoActivo } from "@/lib/correo";
+import { constanciaDe, puedePedir } from "@/lib/cuenta/constancia";
+import { camposDeLiga, estadoDeLiga, estadosLiga, mensajeDeLiga, urlDeLiga } from "@/lib/cuenta/ligas";
 import { estadosGafete, motivosGafete } from "@/lib/cuenta/catalogos";
 import { camposDe, sugerenciasDe } from "@/lib/cuenta/consultas";
 import { QrSvg } from "@/components/QrSvg";
@@ -40,7 +45,7 @@ export default async function Persona({ params }: { params: Promise<{ id: string
     .maybeSingle();
   if (!persona) notFound();
 
-  const [campos, sugerencias, { data: gafetes }, fotos, { data: listo }] = await Promise.all([
+  const [campos, sugerencias, { data: gafetes }, fotos, { data: listo }, { data: ajuste }, { data: propuesta }, constancia] = await Promise.all([
     camposDe(supabase, empresa.id),
     sugerenciasDe(supabase, empresa.id),
     supabase.from("gafetes").select("*").eq("empleado_id", id).order("emitido_en", { ascending: false }),
@@ -50,7 +55,12 @@ export default async function Persona({ params }: { params: Promise<{ id: string
       .select("frente_path, frente_ancho, frente_alto, vuelta_path, vuelta_ancho, vuelta_alto")
       .eq("empleado_id", id)
       .maybeSingle(),
+    supabase.from("empresas").select("liga_campos, liga_foto").eq("id", empresa.id).maybeSingle(),
+    supabase.from("propuestas").select("estado, motivo").eq("empleado_id", id).maybeSingle(),
+    constanciaDe(supabase, empresa.id),
   ]);
+  const estadoLiga = estadoDeLiga(persona, propuesta);
+  const urlLiga = urlDeLiga(persona.liga);
   const caraLista = (ruta?: string | null, ancho?: number | null, alto?: number | null): CaraGuardada | null =>
     ruta && ancho && alto ? { ruta, ancho, alto } : null;
   const frenteListo = caraLista(listo?.frente_path, listo?.frente_ancho, listo?.frente_alto);
@@ -156,6 +166,43 @@ export default async function Persona({ params }: { params: Promise<{ id: string
               </p>
             </Bloque>
           ) : null}
+
+          {deBaja ? null : (
+            <Bloque titulo="Su liga personal">
+              <p className="text-sm text-gris">
+                Con esta liga revisa sus datos y sube su foto, sin crear cuenta. Tú apruebas antes de imprimir.
+              </p>
+              <p className="mt-3">
+                <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${estadosLiga[estadoLiga].clase}`}>
+                  {estadosLiga[estadoLiga].nombre}
+                </span>
+                {estadoLiga === "pendiente" ? (
+                  <Link href="/cuenta/equipo/ligas" className="ml-2 text-sm font-semibold underline underline-offset-4">Revisar lo que mandó</Link>
+                ) : null}
+              </p>
+              <div className="mt-3">
+                <AccionesLiga
+                  id={persona.id}
+                  url={urlLiga}
+                  mensaje={mensajeDeLiga({
+                    nombre: persona.nombre,
+                    empresa: empresa.nombre,
+                    url: urlLiga,
+                    conDatos: camposDeLiga(campos, ajuste?.liga_campos ?? []).length > 0,
+                    conFoto: ajuste?.liga_foto ?? true,
+                  })}
+                  correo={correoActivo() && puedePedir(constancia) ? persona.correo : null}
+                  yaEnviada={estadoLiga !== "sin_enviar"}
+                />
+              </div>
+              <p className="mt-3 text-xs break-all text-gris">{urlLiga}</p>
+              <div className="mt-4 border-t border-linea pt-3">
+                <Confirmar accion={renovarLiga} id={persona.id} texto="Cambiar su liga por una nueva" confirmar="Sí, cambiarla">
+                  La liga de ahora deja de funcionar. Úsalo si se la mandaste a alguien más por error.
+                </Confirmar>
+              </div>
+            </Bloque>
+          )}
 
           <Bloque titulo="Código QR">
             {qr ? (

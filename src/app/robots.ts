@@ -21,8 +21,8 @@ const rastreadoresIA = [
   "CCBot",
 ];
 
-/** Rutas que no deben rastrearse: la API y todo lo que requiere sesión. */
-const privadas = ["/api/", "/auth/", "/cuenta", "/entrar", "/aceptar", "/salir", "/v/"];
+/** Rutas que no deben rastrearse: la API, lo que requiere sesión y las ligas personales. */
+const privadas = ["/api/", "/auth/", "/cuenta", "/entrar", "/aceptar", "/salir", "/v/", "/mi-gafete/"];
 
 export default function robots(): MetadataRoute.Robots {
   if (!site.indexable) {

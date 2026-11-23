@@ -67,7 +67,9 @@ export default function AvisoDePrivacidad() {
               <li>
                 <strong>De las personas que aparecen en los gafetes y credenciales:</strong> los
                 datos que tu empresa decida incluir, como nombre, puesto, número de empleado, área,
-                vigencia y fotografía.
+                vigencia y fotografía. Si tu empresa registra tu correo electrónico, lo usamos solo
+                para enviarte, a nombre de tu empresa, la liga personal donde revisas tus datos y
+                subes tu fotografía; no se imprime en el gafete.
               </li>
               <li>
                 <strong>Datos técnicos:</strong> al navegar el sitio, nuestros proveedores de

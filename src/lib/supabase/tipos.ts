@@ -139,14 +139,14 @@ isOneToOne: false
                   ]
                 },"empleados": {
                   Row: {
-                    "actualizado_en": string,"codigo": string,"creado_en": string,"datos": NonNullable<Json>,"departamento": string | null,"empresa_id": string,"estatus": string,"fecha_baja": string | null,"foto_path": string | null,"id": string,"nombre": string,"numero_empleado": string | null,"puesto": string | null,"tipo_contrato": string | null
+                    "actualizado_en": string,"codigo": string,"correo": string | null,"creado_en": string,"datos": NonNullable<Json>,"departamento": string | null,"empresa_id": string,"estatus": string,"fecha_baja": string | null,"foto_path": string | null,"id": string,"liga": string,"liga_enviada_en": string | null,"nombre": string,"numero_empleado": string | null,"puesto": string | null,"tipo_contrato": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "actualizado_en"?: string,"codigo"?: string,"creado_en"?: string,"datos"?: NonNullable<Json>,"departamento"?: string | null,"empresa_id": string,"estatus"?: string,"fecha_baja"?: string | null,"foto_path"?: string | null,"id"?: string,"nombre": string,"numero_empleado"?: string | null,"puesto"?: string | null,"tipo_contrato"?: string | null
+                    "actualizado_en"?: string,"codigo"?: string,"correo"?: string | null,"creado_en"?: string,"datos"?: NonNullable<Json>,"departamento"?: string | null,"empresa_id": string,"estatus"?: string,"fecha_baja"?: string | null,"foto_path"?: string | null,"id"?: string,"liga"?: string,"liga_enviada_en"?: string | null,"nombre": string,"numero_empleado"?: string | null,"puesto"?: string | null,"tipo_contrato"?: string | null
                   }
                   Update: {
-                    "actualizado_en"?: string,"codigo"?: string,"creado_en"?: string,"datos"?: NonNullable<Json>,"departamento"?: string | null,"empresa_id"?: string,"estatus"?: string,"fecha_baja"?: string | null,"foto_path"?: string | null,"id"?: string,"nombre"?: string,"numero_empleado"?: string | null,"puesto"?: string | null,"tipo_contrato"?: string | null
+                    "actualizado_en"?: string,"codigo"?: string,"correo"?: string | null,"creado_en"?: string,"datos"?: NonNullable<Json>,"departamento"?: string | null,"empresa_id"?: string,"estatus"?: string,"fecha_baja"?: string | null,"foto_path"?: string | null,"id"?: string,"liga"?: string,"liga_enviada_en"?: string | null,"nombre"?: string,"numero_empleado"?: string | null,"puesto"?: string | null,"tipo_contrato"?: string | null
                   }
                   Relationships: [
                     {
@@ -159,14 +159,14 @@ isOneToOne: false
                   ]
                 },"empresas": {
                   Row: {
-                    "actualizado_en": string,"creado_en": string,"creado_por": string | null,"giro": string | null,"id": string,"nombre": string,"predeterminados": NonNullable<Json>,"qr_dato": string,"qr_liga": string | null,"qr_modo": string,"qr_mostrar": (string)[],"qr_vigencia": string | null
+                    "actualizado_en": string,"creado_en": string,"creado_por": string | null,"giro": string | null,"id": string,"liga_campos": (string)[],"liga_foto": boolean,"nombre": string,"predeterminados": NonNullable<Json>,"qr_dato": string,"qr_liga": string | null,"qr_modo": string,"qr_mostrar": (string)[],"qr_vigencia": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "actualizado_en"?: string,"creado_en"?: string,"creado_por"?: string | null,"giro"?: string | null,"id"?: string,"nombre": string,"predeterminados"?: NonNullable<Json>,"qr_dato"?: string,"qr_liga"?: string | null,"qr_modo"?: string,"qr_mostrar"?: (string)[],"qr_vigencia"?: string | null
+                    "actualizado_en"?: string,"creado_en"?: string,"creado_por"?: string | null,"giro"?: string | null,"id"?: string,"liga_campos"?: (string)[],"liga_foto"?: boolean,"nombre": string,"predeterminados"?: NonNullable<Json>,"qr_dato"?: string,"qr_liga"?: string | null,"qr_modo"?: string,"qr_mostrar"?: (string)[],"qr_vigencia"?: string | null
                   }
                   Update: {
-                    "actualizado_en"?: string,"creado_en"?: string,"creado_por"?: string | null,"giro"?: string | null,"id"?: string,"nombre"?: string,"predeterminados"?: NonNullable<Json>,"qr_dato"?: string,"qr_liga"?: string | null,"qr_modo"?: string,"qr_mostrar"?: (string)[],"qr_vigencia"?: string | null
+                    "actualizado_en"?: string,"creado_en"?: string,"creado_por"?: string | null,"giro"?: string | null,"id"?: string,"liga_campos"?: (string)[],"liga_foto"?: boolean,"nombre"?: string,"predeterminados"?: NonNullable<Json>,"qr_dato"?: string,"qr_liga"?: string | null,"qr_modo"?: string,"qr_mostrar"?: (string)[],"qr_vigencia"?: string | null
                   }
                   Relationships: [
                     
@@ -334,6 +334,32 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"propuestas": {
+                  Row: {
+                    "datos": NonNullable<Json>,"empleado_id": string,"empresa_id": string,"enviado_en": string,"estado": string,"foto_path": string | null,"motivo": string | null,"resuelto_en": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "datos"?: NonNullable<Json>,"empleado_id": string,"empresa_id": string,"enviado_en"?: string,"estado"?: string,"foto_path"?: string | null,"motivo"?: string | null,"resuelto_en"?: string | null
+                  }
+                  Update: {
+                    "datos"?: NonNullable<Json>,"empleado_id"?: string,"empresa_id"?: string,"enviado_en"?: string,"estado"?: string,"foto_path"?: string | null,"motivo"?: string | null,"resuelto_en"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "propuestas_empleado_id_fkey"
+      columns: ["empleado_id"]
+isOneToOne: true
+      referencedRelation: "empleados"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "propuestas_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"stripe_clientes": {
                   Row: {

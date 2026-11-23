@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { estadosMexico, regimenesFiscales, usosCfdi } from "@/lib/cuenta/catalogos";
 import { constanciaDe, ventanaDeEmision } from "@/lib/cuenta/constancia";
+import { CLAVES_DE_CORREO, correoValido } from "@/lib/cuenta/ligas";
 import { datosVerificables, modosQr } from "@/lib/cuenta/qr";
 import { recordarEmpresa, requerirEmpresa, requerirUsuario } from "@/lib/cuenta/sesion";
 import { claveDe, normalizar } from "@/lib/cuenta/texto";
@@ -230,9 +231,13 @@ export async function guardarEmpleado(_: Resultado, d: FormData): Promise<Result
     else delete datos[c.clave];
   }
 
+  const correo = texto(d, "correo", 200);
+  if (correo && !correoValido(correo)) return { error: "Revisa el correo de la persona: no parece válido." };
+
   const estatus = ESTATUS.includes(texto(d, "estatus")) ? texto(d, "estatus") : "activo";
   const fila = {
     nombre,
+    correo: correoValido(correo),
     numero_empleado: opcional(d, "numero_empleado", 40),
     puesto: opcional(d, "puesto", 120),
     departamento: opcional(d, "departamento", 120),
@@ -317,7 +322,7 @@ export async function importarEmpleados(
 
   const { data: existentes } = await supabase
     .from("empleados")
-    .select("id, nombre, numero_empleado, datos")
+    .select("id, nombre, numero_empleado, correo, datos")
     .eq("empresa_id", empresa.id);
   type Previa = NonNullable<typeof existentes>[number];
   const porNumero = new Map<string, Previa>();
@@ -351,6 +356,12 @@ export async function importarEmpleados(
       puesto: corto(f.puesto, 120),
       departamento: corto(f.departamento, 120),
       tipo_contrato: corto(f.tipo_contrato, 60),
+      // El correo llega en su columna o, si la empresa lo tiene como campo propio, de ahí.
+      correo:
+        correoValido(f.correo) ??
+        CLAVES_DE_CORREO.map((clave) => correoValido(f.datos?.[clave])).find(Boolean) ??
+        previa?.correo ??
+        null,
       datos,
     };
     if (previa) cambios.set(previa.id, { ...fila, id: previa.id });

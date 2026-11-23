@@ -5,8 +5,8 @@ import { RUTA_ADMIN } from "@/lib/admin/ruta";
  * y cómo se guarda; nada de esto identifica a una persona.
  */
 
-/** Lo que no se cuenta: la plataforma con sesión, el panel y las rutas internas. */
-const SIN_CONTAR = ["/cuenta", RUTA_ADMIN, "/aceptar", "/api", "/auth", "/salir"];
+/** Lo que no se cuenta: la plataforma con sesión, el panel, las rutas internas y la liga de cada persona. */
+const SIN_CONTAR = ["/cuenta", RUTA_ADMIN, "/aceptar", "/api", "/auth", "/salir", "/mi-gafete"];
 
 /** Ruta bajo la que se guardan todas las verificaciones de QR, sin el código de la persona. */
 export const RUTA_QR = "/v";

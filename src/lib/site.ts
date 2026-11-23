@@ -72,8 +72,8 @@ export const legal = {
   domicilio: "Cajeme, Sonora, México",
   correo: "hola@figalo.mx",
   horario: "lunes a viernes de 09:00 a 15:00 horas (hora del centro de México)",
-  avisoVersion: "1.5",
-  avisoFecha: "2026-11-22",
+  avisoVersion: "1.6",
+  avisoFecha: "2026-11-23",
   terminosVersion: "1.1",
   terminosFecha: "2026-11-22",
   /** Días naturales, desde la entrega, para reportar un gafete con defecto. */
