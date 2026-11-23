@@ -171,6 +171,32 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"facturas": {
+                  Row: {
+                    "actualizado_en": string,"cancelada_en": string | null,"creado_en": string,"datos": NonNullable<Json>,"emitida_en": string | null,"emitida_por": string | null,"empresa_id": string,"enviada_en": string | null,"estado": string,"folio_fiscal": string | null,"pdf_ruta": string | null,"pedido_id": string,"solicitada_en": string,"solicitada_por": string | null,"xml_ruta": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actualizado_en"?: string,"cancelada_en"?: string | null,"creado_en"?: string,"datos": NonNullable<Json>,"emitida_en"?: string | null,"emitida_por"?: string | null,"empresa_id": string,"enviada_en"?: string | null,"estado"?: string,"folio_fiscal"?: string | null,"pdf_ruta"?: string | null,"pedido_id": string,"solicitada_en"?: string,"solicitada_por"?: string | null,"xml_ruta"?: string | null
+                  }
+                  Update: {
+                    "actualizado_en"?: string,"cancelada_en"?: string | null,"creado_en"?: string,"datos"?: NonNullable<Json>,"emitida_en"?: string | null,"emitida_por"?: string | null,"empresa_id"?: string,"enviada_en"?: string | null,"estado"?: string,"folio_fiscal"?: string | null,"pdf_ruta"?: string | null,"pedido_id"?: string,"solicitada_en"?: string,"solicitada_por"?: string | null,"xml_ruta"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "facturas_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "facturas_pedido_id_fkey"
+      columns: ["pedido_id"]
+isOneToOne: true
+      referencedRelation: "pedidos"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"gafetes": {
                   Row: {
                     "datos": NonNullable<Json>,"diseno_id": string | null,"emitido_en": string,"empleado_id": string,"empresa_id": string,"estado": string,"id": string,"motivo": string,"pedido_id": string | null,"tipo": string

@@ -5,8 +5,10 @@ import { Confirmar } from "@/components/cuenta/Confirmar";
 import { Bloque } from "@/components/cuenta/Entrada";
 import { EstadoPedido } from "@/components/cuenta/EstadoPedido";
 import { claseBoton, claseBotonSecundario, claseEntrada } from "@/components/cuenta/Formulario";
+import { FacturaAdmin } from "@/components/admin/FacturaAdmin";
 import { RUTA_ADMIN } from "@/lib/admin/ruta";
 import { requerirAdmin } from "@/lib/admin/sesion";
+import { eventosFactura } from "@/lib/facturas";
 import { materialPara } from "@/lib/materiales";
 import {
   type DireccionCopiada,
@@ -293,6 +295,8 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
         </Bloque>
       </div>
 
+      <FacturaAdmin pedidoId={pedido.id} />
+
       <Bloque titulo="Evidencia para una disputa">
         <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
           <div>
@@ -331,7 +335,7 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
           <ol className="space-y-2 text-sm">
             {(eventos ?? []).map((e) => (
               <li key={e.id} className="flex flex-wrap justify-between gap-x-3">
-                <span>{EVENTOS[e.tipo] ?? e.tipo}</span>
+                <span>{EVENTOS[e.tipo] ?? eventosFactura[e.tipo] ?? e.tipo}</span>
                 <span className="text-gris">{fechaHora(e.creado_en)}</span>
               </li>
             ))}

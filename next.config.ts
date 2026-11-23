@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
 const nextConfig: NextConfig = {
+  // El panel sube el PDF y el XML de cada factura (hasta 2 MB cada uno).
+  experimental: { serverActions: { bodySizeLimit: "5mb" } },
   turbopack: {
     rules: {
       "*.css": {
