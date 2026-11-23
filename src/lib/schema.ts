@@ -229,7 +229,8 @@ export const videoPitch = {
     "Cómo pasar de fotos por chat y un Excel a los gafetes y credenciales de todo tu equipo: eliges una plantilla, subes a tu equipo, cada quien manda su foto y cotizas en línea al momento.",
   duracion: "50 segundos",
   duracionIso: "PT50S",
-  publicado: "2026-11-22",
+  /** Fecha y hora de publicación, con zona horaria (Sonora, UTC-7): Google la pide completa. */
+  publicado: "2026-11-22T12:00:00-07:00",
 };
 
 export function video() {
