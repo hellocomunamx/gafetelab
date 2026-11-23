@@ -12,6 +12,7 @@ import { type MaterialId, materiales, materialPara } from "./materiales";
 import {
   cotizar,
   cotizarPaquete,
+  type Modalidad,
   normalizarCantidad,
   paqueteMaximoRenglones,
   paquetes,
@@ -21,8 +22,8 @@ import {
 } from "./precios";
 
 export type ArticuloCarrito =
-  /** Gafetes impresos desde el cotizador, al precio por cantidad, con su envío. */
-  | { id: string; tipo: "gafetes"; piezas: number; dosCaras: boolean; material: MaterialId }
+  /** Gafetes del cotizador (impresos, digitales o los dos), al precio por cantidad; los impresos con su envío. */
+  | { id: string; tipo: "gafetes"; piezas: number; modalidad: Modalidad; dosCaras: boolean; material: MaterialId }
   /** Un paquete prepagado de lista. */
   | { id: string; tipo: "paquete"; piezas: number }
   /** Un paquete prepagado a la medida. */
@@ -31,7 +32,9 @@ export type ArticuloCarrito =
 /** Lo que queda en el saldo de la empresa al pagar un artículo. */
 export type SaldoNuevo =
   | { concepto: "gafetes"; cantidad: number; dosCaras: boolean; material: MaterialId }
-  | { concepto: "envios"; cantidad: number };
+  | { concepto: "envios"; cantidad: number }
+  /** Gafetes digitales: se activan desde la plataforma. */
+  | { concepto: "digitales"; cantidad: number };
 
 export type ArticuloCotizado = {
   nombre: string;
@@ -70,7 +73,8 @@ export function limpiarArticulo(a: unknown): ArticuloCarrito | null {
   if (x.tipo === "gafetes") {
     const piezas = enteroEntre(x.piezas, 1, carritoMaximoPiezas);
     const material = materialValido(x.material);
-    return piezas && material ? { id, tipo: "gafetes", piezas, dosCaras: x.dosCaras === true, material } : null;
+    const modalidad: Modalidad = x.modalidad === "digital" || x.modalidad === "ambos" ? x.modalidad : "impreso";
+    return piezas && material ? { id, tipo: "gafetes", piezas, modalidad, dosCaras: x.dosCaras === true, material } : null;
   }
   if (x.tipo === "paquete") {
     const p = paquetes.find((q) => q.piezas === x.piezas);
@@ -94,19 +98,33 @@ export function limpiarArticulo(a: unknown): ArticuloCarrito | null {
 export function cotizarArticulo(a: ArticuloCarrito): ArticuloCotizado | null {
   if (a.tipo === "gafetes") {
     const piezas = normalizarCantidad(a.piezas);
-    const c = cotizar(piezas, { modalidad: "impreso", dosCaras: a.dosCaras, material: a.material });
+    const modalidad = a.modalidad ?? "impreso";
+    const c = cotizar(piezas, { modalidad, dosCaras: a.dosCaras, material: a.material });
+    const impreso = modalidad !== "digital";
+    const digital = modalidad !== "impreso";
+    const cuantos = piezas.toLocaleString("es-MX");
+    const uno = piezas === 1;
+    const nombre =
+      modalidad === "digital"
+        ? `${cuantos} ${uno ? "gafete digital" : "gafetes digitales"}`
+        : modalidad === "ambos"
+          ? `${cuantos} ${uno ? "gafete impreso + digital" : "gafetes impresos + digitales"}`
+          : `${cuantos} ${uno ? "gafete impreso" : "gafetes impresos"}`;
     return {
-      nombre: `${piezas.toLocaleString("es-MX")} ${piezas === 1 ? "gafete impreso" : "gafetes impresos"}`,
+      nombre,
       detalle: [
-        `${caras(a.dosCaras)}, ${nombreMaterial(a.material)}: ${pesos(c.porPieza)} por pieza`,
-        c.envioGratis ? "Incluye 1 envío gratis" : `Incluye 1 envío (${pesos(c.envio)})`,
+        impreso
+          ? `${caras(a.dosCaras)}, ${nombreMaterial(a.material)}${digital ? ", con su versión digital" : ""}: ${pesos(c.porPieza)} por pieza`
+          : `En el celular, con código QR verificable: ${pesos(c.porPieza)} por pieza, pago único`,
+        impreso ? (c.envioGratis ? "Incluye 1 envío gratis" : `Incluye 1 envío (${pesos(c.envio)})`) : "Sin envío: se activan en tu plataforma",
       ],
       piezas,
-      envios: 1,
+      envios: impreso ? 1 : 0,
       subtotal: c.subtotal + c.envio,
       saldos: [
-        { concepto: "gafetes", cantidad: piezas, dosCaras: a.dosCaras, material: a.material },
-        { concepto: "envios", cantidad: 1 },
+        ...(impreso ? [{ concepto: "gafetes" as const, cantidad: piezas, dosCaras: a.dosCaras, material: a.material }] : []),
+        ...(digital ? [{ concepto: "digitales" as const, cantidad: piezas }] : []),
+        ...(impreso ? [{ concepto: "envios" as const, cantidad: 1 }] : []),
       ],
     };
   }

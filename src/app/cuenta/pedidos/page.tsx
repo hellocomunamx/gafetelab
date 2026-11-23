@@ -38,13 +38,14 @@ export default async function Pedidos() {
           </Link>
         ) : null}
       </div>
-      {enSaldo.gafetes || enSaldo.envios ? (
+      {enSaldo.gafetes || enSaldo.envios || enSaldo.digitales ? (
         <section className="rounded-tarjeta border border-linea bg-white p-5 sm:p-6">
           <h2 className="text-xl font-extrabold">Tu saldo prepagado</h2>
           <p className="mt-2 font-titulos text-3xl font-extrabold">
             {enSaldo.gafetes.toLocaleString("es-MX")} {enSaldo.gafetes === 1 ? "gafete" : "gafetes"}
             <span className="ml-2 text-lg font-semibold text-gris">
               y {enSaldo.envios} {enSaldo.envios === 1 ? "envío" : "envíos"}
+              {enSaldo.digitales ? `, más ${enSaldo.digitales.toLocaleString("es-MX")} ${enSaldo.digitales === 1 ? "gafete digital" : "gafetes digitales"}` : ""}
             </span>
           </p>
           <p className="mt-1 text-sm text-gris">

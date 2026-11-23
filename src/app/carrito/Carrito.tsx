@@ -183,9 +183,11 @@ export function Carrito({ estado }: { estado: EstadoCompra }) {
         <p className="mt-1 font-titulos text-3xl font-extrabold">
           {c.piezas.toLocaleString("es-MX")} {c.piezas === 1 ? "gafete" : "gafetes"}
         </p>
-        <p className="text-sm text-gris">
-          y {c.envios} {c.envios === 1 ? "envío" : "envíos"} incluidos
-        </p>
+        {c.envios ? (
+          <p className="text-sm text-gris">
+            y {c.envios} {c.envios === 1 ? "envío" : "envíos"} incluidos
+          </p>
+        ) : null}
         <dl className="mt-4 space-y-2 text-sm">
           <div className="flex justify-between gap-3">
             <dt>Subtotal</dt>
