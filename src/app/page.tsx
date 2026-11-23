@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BotonAgregar } from "@/components/carrito/BotonAgregar";
 import { Afiliados } from "@/components/Afiliados";
 import { Faq } from "@/components/Faq";
 import { GruposFunciones, MuyPronto, Palomita, SinCostoExtra } from "@/components/Funciones";
@@ -223,6 +224,7 @@ export default function Inicio() {
               <p className="mt-1 text-gris">{pesos(p.porPieza)} por pieza</p>
               <p className="text-gris">{p.envios} envíos incluidos</p>
               <p className="mt-3 font-titulos text-xl font-extrabold">{pesos(precioPaquete(p))}</p>
+              <BotonAgregar articulo={{ tipo: "paquete", piezas: p.piezas }} texto="Lo quiero" irAlCarrito className="mt-4" />
             </li>
           ))}
         </ul>

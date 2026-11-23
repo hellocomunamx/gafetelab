@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Formulario } from "@/components/cuenta/Formulario";
 import { Contenedor } from "@/components/ui";
 import { miAceptacion, usuarioDeSesion } from "@/lib/cuenta/sesion";
+import { destinoSeguro } from "@/lib/cuenta/siguiente";
 import { afiliados, site } from "@/lib/site";
 import { aceptarTerminos } from "./acciones";
 
@@ -12,9 +13,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function Aceptar() {
+export default async function Aceptar({ searchParams }: { searchParams: Promise<{ siguiente?: string }> }) {
+  const siguiente = destinoSeguro((await searchParams).siguiente);
   const { usuario } = await usuarioDeSesion();
-  if (!(await miAceptacion()).pendiente) redirect("/cuenta");
+  if (!(await miAceptacion()).pendiente) redirect(siguiente ?? "/cuenta");
 
   return (
     <Contenedor className="py-14 sm:py-20">
@@ -28,6 +30,7 @@ export default async function Aceptar() {
         </p>
         <div className="mt-8 rounded-tarjeta border border-linea p-6 sm:p-7">
           <Formulario accion={aceptarTerminos} boton="Aceptar y continuar">
+            {siguiente ? <input type="hidden" name="siguiente" value={siguiente} /> : null}
             <label className="flex cursor-pointer items-start gap-3">
               <input type="checkbox" name="acepto" required className="mt-1 size-5 shrink-0 accent-tinta" />
               <span>

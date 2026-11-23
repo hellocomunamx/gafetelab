@@ -40,7 +40,7 @@ export default async function Pedidos({ searchParams }: { searchParams: Promise<
   const [{ data: todos }, { data: empresas }] = await Promise.all([
     servicio
       .from("pedidos")
-      .select("id, folio, empresa_id, estado, piezas, total, metodo, primer_pedido, alertas, revisado_en, disputa, creado_en, pagado_en")
+      .select("id, folio, tipo, empresa_id, estado, piezas, total, metodo, primer_pedido, alertas, revisado_en, disputa, creado_en, pagado_en")
       .order("creado_en", { ascending: false })
       .limit(2000),
     servicio.from("empresas").select("id, nombre").limit(5000),
@@ -113,6 +113,7 @@ export default async function Pedidos({ searchParams }: { searchParams: Promise<
                     <Link href={`${RUTA_ADMIN}/pedidos/${p.id}`} className="font-semibold text-rojo underline underline-offset-4">
                       {p.folio}
                     </Link>
+                    {p.tipo === "prepago" ? <span className="ml-2 text-xs text-gris">Compra prepagada</span> : null}
                     {p.disputa === "abierta" ? <span className={marca}>Disputa abierta</span> : null}
                     {p.estado === "pagado" && requiereRevision(p) && !p.revisado_en ? <span className={marca}>Revisar antes de producir</span> : null}
                   </th>

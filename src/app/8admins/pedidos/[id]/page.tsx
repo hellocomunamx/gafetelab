@@ -19,7 +19,7 @@ import {
   requiereRevision,
   sigueEnGracia,
 } from "@/lib/pedidos/reglas";
-import { aprobacionDe, cobrarAutorizados } from "@/lib/pedidos/servidor";
+import { aprobacionDe, cobrarAutorizados, articulosDe, conceptosDe } from "@/lib/pedidos/servidor";
 import { pesos } from "@/lib/precios";
 import { cancelarPedidoAdmin, entregarPedido, enviarPedido, guardarNotas, producirPedido, revisarPedido } from "../acciones";
 
@@ -49,6 +49,8 @@ const EVENTOS: Record<string, string> = {
   reembolso_parcial: "Se devolvió una parte del pago",
   disputa_abierta: "El banco abrió una disputa",
   disputa_cerrada: "Se cerró la disputa",
+  saldo_creado: "Los gafetes de la compra quedaron en el saldo de la empresa",
+  saldo_liberado: "El saldo que usaba el pedido regresó a la empresa",
 };
 const PAGADOS = ["pagado", "en_produccion", "enviado", "entregado"];
 
@@ -74,6 +76,9 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
   const personas = (gafetes ?? [])
     .map((g) => ({ id: g.id, motivo: g.motivo, ...(g.datos as unknown as GafeteCopiado) }))
     .sort((a, b) => (a.nombre ?? "").localeCompare(b.nombre ?? "", "es"));
+  const prepago = pedido.tipo === "prepago";
+  const conceptos = conceptosDe(pedido);
+  const articulos = articulosDe(pedido);
   const faltaRevisar = requiereRevision(pedido) && !pedido.revisado_en;
   const pagado = PAGADOS.includes(pedido.estado);
   const sinCobrar = ["por_pagar", "pago_en_proceso", "autorizado"].includes(pedido.estado);
@@ -85,7 +90,9 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
         <Link href={`${RUTA_ADMIN}/pedidos`} className="underline">Pedidos</Link> / {pedido.folio}
       </p>
       <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-3xl font-extrabold">Pedido {pedido.folio}</h1>
+        <h1 className="text-3xl font-extrabold">
+          {prepago ? "Compra prepagada" : "Pedido"} {pedido.folio}
+        </h1>
         <EstadoPedido valor={pedido.estado} />
       </div>
       <p className="text-gris">
@@ -134,7 +141,12 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
               : "Ya pasaron los minutos de gracia y el cargo no se ha podido hacer. Vuelve a cargar la página; si sigue igual, revisa el pago en Stripe."}
           </p>
         ) : null}
-        {pedido.estado === "pagado" ? (
+        {prepago && pedido.estado === "pagado" ? (
+          <p className="text-sm">
+            Compra del carrito pagada: sus gafetes y envíos ya están en el saldo de la empresa. No hay nada que producir; se imprimen
+            cuando la empresa haga un pedido con su equipo y su diseño.
+          </p>
+        ) : pedido.estado === "pagado" ? (
           <div className="flex flex-wrap items-center gap-3">
             {faltaRevisar ? (
               <form action={revisarPedido}>
@@ -205,20 +217,41 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
       <div className="grid gap-5 lg:grid-cols-2">
         <Bloque titulo="Pedido">
           <dl className="space-y-2 text-sm">
-            <div className="flex justify-between gap-3">
-              <dt>
-                {pedido.piezas.toLocaleString("es-MX")} × {pesos(Number(pedido.por_pieza))}
-                <span className="block text-gris">
+            {prepago ? (
+              articulos.map((a, i) => (
+                <div key={i} className="flex justify-between gap-3">
+                  <dt>
+                    {a.nombre}
+                    {a.detalle.map((d) => (
+                      <span key={d} className="block text-gris">{d}</span>
+                    ))}
+                  </dt>
+                  <dd className="font-semibold">{pesos(a.subtotal)}</dd>
+                </div>
+              ))
+            ) : (
+              <>
+                {(conceptos ?? [{ nombre: "Gafetes impresos", cantidad: pedido.piezas, precio: Number(pedido.por_pieza) }]).map((x) => (
+                  <div key={x.nombre} className="flex justify-between gap-3">
+                    <dt>
+                      {x.nombre}
+                      <span className="block text-gris">
+                        {x.cantidad.toLocaleString("es-MX")} × {x.precio ? pesos(x.precio) : "del saldo prepagado"}
+                      </span>
+                    </dt>
+                    <dd className="font-semibold">{pesos(x.cantidad * x.precio)}</dd>
+                  </div>
+                ))}
+                <p className="text-gris">
                   {pedido.dos_caras ? "Frente y vuelta" : "Una cara"}
                   {material ? `, ${material.nombre}` : ""}
                   {pedido.fuente === "listos" ? ", gafetes que la empresa subió ya terminados" : ""}
-                </span>
-              </dt>
-              <dd className="font-semibold">{pesos(Number(pedido.subtotal))}</dd>
-            </div>
+                </p>
+              </>
+            )}
             <div className="flex justify-between gap-3">
               <dt>Envío</dt>
-              <dd>{Number(pedido.envio) ? pesos(Number(pedido.envio)) : "Gratis"}</dd>
+              <dd>{Number(pedido.envio) ? pesos(Number(pedido.envio)) : pedido.envio_de_saldo ? "Del saldo prepagado" : prepago ? "Incluido arriba" : "Gratis"}</dd>
             </div>
             <div className="flex justify-between gap-3">
               <dt>IVA</dt>
@@ -286,8 +319,10 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
           </div>
         </dl>
         <p className="mt-3 text-sm text-gris">
-          La empresa marcó la casilla «Revisé la vista previa de mis gafetes y credenciales, los datos son correctos y apruebo que se
-          impriman tal como se ven». Su constancia fiscal aprobada y la guía de envío completan la evidencia.
+          {prepago
+            ? "Compra hecha desde el carrito con una cuenta que aceptó los términos vigentes. No lleva vista previa: los gafetes se aprueban al pedirlos."
+            : null}
+          {prepago ? null : "La empresa marcó la casilla «Revisé la vista previa de mis gafetes y credenciales, los datos son correctos y apruebo que se impriman tal como se ven». Su constancia fiscal aprobada y la guía de envío completan la evidencia."}
         </p>
       </Bloque>
 
@@ -316,6 +351,7 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
         </Bloque>
       </div>
 
+      {personas.length ? (
       <Bloque titulo={`${personas.length === 1 ? "1 gafete" : `${personas.length.toLocaleString("es-MX")} gafetes`}`}>
         <ul className="max-h-80 divide-y divide-linea overflow-y-auto text-sm">
           {personas.map((p) => (
@@ -328,6 +364,7 @@ export default async function Pedido({ params }: { params: Promise<{ id: string 
           ))}
         </ul>
       </Bloque>
+      ) : null}
     </div>
   );
 }

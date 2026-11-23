@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { usuarioDeSesion } from "@/lib/cuenta/sesion";
+import { destinoSeguro } from "@/lib/cuenta/siguiente";
 import type { Resultado } from "@/lib/cuenta/tipos";
 import { legal } from "@/lib/site";
 
@@ -22,5 +23,5 @@ export async function aceptarTerminos(_: Resultado, d: FormData): Promise<Result
     await supabase.from("perfiles").upsert({ id: usuario.id, publicidad: true });
   }
   revalidatePath("/cuenta", "layout");
-  redirect("/cuenta");
+  redirect(destinoSeguro(d.get("siguiente")) ?? "/cuenta");
 }

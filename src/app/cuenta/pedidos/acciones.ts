@@ -17,8 +17,8 @@ import {
   sigueEnGracia,
   soloTransferencia,
 } from "@/lib/pedidos/reglas";
-import { abrirCobro, anotar, cancelarAutorizado, cerrarCobro } from "@/lib/pedidos/servidor";
-import { cotizar } from "@/lib/precios";
+import { abrirCobro, anotar, cancelarAutorizado, cerrarCobro, liberarSaldo, marcarPagado, saldoDe } from "@/lib/pedidos/servidor";
+import { cotizarConSaldo } from "@/lib/pedidos/saldo";
 import { stripeActivo } from "@/lib/stripe";
 import { clienteServicio } from "@/lib/supabase/publico";
 import type { Json } from "@/lib/supabase/tipos";
@@ -44,7 +44,7 @@ export type EntradaPedido = {
  * liga de Stripe para pagarlo. Nada de lo que manda el navegador se da por
  * bueno: personas, precio y permisos se vuelven a calcular aquí.
  */
-export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: string; pedido?: string; error?: string }> {
+export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: string; pedido?: string; pagado?: boolean; error?: string }> {
   const { supabase, usuario, empresa, administra } = await requerirEmpresa();
   if (!administra) return { error: SOLO_ADMIN };
   const servicio = clienteServicio();
@@ -78,7 +78,7 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
       ? supabase.from("datos_fiscales").select("*").eq("id", entrada.facturacion).eq("empresa_id", empresa.id).maybeSingle()
       : Promise.resolve({ data: null }),
     servicio.from("pedidos").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).eq("estado", "por_pagar"),
-    servicio.from("pedidos").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).not("pagado_en", "is", null),
+    servicio.from("pedidos").select("id", { count: "exact", head: true }).eq("empresa_id", empresa.id).eq("tipo", "impresion").not("pagado_en", "is", null),
     miAceptacion(),
   ]);
   if (!direccion) return { error: "Elige a dónde enviamos tu pedido." };
@@ -88,7 +88,8 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
   }
 
   const dosCaras = llevaVuelta(fuente, ids);
-  const c = cotizar(ids.length, { modalidad: "impreso", dosCaras, material: material.id as MaterialId });
+  // Primero se usa el saldo prepagado de la empresa; solo se cobra lo que falte.
+  const c = cotizarConSaldo(ids.length, { dosCaras, material: material.id as MaterialId }, await saldoDe(servicio, empresa.id));
   const h = await headers();
   const aprobacion: AprobacionPedido = {
     vista_previa: true,
@@ -141,6 +142,9 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
         ? ({ nombre: fuente.fila.nombre, orientacion: fuente.fila.orientacion, frente: fuente.fila.frente, vuelta: fuente.fila.vuelta } as Json)
         : null,
       por_pieza: c.porPieza,
+      conceptos: c.conceptos as unknown as Json,
+      gafetes_de_saldo: c.deSaldo,
+      envio_de_saldo: c.envioDeSaldo,
       subtotal: c.subtotal,
       envio: c.envio,
       iva: c.iva,
@@ -155,6 +159,15 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
     .select("*")
     .single();
   if (error || !pedido) return { error: "No pudimos guardar tu pedido. Intenta de nuevo." };
+
+  // Se aparta el saldo, todo o nada. Si otro pedido lo usó al mismo tiempo, se deshace.
+  if (c.plan.length) {
+    const { error: sinSaldo } = await servicio.rpc("usar_saldo", { p_pedido: pedido.id, p_plan: c.plan as unknown as Json });
+    if (sinSaldo) {
+      await servicio.from("pedidos").delete().eq("id", pedido.id);
+      return { error: "Tu saldo cambió mientras hacías el pedido. Vuelve a cargar la página." };
+    }
+  }
 
   // Los gafetes del pedido, con la copia de cada persona. Quien ya tuvo un gafete impreso lleva una reposición.
   const { data: previos } = await servicio
@@ -182,8 +195,20 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
       return { error: "No pudimos guardar tu pedido. Intenta de nuevo." };
     }
   }
-  await anotar(servicio, pedido.id, "creado", { piezas: c.piezas, total: c.total, fuente: fuente.id === FUENTE_LISTOS ? "listos" : fuente.nombre }, usuario.id);
+  await anotar(
+    servicio,
+    pedido.id,
+    "creado",
+    { piezas: c.piezas, total: c.total, de_saldo: c.deSaldo, envio_de_saldo: c.envioDeSaldo, fuente: fuente.id === FUENTE_LISTOS ? "listos" : fuente.nombre },
+    usuario.id,
+  );
   revalidatePath("/cuenta", "layout");
+
+  // Cubierto completo con saldo: no hay nada que cobrar.
+  if (c.total === 0) {
+    await marcarPagado(servicio, pedido, { metodo: "saldo", pago: null });
+    return { pedido: pedido.id, pagado: true };
+  }
 
   try {
     return { url: await abrirCobro(servicio, pedido, empresa, usuario.email ?? null) };
@@ -233,6 +258,7 @@ export async function cancelarPedido(d: FormData) {
       .select("id");
     if (movido?.length) {
       await servicio.from("gafetes").update({ estado: "cancelado" }).eq("pedido_id", id);
+      await liberarSaldo(servicio, id);
       await anotar(servicio, id, "cancelado", { por: "empresa" }, usuario.id);
     }
   }
