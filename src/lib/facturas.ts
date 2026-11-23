@@ -6,7 +6,6 @@
 import { materialPara } from "@/lib/materiales";
 import type { FacturacionCopiada } from "@/lib/pedidos/reglas";
 import { regimenesFiscales, usosCfdi } from "@/lib/cuenta/catalogos";
-import { site } from "@/lib/site";
 
 export type EstadoFactura = "por_emitir" | "emitida" | "cancelada";
 export const estadosFactura: Record<EstadoFactura, string> = {
