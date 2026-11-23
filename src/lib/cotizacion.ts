@@ -89,7 +89,7 @@ export function condiciones(d: DatosCotizacion): string[] {
   }
   lista.push("Pago único por gafete, impreso o digital: no hay suscripción, mensualidades ni cobros recurrentes.");
   lista.push(
-    `Precios en pesos mexicanos. La factura (CFDI) se pide dentro de los ${site.plazoFacturaDias} días posteriores al pedido y no se puede modificar una vez emitida.`,
+    `Precios en pesos mexicanos. La factura (CFDI) se pide ${site.plazoFactura} y no se puede modificar una vez emitida.`,
   );
   lista.push(
     `Cotización vigente hasta el ${fechaLarga(vigenciaHasta(d.fecha))}.`,

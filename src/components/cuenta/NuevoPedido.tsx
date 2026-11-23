@@ -260,7 +260,7 @@ export function NuevoPedido({
             ))}
             <button type="button" aria-pressed={!facturacion} onClick={() => setFacturacion("")} className={tarjeta(!facturacion)}>
               <span className="block font-semibold">No necesito factura</span>
-              <span className="block text-gris">Puedes pedirla hasta {site.plazoFacturaDias} días después del pedido.</span>
+              <span className="block text-gris">Puedes pedirla después, {site.plazoFactura}.</span>
             </button>
           </div>
           <p className="mt-3 text-sm">

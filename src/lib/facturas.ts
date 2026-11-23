@@ -32,10 +32,17 @@ export const eventosFactura: Record<string, string> = {
   factura_cancelada: "Marcaste la factura como cancelada en el SAT",
 };
 
-/** Hasta cuándo puede pedir factura (o cambiar sus datos) la empresa. */
+/** Sonora no cambia de horario: siempre UTC-7. */
+const SONORA_MS = 7 * 60 * 60 * 1000;
+
+/**
+ * Hasta cuándo puede pedir factura (o cambiar sus datos) la empresa: el último
+ * instante del mes, en hora de Sonora, en que pagó el pedido (o lo hizo, si no
+ * lo ha pagado). Después, la venta va en la factura global de ese mes.
+ */
 export function plazoFactura(pedido: { pagado_en: string | null; creado_en: string }): Date {
-  const desde = new Date(pedido.pagado_en ?? pedido.creado_en);
-  return new Date(desde.getTime() + site.plazoFacturaDias * 24 * 60 * 60 * 1000);
+  const local = new Date(new Date(pedido.pagado_en ?? pedido.creado_en).getTime() - SONORA_MS);
+  return new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth() + 1, 1) + SONORA_MS - 1);
 }
 export const dentroDelPlazo = (pedido: { pagado_en: string | null; creado_en: string }) => plazoFactura(pedido).getTime() > Date.now();
 

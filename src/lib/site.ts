@@ -25,8 +25,11 @@ export const site = {
   entrega: "14 días",
   /** Días que se respeta el precio de una cotización descargada o enviada. */
   vigenciaCotizacionDias: 15,
-  /** Días después del pedido en los que todavía se puede pedir la factura. */
-  plazoFacturaDias: 60,
+  /**
+   * Hasta cuándo se puede pedir la factura: el mismo mes calendario en que se paga
+   * el pedido. Al cerrar el mes, lo que no pidió factura va en la factura global.
+   */
+  plazoFactura: "dentro del mismo mes en que pagas tu pedido",
   /** Antigüedad máxima, en meses, de la Constancia de Situación Fiscal que se pide a cada empresa. */
   constanciaMeses: 3,
   /** Fecha de la última revisión de contenido (se muestra y va al sitemap). */
@@ -97,8 +100,8 @@ export const legal = {
   horario: "lunes a viernes de 09:00 a 15:00 horas (hora del centro de México)",
   avisoVersion: "1.6",
   avisoFecha: "2026-11-23",
-  terminosVersion: "1.1",
-  terminosFecha: "2026-11-22",
+  terminosVersion: "1.2",
+  terminosFecha: "2026-11-23",
   /** Días naturales, desde la entrega, para reportar un gafete con defecto. */
   plazoDefectosDias: 10,
 } as const;

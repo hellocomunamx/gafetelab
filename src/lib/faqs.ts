@@ -141,7 +141,7 @@ export const faqsGenerales: Faq[] = [
   },
   {
     pregunta: "¿Dan factura?",
-    respuesta: `Sí. Al hacer tu pedido capturas tus datos fiscales y recibes tu factura (CFDI) por correo. El RFC y la razón social de la factura son los de la ${constancia.nombre} de tu empresa, la misma que aparece en los gafetes. Puedes pedirla dentro de los ${site.plazoFacturaDias} días posteriores a tu pedido. Solo te pedimos darles una última revisada a tus datos fiscales antes de confirmar: una vez emitida, la factura ya no se puede cambiar, y queremos que te llegue bien a la primera.`,
+    respuesta: `Sí. Al hacer tu pedido capturas tus datos fiscales y recibes tu factura (CFDI) por correo. El RFC y la razón social de la factura son los de la ${constancia.nombre} de tu empresa, la misma que aparece en los gafetes. Puedes pedirla al hacer tu pedido o después, ${site.plazoFactura}. Solo te pedimos darles una última revisada a tus datos fiscales antes de confirmar: una vez emitida, la factura ya no se puede cambiar, y queremos que te llegue bien a la primera.`,
   },
   {
     pregunta: "¿Cuál es su política de devoluciones?",

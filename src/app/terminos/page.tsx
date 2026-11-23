@@ -158,8 +158,10 @@ export default function Terminos() {
               </li>
               <li>
                 Emitimos factura electrónica (CFDI) con los datos fiscales que captures. Puedes
-                pedirla dentro de los {site.plazoFacturaDias} días posteriores a tu pedido. Revisa
-                bien tus datos: una factura ya emitida no se puede modificar.
+                pedirla al hacer tu pedido o después, {site.plazoFactura} (hora de Sonora). Al
+                cerrar ese mes, las ventas sin factura van en nuestra factura global y ya no se
+                pueden facturar por separado. Revisa bien tus datos: una factura ya emitida no se
+                puede modificar.
               </li>
             </ul>
           </Apartado>

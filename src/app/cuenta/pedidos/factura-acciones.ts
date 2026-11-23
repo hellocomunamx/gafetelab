@@ -41,7 +41,9 @@ export async function pedirFactura(_previo: Resultado, d: FormData): Promise<Res
   if (pedido.estado === "cancelado" || pedido.estado === "reembolsado") return { error: "Este pedido se canceló, así que no lleva factura." };
   if (factura && factura.estado !== "por_emitir") return { error: "Esta factura ya se emitió y no se puede cambiar." };
   if (!dentroDelPlazo(pedido)) {
-    return { error: `Pasaron más de ${site.plazoFacturaDias} días desde tu pedido. Escríbenos a ${site.correo} y vemos cómo ayudarte.` };
+    return {
+      error: `La factura se pide ${site.plazoFactura}, y ese mes ya cerró: la venta quedó en nuestra factura global. Escríbenos a ${site.correo} y vemos cómo ayudarte.`,
+    };
   }
   if (!fiscales) return { error: "Esos datos de facturación ya no existen. Vuelve a cargar la página." };
 

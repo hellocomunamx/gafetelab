@@ -134,8 +134,8 @@ export default async function Datos({
       <section id="facturacion" className="scroll-mt-28 rounded-tarjeta border border-linea bg-white p-5 sm:p-6">
         <h2 className="mb-4 text-xl font-extrabold">Datos de facturación</h2>
         <p className="mb-5 rounded-tarjeta-chica bg-resaltador/30 p-4 text-sm">
-          <strong>Revisa bien tus datos.</strong> La factura (CFDI) se pide dentro de los{" "}
-          {site.plazoFacturaDias} días posteriores a tu pedido y, una vez emitida, no se puede
+          <strong>Revisa bien tus datos.</strong> La factura (CFDI) se pide{" "}
+          {site.plazoFactura} y, una vez emitida, no se puede
           modificar. Captúralos tal como aparecen en tu{" "}
           <Link href="/cuenta/constancia" className="underline">Constancia de Situación Fiscal</Link>.
         </p>

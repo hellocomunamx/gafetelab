@@ -111,7 +111,7 @@ export async function FacturaDelPedido({ pedido, datos }: Props) {
       <p>Sin factura.</p>
       {forma ? (
         <>
-          <p className="text-gris">¿La necesitas? Puedes pedirla hasta el {fechaLarga(plazoFactura(pedido).toISOString())}.</p>
+          <p className="text-gris">¿La necesitas? Puedes pedirla hasta el {fechaLarga(plazoFactura(pedido).toISOString())}, último día del mes en que se pagó.</p>
           {forma}
         </>
       ) : null}

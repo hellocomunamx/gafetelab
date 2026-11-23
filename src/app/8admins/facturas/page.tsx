@@ -134,8 +134,8 @@ export default async function Facturas({ searchParams }: { searchParams: Promise
         meses.length ? (
           <div className="space-y-5">
             <p className="max-w-2xl text-sm text-gris">
-              Pedidos cobrados que no pidieron factura. Van en la factura global a «Público en general» (RFC XAXX010101000) de cada mes. Los
-              que todavía están dentro del plazo aún pueden pedir la suya.
+              Pedidos cobrados que no pidieron factura. Van en la factura global a «Público en general» (RFC XAXX010101000) de cada mes. El mes
+              en curso todavía puede cambiar: sus pedidos pueden pedir factura hasta el último día.
             </p>
             {meses.map((m) => (
               <Bloque key={m.clave} titulo={nombreMes(m.clave)}>
