@@ -8,7 +8,7 @@ import type { Database } from "@/lib/supabase/tipos";
  * constancia fiscal, INE con una prueba del negocio o correo de la empresa.
  */
 
-export type EstadoConstancia = "pendiente" | "aprobada" | "rechazada";
+export type EstadoConstancia = "pendiente" | "aprobada" | "rechazada" | "retirada";
 export type Constancia = Database["public"]["Tables"]["constancias"]["Row"];
 
 export type MetodoVerificacion = "constancia" | "ine" | "correo";

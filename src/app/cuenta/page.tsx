@@ -78,17 +78,19 @@ export default async function Resumen() {
           ) : null}
         </p>
       </div>
-      {!constancia || constancia.estado === "rechazada" ? (
+      {!constancia || constancia.estado === "rechazada" || constancia.estado === "retirada" ? (
         <div role={constancia ? "alert" : undefined} className="rounded-tarjeta bg-resaltador/30 p-4 text-sm">
           <p>
             <strong>
-              {constancia
-                ? "No pudimos aceptar la verificación de tu empresa."
-                : "Falta verificar tu empresa."}
+              {constancia?.estado === "retirada"
+                ? "Quitamos la verificación de tu empresa: no puedes hacer pedidos nuevos hasta verificarla otra vez."
+                : constancia
+                  ? "No pudimos aceptar la verificación de tu empresa."
+                  : "Falta verificar tu empresa."}
             </strong>{" "}
-            {constancia ? (constancia.motivo ?? "") : "Lo necesitas antes de tu primer pedido. Con RFC o sin RFC: tú eliges cómo."}{" "}
+            {constancia ? (constancia.motivo ? `Motivo: ${constancia.motivo}` : "") : "Lo necesitas antes de tu primer pedido. Con RFC o sin RFC: tú eliges cómo."}{" "}
             <Link href="/cuenta/verificacion" className="font-semibold underline underline-offset-4">
-              {constancia ? "Intentar de nuevo" : "Verificarla ahora"}
+              {constancia?.estado === "retirada" ? "Verificarla otra vez" : constancia ? "Intentar de nuevo" : "Verificarla ahora"}
             </Link>
           </p>
           <PorQueConstancia className="mt-2" />

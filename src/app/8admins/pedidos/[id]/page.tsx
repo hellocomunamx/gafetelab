@@ -147,6 +147,12 @@ export default async function Pedido({
           usar esos nombres.
         </p>
       ) : null}
+      {verificada?.estado === "retirada" && ["pagado", "en_produccion"].includes(pedido.estado) ? (
+        <p role="alert" className="rounded-tarjeta border border-rojo/40 bg-white p-4 text-sm">
+          <strong className="text-rojo-oscuro">Le quitaste la verificación a esta empresa.</strong> Este pedido ya estaba
+          pagado: decide si se produce, se cancela o se devuelve antes de seguir.
+        </p>
+      ) : null}
       {pedido.primer_pedido && pagado ? (
         <p className="rounded-tarjeta bg-resaltador/30 p-4 text-sm">
           <strong>Es el primer pedido de esta empresa.</strong> Revisa que los gafetes correspondan a la empresa que verificó
