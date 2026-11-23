@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
-import { carritoMaximoPiezas } from "@/lib/carrito";
+import { carritoMaximoPiezas, ventaDigitalActiva } from "@/lib/carrito";
 import { condiciones, nombreArchivo, nuevoFolio, renglones, totales } from "@/lib/cotizacion";
 import { grosorTexto, type MaterialId, materiales } from "@/lib/materiales";
 import {
@@ -314,8 +314,11 @@ export function Cotizador() {
         </div>
 
         <div className="mt-6 border-t border-linea pt-5">
-          {false ? (
-            null          ) : c.piezas > carritoMaximoPiezas ? (
+          {c.modalidad !== "impreso" && !ventaDigitalActiva ? (
+            <p className="rounded-tarjeta-chica bg-papel px-4 py-3 text-sm">
+              El gafete digital se activa desde tu plataforma, junto con tus gafetes impresos. Por ahora, en el carrito puedes comprar los impresos.
+            </p>
+          ) : c.piezas > carritoMaximoPiezas ? (
             <p className="rounded-tarjeta-chica bg-papel px-4 py-3 text-sm">
               En línea se compran hasta {carritoMaximoPiezas.toLocaleString("es-MX")} gafetes a la vez. Agrega dos compras al carrito o descarga la cotización.
             </p>

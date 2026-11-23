@@ -52,6 +52,12 @@ export const carritoMaximoArticulos = 12;
 /** Gafetes por compra: el mismo tope que un pedido. */
 export const carritoMaximoPiezas = 5000;
 
+/**
+ * Venta de gafetes digitales en el carrito. Apagada mientras el gafete digital
+ * no se pueda activar en la plataforma: se enciende con NEXT_PUBLIC_VENTA_DIGITAL=1.
+ */
+export const ventaDigitalActiva = process.env.NEXT_PUBLIC_VENTA_DIGITAL === "1";
+
 const caras = (dosCaras: boolean) => (dosCaras ? "Frente y vuelta" : "Una cara");
 const nombreMaterial = (id: MaterialId) => materialPara(id).nombre;
 const enteroEntre = (v: unknown, min: number, max: number) => {
@@ -74,6 +80,8 @@ export function limpiarArticulo(a: unknown): ArticuloCarrito | null {
     const piezas = enteroEntre(x.piezas, 1, carritoMaximoPiezas);
     const material = materialValido(x.material);
     const modalidad: Modalidad = x.modalidad === "digital" || x.modalidad === "ambos" ? x.modalidad : "impreso";
+    // Con la venta de digitales apagada, un artículo digital no entra al carrito ni se cobra.
+    if (modalidad !== "impreso" && !ventaDigitalActiva) return null;
     return piezas && material ? { id, tipo: "gafetes", piezas, modalidad, dosCaras: x.dosCaras === true, material } : null;
   }
   if (x.tipo === "paquete") {
