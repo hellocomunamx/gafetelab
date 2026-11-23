@@ -57,7 +57,7 @@ async function mandar(destinos: Destino[]): Promise<Resultado & { enviados?: num
   const { supabase, empresa, usuario } = await requerirEmpresa();
   if (!correoActivo()) return { error: "El envío por correo todavía no está activo. Mientras, copia la liga o mándala por WhatsApp." };
   if (!puedePedir(await constanciaDe(supabase, empresa.id))) {
-    return { error: "Para mandar correos desde la plataforma necesitas tu constancia aprobada. Mientras, copia la liga o mándala por WhatsApp." };
+    return { error: "Para mandar correos desde la plataforma necesitas tu empresa verificada. Mientras, copia la liga o mándala por WhatsApp." };
   }
   const conCorreo = destinos.filter((p): p is Destino & { correo: string } => Boolean(p.correo)).slice(0, CORREOS_POR_ENVIO);
   if (!conCorreo.length) return { error: "No hay a quién mandarle: falta su correo." };

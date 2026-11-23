@@ -16,7 +16,7 @@ import { modalidadesDetalle } from "@/lib/plataforma";
 import { envio, notaIva, paqueteVigenciaMeses, paquetes, pesos, precioMinimo, precioPaquete } from "@/lib/precios";
 import { paginaFaq, producto, video, videoPitch } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
-import { constancia, entregaTexto, site } from "@/lib/site";
+import { entregaTexto, site, verificacion } from "@/lib/site";
 
 export const metadata = metadatos({
   titulo: `${site.titulo} | ${site.nombre}`,
@@ -158,10 +158,9 @@ export default function Inicio() {
           ))}
         </ol>
         <p className="mt-6 max-w-3xl text-sm text-gris">
-          <strong className="text-tinta">Antes de empezar:</strong> {constancia.corto} Así comprobamos
-          que los gafetes son de tu propia empresa.{" "}
-          <Link href="/como-funciona#constancia" className="underline underline-offset-4">
-            Por qué la pedimos
+          <strong className="text-tinta">Antes de empezar:</strong> {verificacion.corto}{" "}
+          <Link href="/como-funciona#verificacion" className="underline underline-offset-4">
+            Por qué lo pedimos
           </Link>
         </p>
       </Seccion>

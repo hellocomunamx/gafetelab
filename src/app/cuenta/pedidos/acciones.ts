@@ -50,7 +50,7 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
   const servicio = clienteServicio();
   if (!servicio || !stripeActivo()) return { error: SIN_ACTIVAR };
   if (!puedePedir(await constanciaDe(supabase, empresa.id))) {
-    return { error: "Para hacer tu primer pedido necesitamos aprobar la Constancia de Situación Fiscal de tu empresa." };
+    return { error: "Para hacer tu primer pedido necesitamos verificar tu empresa. Hazlo en Verificación: con RFC o sin RFC." };
   }
   if (entrada?.aprobado !== true) return { error: "Confirma que revisaste la vista previa de tus gafetes." };
 

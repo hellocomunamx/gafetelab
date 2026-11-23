@@ -21,7 +21,7 @@ export async function cuentas(servicio: Servicio): Promise<Map<string, Persona>>
 
 const constancias = { aprobada: "Aprobada", pendiente: "Por revisar", rechazada: "Rechazada" } as const;
 export const nombreConstancia = (estado: string | null | undefined) =>
-  estado && estado in constancias ? constancias[estado as keyof typeof constancias] : "Sin subir";
+  estado && estado in constancias ? constancias[estado as keyof typeof constancias] : "Sin verificar";
 
 /** Pedidos que ya se cobraron (aunque después se hayan devuelto). */
 export const cobrado = (p: { pagado_en: string | null }) => Boolean(p.pagado_en);
@@ -152,10 +152,10 @@ export function haceCuanto(iso: string, ahora = Date.now()): string {
 export function pasoPendiente(c: Cliente): { orden: number; falta: string } | null {
   if (c.pagados > 0) return null;
   if (c.pedidos > 0) return { orden: 1, falta: "Hizo un pedido y no lo ha pagado" };
-  if (c.constancia === "Por revisar") return { orden: 2, falta: "Su constancia espera tu revisión" };
+  if (c.constancia === "Por revisar") return { orden: 2, falta: "Su verificación espera tu revisión" };
   if (c.activos === 0) return { orden: 6, falta: "No ha cargado a su equipo" };
   if (c.disenos + c.listos === 0) return { orden: 5, falta: "No ha hecho su diseño" };
-  if (c.constancia === "Rechazada") return { orden: 4, falta: "Su constancia se rechazó y no ha subido otra" };
-  if (c.constancia === "Sin subir") return { orden: 4, falta: "No ha subido su constancia" };
+  if (c.constancia === "Rechazada") return { orden: 4, falta: "Su verificación se rechazó y no ha mandado otra" };
+  if (c.constancia === "Sin verificar") return { orden: 4, falta: "No ha verificado su empresa" };
   return { orden: 3, falta: "Tiene todo listo y no ha pedido" };
 }
