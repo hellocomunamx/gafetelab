@@ -9,6 +9,7 @@ import { requerirEmpresa } from "@/lib/cuenta/sesion";
 import { rutasDe } from "@/lib/diseno/limpiar";
 import { materiales } from "@/lib/materiales";
 import { type FuenteDePedido, prepararPedido } from "@/lib/pedidos/preparar";
+import { saldoDe } from "@/lib/pedidos/servidor";
 import { stripeActivo } from "@/lib/stripe";
 import { clienteServicio } from "@/lib/supabase/publico";
 
@@ -123,6 +124,7 @@ export default async function Nuevo() {
     })),
   ]);
   const ligasImagenes = Object.fromEntries(imagenes);
+  const saldos = await saldoDe(supabase, empresa.id);
 
   const muestras: Record<string, ReactNode> = {};
   const vistas: FuenteVista[] = fuentes.map((f) => {
@@ -188,6 +190,7 @@ export default async function Nuevo() {
           texto: `${d.calle}, ${d.colonia}, ${d.ciudad}, ${d.estado}, C.P. ${d.cp}`,
         }))}
         fiscales={(fiscales ?? []).map((f) => ({ id: f.id, titulo: f.rfc, texto: f.razon_social }))}
+        saldos={saldos}
       />
     </div>
   );

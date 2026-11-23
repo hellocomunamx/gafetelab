@@ -1,3 +1,4 @@
+import { BotonAgregar } from "@/components/carrito/BotonAgregar";
 import {
   notaIva,
   paqueteVigenciaMeses,
@@ -11,7 +12,7 @@ export function TablaPaquetes() {
   return (
     <div>
       <div className="overflow-x-auto rounded-tarjeta border border-linea bg-white">
-        <table className="w-full min-w-[34rem] text-left">
+        <table className="w-full min-w-[42rem] text-left">
           <caption className="sr-only">
             Paquetes prepagados de gafetes y credenciales impresos: piezas, precio por pieza, envíos
             incluidos y precio del paquete, en pesos mexicanos, {notaIva}
@@ -22,6 +23,7 @@ export function TablaPaquetes() {
               <th scope="col" className="px-5 py-3 font-semibold">Precio por pieza</th>
               <th scope="col" className="px-5 py-3 font-semibold">Envíos incluidos</th>
               <th scope="col" className="px-5 py-3 font-semibold">Precio del paquete</th>
+              <th scope="col" className="px-5 py-3 font-semibold"><span className="sr-only">Comprar</span></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-linea">
@@ -32,6 +34,9 @@ export function TablaPaquetes() {
                 <td className="px-5 py-3">{p.envios}</td>
                 <td className="px-5 py-3">
                   <span className="font-titulos text-xl font-extrabold">{pesos(precioPaquete(p))}</span>
+                </td>
+                <td className="px-5 py-2">
+                  <BotonAgregar articulo={{ tipo: "paquete", piezas: p.piezas }} texto="Lo quiero" irAlCarrito className="w-36" />
                 </td>
               </tr>
             ))}

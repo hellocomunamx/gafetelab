@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { envioGratisTexto } from "@/lib/precios";
 import { entregaTexto } from "@/lib/site";
+import { IconoCarrito } from "./carrito/IconoCarrito";
 import { Logo } from "./Logo";
 import { Boton, Contenedor } from "./ui";
 
@@ -41,6 +42,7 @@ export function Encabezado() {
           <Link href="/cuenta" className="hidden px-2 font-medium whitespace-nowrap hover:text-rojo sm:block">
             Mi cuenta
           </Link>
+          <IconoCarrito />
           <Boton href="/cotizar" className="px-5 py-2 text-sm">
             Cotizar<span className="hidden sm:inline">&nbsp;en línea</span>
           </Boton>

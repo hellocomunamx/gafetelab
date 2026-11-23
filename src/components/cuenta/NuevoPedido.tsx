@@ -7,7 +7,8 @@ import { crearPedido } from "@/app/cuenta/pedidos/acciones";
 import { claseBoton, claseEntrada } from "@/components/cuenta/Formulario";
 import type { MaterialId } from "@/lib/materiales";
 import { pago, pedidoMaximoPiezas, soloTransferencia } from "@/lib/pedidos/reglas";
-import { cotizar, envioGratisTexto, notaIva, pesos } from "@/lib/precios";
+import { cotizarConSaldo, resumenSaldo, type SaldoDisponible } from "@/lib/pedidos/saldo";
+import { envioGratisTexto, notaIva, pesos } from "@/lib/precios";
 import { entregaTexto, site } from "@/lib/site";
 
 export type FuenteVista = {
@@ -60,6 +61,7 @@ export function NuevoPedido({
   materiales,
   direcciones,
   fiscales,
+  saldos,
 }: {
   fuentes: FuenteVista[];
   muestras: Record<string, ReactNode>;
@@ -67,6 +69,8 @@ export function NuevoPedido({
   materiales: { id: MaterialId; nombre: string; extra: number; resumen: string }[];
   direcciones: Opcion[];
   fiscales: Opcion[];
+  /** Saldo prepagado de la empresa: se usa primero. */
+  saldos: SaldoDisponible[];
 }) {
   const router = useRouter();
   const completas = (f: FuenteVista) => personas.filter((p) => f.gafetes[p.id] && !f.gafetes[p.id].faltan.length).map((p) => p.id);
@@ -91,7 +95,8 @@ export function NuevoPedido({
 
   const piezas = elegidas.size;
   const dosCaras = fuente.tipo === "diseno" ? fuente.dosCaras : [...elegidas].some((id) => fuente.gafetes[id]?.vuelta);
-  const c = cotizar(Math.max(1, piezas), { modalidad: "impreso", dosCaras, material });
+  const c = cotizarConSaldo(Math.max(1, piezas), { dosCaras, material }, saldos);
+  const enSaldo = resumenSaldo(saldos);
   const porTransferencia = soloTransferencia(piezas, c.total);
 
   function cambiarFuente(id: string) {
@@ -126,6 +131,7 @@ export function NuevoPedido({
         aprobado,
       });
       if (r.url) window.location.assign(r.url);
+      else if (r.pedido && r.pagado) router.push(`/cuenta/pedidos/${r.pedido}?pago=saldo`);
       else if (r.pedido) router.push(`/cuenta/pedidos/${r.pedido}?pago=error`);
       else setError(r.error ?? "No pudimos guardar tu pedido. Intenta de nuevo.");
     });
@@ -276,23 +282,28 @@ export function NuevoPedido({
         <p className="mt-1 font-titulos text-3xl font-extrabold">
           {piezas.toLocaleString("es-MX")} {piezas === 1 ? "gafete" : "gafetes"}
         </p>
+        {enSaldo.gafetes || enSaldo.envios ? (
+          <p className="mt-2 text-sm text-gris">
+            Tienes {enSaldo.gafetes.toLocaleString("es-MX")} {enSaldo.gafetes === 1 ? "gafete" : "gafetes"} y {enSaldo.envios}{" "}
+            {enSaldo.envios === 1 ? "envío" : "envíos"} prepagados. Se usan primero.
+          </p>
+        ) : null}
         {piezas ? (
           <dl className="mt-4 space-y-2 text-sm">
             {c.conceptos.map((x) => (
               <div key={x.nombre} className="flex justify-between gap-3">
-                <dt>{x.nombre}</dt>
-                <dd>{pesos(x.porPieza)}</dd>
+                <dt>
+                  {x.nombre}
+                  <span className="block text-gris">
+                    {x.cantidad.toLocaleString("es-MX")} × {x.precio ? pesos(x.precio) : "ya pagados"}
+                  </span>
+                </dt>
+                <dd className="font-semibold">{pesos(x.cantidad * x.precio)}</dd>
               </div>
             ))}
             <div className="flex justify-between gap-3 border-t border-linea pt-2">
-              <dt>
-                {piezas.toLocaleString("es-MX")} × {pesos(c.porPieza)}
-              </dt>
-              <dd className="font-semibold">{pesos(c.subtotal)}</dd>
-            </div>
-            <div className="flex justify-between gap-3">
               <dt>Envío a todo México</dt>
-              <dd>{c.envioGratis ? "Gratis" : pesos(c.envio)}</dd>
+              <dd>{c.envioDeSaldo ? "De tu saldo" : c.envioGratis ? "Gratis" : pesos(c.envio)}</dd>
             </div>
             <div className="flex justify-between gap-3">
               <dt>IVA</dt>
@@ -306,14 +317,16 @@ export function NuevoPedido({
         ) : (
           <p className="mt-3 text-sm text-gris">Elige a quiénes les hacemos gafete para ver tu total. Precios {notaIva}.</p>
         )}
-        {piezas && !c.envioGratis ? (
+        {piezas && c.faltaParaEnvioGratis > 0 ? (
           <p className="mt-3 text-sm text-gris">
             {envioGratisTexto}: te faltan {pesos(c.faltaParaEnvioGratis)} antes de IVA.
           </p>
         ) : null}
 
         <p className="mt-4 rounded-tarjeta-chica bg-papel p-3 text-sm">
-          {porTransferencia
+          {piezas && c.total === 0
+            ? "Todo sale de tu saldo prepagado: no hay nada que pagar."
+            : porTransferencia
             ? "Por su tamaño, este pedido se paga por transferencia (SPEI). Al continuar te damos la CLABE y la referencia."
             : `Pagas con tarjeta, en efectivo en OXXO o por transferencia (SPEI). Con tarjeta tienes ${pago.minutosDeGracia} minutos para cancelar sin costo.`}{" "}
           Empezamos a producir cuando se confirma tu pago; la entrega es en {entregaTexto}.
@@ -327,7 +340,7 @@ export function NuevoPedido({
         </label>
 
         <button type="button" onClick={pedir} disabled={enviando || !piezas} className={`${claseBoton} mt-4 w-full`}>
-          {enviando ? "Preparando tu pago…" : "Continuar al pago"}
+          {enviando ? "Preparando tu pedido…" : piezas && c.total === 0 ? "Hacer mi pedido con mi saldo" : "Continuar al pago"}
         </button>
         {error ? (
           <p role="alert" className="mt-3 text-sm font-medium text-rojo-oscuro">

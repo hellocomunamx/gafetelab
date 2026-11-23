@@ -297,14 +297,14 @@ isOneToOne: false
                   ]
                 },"pedidos": {
                   Row: {
-                    "actualizado_en": string,"alertas": (string)[],"aprobacion": NonNullable<Json>,"cancelado_en": string | null,"creado_en": string,"creado_por": string | null,"direccion": Json | null,"diseno": Json | null,"diseno_id": string | null,"disputa": string | null,"dos_caras": boolean,"empresa_id": string,"entregado_en": string | null,"enviado_en": string | null,"envio": number,"estado": string,"facturacion": Json | null,"ficha_url": string | null,"folio": string,"fuente": string,"gracia_hasta": string | null,"guia": string | null,"id": string,"intento": number,"iva": number,"material": string | null,"metodo": string | null,"modalidad": string,"notas": string | null,"pagado_en": string | null,"paqueteria": string | null,"piezas": number,"por_pieza": number,"primer_pedido": boolean,"produccion_en": string | null,"revisado_en": string | null,"revisado_por": string | null,"solo_transferencia": boolean,"stripe_pago": string | null,"stripe_sesion": string | null,"stripe_url": string | null,"subtotal": number,"total": number
+                    "actualizado_en": string,"alertas": (string)[],"articulos": Json | null,"conceptos": Json | null,"envio_de_saldo": boolean,"gafetes_de_saldo": number,"tipo": string,"aprobacion": NonNullable<Json>,"cancelado_en": string | null,"creado_en": string,"creado_por": string | null,"direccion": Json | null,"diseno": Json | null,"diseno_id": string | null,"disputa": string | null,"dos_caras": boolean,"empresa_id": string,"entregado_en": string | null,"enviado_en": string | null,"envio": number,"estado": string,"facturacion": Json | null,"ficha_url": string | null,"folio": string,"fuente": string,"gracia_hasta": string | null,"guia": string | null,"id": string,"intento": number,"iva": number,"material": string | null,"metodo": string | null,"modalidad": string,"notas": string | null,"pagado_en": string | null,"paqueteria": string | null,"piezas": number,"por_pieza": number,"primer_pedido": boolean,"produccion_en": string | null,"revisado_en": string | null,"revisado_por": string | null,"solo_transferencia": boolean,"stripe_pago": string | null,"stripe_sesion": string | null,"stripe_url": string | null,"subtotal": number,"total": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "actualizado_en"?: string,"alertas"?: (string)[],"aprobacion": NonNullable<Json>,"cancelado_en"?: string | null,"creado_en"?: string,"creado_por"?: string | null,"direccion"?: Json | null,"diseno"?: Json | null,"diseno_id"?: string | null,"disputa"?: string | null,"dos_caras"?: boolean,"empresa_id": string,"entregado_en"?: string | null,"enviado_en"?: string | null,"envio"?: number,"estado"?: string,"facturacion"?: Json | null,"ficha_url"?: string | null,"folio"?: string,"fuente": string,"gracia_hasta"?: string | null,"guia"?: string | null,"id"?: string,"intento"?: number,"iva": number,"material"?: string | null,"metodo"?: string | null,"modalidad"?: string,"notas"?: string | null,"pagado_en"?: string | null,"paqueteria"?: string | null,"piezas": number,"por_pieza": number,"primer_pedido"?: boolean,"produccion_en"?: string | null,"revisado_en"?: string | null,"revisado_por"?: string | null,"solo_transferencia"?: boolean,"stripe_pago"?: string | null,"stripe_sesion"?: string | null,"stripe_url"?: string | null,"subtotal": number,"total": number
+                    "actualizado_en"?: string,"alertas"?: (string)[],"articulos"?: Json | null,"conceptos"?: Json | null,"envio_de_saldo"?: boolean,"gafetes_de_saldo"?: number,"tipo"?: string,"aprobacion": NonNullable<Json>,"cancelado_en"?: string | null,"creado_en"?: string,"creado_por"?: string | null,"direccion"?: Json | null,"diseno"?: Json | null,"diseno_id"?: string | null,"disputa"?: string | null,"dos_caras"?: boolean,"empresa_id": string,"entregado_en"?: string | null,"enviado_en"?: string | null,"envio"?: number,"estado"?: string,"facturacion"?: Json | null,"ficha_url"?: string | null,"folio"?: string,"fuente": string,"gracia_hasta"?: string | null,"guia"?: string | null,"id"?: string,"intento"?: number,"iva": number,"material"?: string | null,"metodo"?: string | null,"modalidad"?: string,"notas"?: string | null,"pagado_en"?: string | null,"paqueteria"?: string | null,"piezas": number,"por_pieza": number,"primer_pedido"?: boolean,"produccion_en"?: string | null,"revisado_en"?: string | null,"revisado_por"?: string | null,"solo_transferencia"?: boolean,"stripe_pago"?: string | null,"stripe_sesion"?: string | null,"stripe_url"?: string | null,"subtotal": number,"total": number
                   }
                   Update: {
-                    "actualizado_en"?: string,"alertas"?: (string)[],"aprobacion"?: NonNullable<Json>,"cancelado_en"?: string | null,"creado_en"?: string,"creado_por"?: string | null,"direccion"?: Json | null,"diseno"?: Json | null,"diseno_id"?: string | null,"disputa"?: string | null,"dos_caras"?: boolean,"empresa_id"?: string,"entregado_en"?: string | null,"enviado_en"?: string | null,"envio"?: number,"estado"?: string,"facturacion"?: Json | null,"ficha_url"?: string | null,"folio"?: string,"fuente"?: string,"gracia_hasta"?: string | null,"guia"?: string | null,"id"?: string,"intento"?: number,"iva"?: number,"material"?: string | null,"metodo"?: string | null,"modalidad"?: string,"notas"?: string | null,"pagado_en"?: string | null,"paqueteria"?: string | null,"piezas"?: number,"por_pieza"?: number,"primer_pedido"?: boolean,"produccion_en"?: string | null,"revisado_en"?: string | null,"revisado_por"?: string | null,"solo_transferencia"?: boolean,"stripe_pago"?: string | null,"stripe_sesion"?: string | null,"stripe_url"?: string | null,"subtotal"?: number,"total"?: number
+                    "actualizado_en"?: string,"alertas"?: (string)[],"articulos"?: Json | null,"conceptos"?: Json | null,"envio_de_saldo"?: boolean,"gafetes_de_saldo"?: number,"tipo"?: string,"aprobacion"?: NonNullable<Json>,"cancelado_en"?: string | null,"creado_en"?: string,"creado_por"?: string | null,"direccion"?: Json | null,"diseno"?: Json | null,"diseno_id"?: string | null,"disputa"?: string | null,"dos_caras"?: boolean,"empresa_id"?: string,"entregado_en"?: string | null,"enviado_en"?: string | null,"envio"?: number,"estado"?: string,"facturacion"?: Json | null,"ficha_url"?: string | null,"folio"?: string,"fuente"?: string,"gracia_hasta"?: string | null,"guia"?: string | null,"id"?: string,"intento"?: number,"iva"?: number,"material"?: string | null,"metodo"?: string | null,"modalidad"?: string,"notas"?: string | null,"pagado_en"?: string | null,"paqueteria"?: string | null,"piezas"?: number,"por_pieza"?: number,"primer_pedido"?: boolean,"produccion_en"?: string | null,"revisado_en"?: string | null,"revisado_por"?: string | null,"solo_transferencia"?: boolean,"stripe_pago"?: string | null,"stripe_sesion"?: string | null,"stripe_url"?: string | null,"subtotal"?: number,"total"?: number
                   }
                   Relationships: [
                     {
@@ -355,6 +355,58 @@ isOneToOne: true
       referencedColumns: ["id"]
     },{
       foreignKeyName: "propuestas_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"saldo_usos": {
+                  Row: {
+                    "cantidad": number,"creado_en": string,"id": number,"pedido_id": string,"saldo_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cantidad": number,"creado_en"?: string,"id"?: never,"pedido_id": string,"saldo_id": string
+                  }
+                  Update: {
+                    "cantidad"?: number,"creado_en"?: string,"id"?: never,"pedido_id"?: string,"saldo_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "saldo_usos_pedido_id_fkey"
+      columns: ["pedido_id"]
+isOneToOne: false
+      referencedRelation: "pedidos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "saldo_usos_saldo_id_fkey"
+      columns: ["saldo_id"]
+isOneToOne: false
+      referencedRelation: "saldos"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"saldos": {
+                  Row: {
+                    "anulado_en": string | null,"cantidad": number,"compra_id": string,"concepto": string,"creado_en": string,"dos_caras": boolean,"empresa_id": string,"id": string,"material": string | null,"renglon": number,"vence_en": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "anulado_en"?: string | null,"cantidad": number,"compra_id": string,"concepto": string,"creado_en"?: string,"dos_caras"?: boolean,"empresa_id": string,"id"?: string,"material"?: string | null,"renglon": number,"vence_en": string
+                  }
+                  Update: {
+                    "anulado_en"?: string | null,"cantidad"?: number,"compra_id"?: string,"concepto"?: string,"creado_en"?: string,"dos_caras"?: boolean,"empresa_id"?: string,"id"?: string,"material"?: string | null,"renglon"?: number,"vence_en"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "saldos_compra_id_fkey"
+      columns: ["compra_id"]
+isOneToOne: false
+      referencedRelation: "pedidos"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "saldos_empresa_id_fkey"
       columns: ["empresa_id"]
 isOneToOne: false
       referencedRelation: "empresas"
@@ -445,6 +497,9 @@ isOneToOne: true
                            },
 "resumen_visitas":
 { Args: { "p_desde": string,"p_hasta": string }; Returns: Json
+                           },
+"usar_saldo":
+{ Args: { "p_pedido": string,"p_plan": Json }; Returns: undefined
                            },
 "usuarios_de":
 { Args: { "p_empresa": string }; Returns: {

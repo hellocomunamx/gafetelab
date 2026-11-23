@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
+import { carritoMaximoPiezas } from "@/lib/carrito";
 import { condiciones, nombreArchivo, nuevoFolio, renglones, totales } from "@/lib/cotizacion";
 import { grosorTexto, type MaterialId, materiales } from "@/lib/materiales";
 import {
@@ -16,6 +17,7 @@ import {
   tramos,
 } from "@/lib/precios";
 import { entregaTexto } from "@/lib/site";
+import { BotonAgregar } from "./carrito/BotonAgregar";
 import { MuestraMaterial } from "./MuestraMaterial";
 import { VistaGafete } from "./VistaGafete";
 
@@ -312,6 +314,20 @@ export function Cotizador() {
         </div>
 
         <div className="mt-6 border-t border-linea pt-5">
+          {false ? (
+            null          ) : c.piezas > carritoMaximoPiezas ? (
+            <p className="rounded-tarjeta-chica bg-papel px-4 py-3 text-sm">
+              En línea se compran hasta {carritoMaximoPiezas.toLocaleString("es-MX")} gafetes a la vez. Agrega dos compras al carrito o descarga la cotización.
+            </p>
+          ) : (
+            <BotonAgregar articulo={{ tipo: "gafetes", piezas: c.piezas, modalidad: c.modalidad, dosCaras: c.dosCaras, material }} />
+          )}
+          <p className="mt-2 text-xs text-gris">
+            Pagas ahora y tus gafetes quedan a tu favor: subes a tu equipo y tu diseño cuando quieras, y los pides o activas desde tu plataforma.
+          </p>
+        </div>
+
+        <div className="mt-6 border-t border-linea pt-5">
           <label className="block">
             <span className="text-sm font-semibold">Empresa (opcional, aparece en la cotización)</span>
             <input
@@ -328,7 +344,7 @@ export function Cotizador() {
             type="button"
             onClick={descargarPdf}
             disabled={generando}
-            className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-rojo px-6 py-3 font-semibold text-white transition-colors hover:bg-rojo-oscuro disabled:opacity-60"
+            className="mt-4 inline-flex w-full items-center justify-center rounded-full border border-tinta px-6 py-3 font-semibold transition-colors hover:bg-papel disabled:opacity-60"
           >
             {generando ? "Generando PDF…" : "Descargar cotización en PDF"}
           </button>

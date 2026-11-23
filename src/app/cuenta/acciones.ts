@@ -1,5 +1,6 @@
 "use server";
 
+import { destinoSeguro } from "@/lib/cuenta/siguiente";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { estadosMexico, regimenesFiscales, usosCfdi } from "@/lib/cuenta/catalogos";
@@ -38,8 +39,9 @@ export async function crearEmpresa(_: Resultado, d: FormData): Promise<Resultado
   if (error || !data) return { error: error?.code === "P0001" ? error.message : ERROR_GENERAL };
   await recordarEmpresa(data);
   refrescar();
-  // Lo primero que se le pide a una empresa nueva es su constancia; puede dejarla para después.
-  redirect("/cuenta/constancia?nueva=1");
+  // Si venía del carrito, regresa a pagar. Si no, lo primero que se le pide a una
+  // empresa nueva es su constancia; puede dejarla para después.
+  redirect(destinoSeguro(d.get("siguiente")) ?? "/cuenta/constancia?nueva=1");
 }
 
 /** Registra la constancia que la empresa acaba de subir al almacenamiento. Queda en revisión. */
