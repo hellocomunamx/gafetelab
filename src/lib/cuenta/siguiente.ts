@@ -7,7 +7,7 @@ import { cookies } from "next/headers";
  */
 
 export const COOKIE_SIGUIENTE = "lg_siguiente";
-const PERMITIDOS = ["/carrito"];
+const PERMITIDOS = ["/carrito", "/cuenta/acceso"];
 
 export const destinoSeguro = (v: unknown): string | null => (typeof v === "string" && PERMITIDOS.includes(v) ? v : null);
 
