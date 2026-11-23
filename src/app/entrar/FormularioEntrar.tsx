@@ -24,12 +24,16 @@ export function FormularioEntrar({
   proveedores,
   aviso,
   correoInicial,
+  siguiente,
 }: {
   proveedores: (keyof typeof NOMBRES)[];
   aviso?: string;
   /** Correo ya escrito, por ejemplo al llegar desde una invitación. */
   correoInicial?: string;
+  /** A dónde regresar al entrar (por ejemplo, al carrito). */
+  siguiente?: string;
 }) {
+  const regreso = siguiente ? <input type="hidden" name="siguiente" value={siguiente} /> : null;
   const [modo, setModo] = useState<(typeof MODOS)[number]["id"]>("liga");
   const [correo, setCorreo] = useState(correoInicial ?? "");
   const [conClave, entrar, entrando] = useActionState<EstadoAcceso, FormData>(entrarConContrasena, {
@@ -52,6 +56,7 @@ export function FormularioEntrar({
         </p>
         <form action={verificar} className="mt-5">
           <input type="hidden" name="correo" value={pedido.correo} />
+          {regreso}
           <label className="block">
             <span className="font-semibold">Código de 6 dígitos</span>
             <input
@@ -72,6 +77,7 @@ export function FormularioEntrar({
         </form>
         <form action={pedir} className="mt-4 text-center text-sm">
           <input type="hidden" name="correo" value={pedido.correo} />
+          {regreso}
           <button type="submit" disabled={pidiendo} className="underline">
             {pidiendo ? "Enviando…" : "Enviar otro correo"}
           </button>
@@ -116,6 +122,7 @@ export function FormularioEntrar({
 
       {modo === "liga" ? (
         <form action={pedir}>
+          {regreso}
           {campoCorreo}
           <p role="alert" className="mt-2 min-h-5 text-sm text-rojo-oscuro">{pedido.error ?? aviso}</p>
           <button type="submit" disabled={pidiendo} className={boton}>
@@ -128,6 +135,7 @@ export function FormularioEntrar({
         </form>
       ) : (
         <form action={entrar}>
+          {regreso}
           {campoCorreo}
           <label className="mt-4 block">
             <span className="font-semibold">Tu contraseña</span>
@@ -159,6 +167,7 @@ export function FormularioEntrar({
           {proveedores.map((p) => (
             <form key={p} action={entrarConProveedor} className="mt-2">
               <input type="hidden" name="proveedor" value={p} />
+              {regreso}
               <button
                 type="submit"
                 className="inline-flex w-full items-center justify-center rounded-full border border-tinta px-6 py-3 font-semibold transition-colors hover:bg-papel"

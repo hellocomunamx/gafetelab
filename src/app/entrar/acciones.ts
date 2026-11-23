@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { origenSolicitud, proveedoresActivos } from "@/lib/cuenta/sesion";
+import { destinoSeguro, recordarSiguiente, tomarSiguiente } from "@/lib/cuenta/siguiente";
 import { crearClienteServidor } from "@/lib/supabase/server";
 
 export type EstadoAcceso = { paso: "correo" | "codigo"; correo?: string; error?: string };
@@ -14,6 +15,7 @@ export async function pedirAcceso(_: EstadoAcceso, datos: FormData): Promise<Est
   if (correo.length > 254 || !CORREO_VALIDO.test(correo)) {
     return { paso: "correo", error: "Escribe un correo válido." };
   }
+  await recordarSiguiente(destinoSeguro(datos.get("siguiente")));
   const supabase = await crearClienteServidor();
   const { error } = await supabase.auth.signInWithOtp({
     email: correo,
@@ -42,7 +44,7 @@ export async function verificarCodigo(_: EstadoAcceso, datos: FormData): Promise
   if (error) {
     return { paso: "codigo", correo, error: "El código no es correcto o ya venció. Pide uno nuevo." };
   }
-  redirect("/cuenta");
+  redirect(destinoSeguro(datos.get("siguiente")) ?? (await tomarSiguiente()) ?? "/cuenta");
 }
 
 /** Entra con correo y contraseña, para quien ya creó una en "Mi acceso". */
@@ -65,13 +67,14 @@ export async function entrarConContrasena(_: EstadoAcceso, datos: FormData): Pro
           : "El correo o la contraseña no son correctos. Si no tienes contraseña o la olvidaste, entra con la liga por correo.",
     };
   }
-  redirect("/cuenta");
+  redirect(destinoSeguro(datos.get("siguiente")) ?? (await tomarSiguiente()) ?? "/cuenta");
 }
 
 /** Entra con una cuenta de Google o Microsoft, si están activadas. */
 export async function entrarConProveedor(datos: FormData) {
   const proveedor = proveedoresActivos().find((p) => p === datos.get("proveedor"));
   if (!proveedor) redirect("/entrar");
+  await recordarSiguiente(destinoSeguro(datos.get("siguiente")));
   const supabase = await crearClienteServidor();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: proveedor,

@@ -66,11 +66,12 @@ export const sigueEnGracia = (hasta: string | null) => Boolean(hasta) && new Dat
 export const soloTransferencia = (piezas: number, total: number) =>
   piezas >= pago.soloTransferenciaDesdePiezas || total >= pago.soloTransferenciaDesdeTotal;
 
-export type MetodoPago = "tarjeta" | "oxxo" | "spei";
+export type MetodoPago = "tarjeta" | "oxxo" | "spei" | "saldo";
 export const metodosPago: Record<MetodoPago, string> = {
   tarjeta: "Tarjeta",
   oxxo: "Efectivo en OXXO",
   spei: "Transferencia (SPEI)",
+  saldo: "Saldo prepagado",
 };
 
 /** El método de pago dentro de una frase: "pagado con tarjeta". */
@@ -78,6 +79,7 @@ export const metodosPagoEnFrase: Record<MetodoPago, string> = {
   tarjeta: "tarjeta",
   oxxo: "efectivo en OXXO",
   spei: "transferencia (SPEI)",
+  saldo: "saldo prepagado",
 };
 export const esMetodoPago = (v: string | null): v is MetodoPago => Boolean(v) && (v as string) in metodosPago;
 

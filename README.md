@@ -158,6 +158,12 @@ Configurar Stripe (una vez):
 
 Sin esas dos llaves (o sin `SUPABASE_SECRET_KEY`), la plataforma dice que los pedidos todavía no están activos y todo lo demás funciona igual. `STRIPE_API_URL` solo sirve para apuntar a un Stripe simulado en pruebas locales.
 
+### Carrito y saldo prepagado
+
+Los paquetes (`/precios#paquetes`), el paquete a la medida y el cotizador tienen «Lo quiero» o «Agregar al carrito». El carrito vive en el navegador (`src/lib/carrito-navegador.ts`) y no pide cuenta hasta pagar; `/carrito` lleva a entrar o crear la cuenta, aceptar términos y registrar la empresa, y regresa solo al carrito (`?siguiente=/carrito`, `src/lib/cuenta/siguiente.ts`).
+
+Pagar el carrito crea un pedido de tipo `prepago` (`src/app/carrito/acciones.ts`) que se cobra igual que cualquier pedido. Al confirmarse el pago, su contenido queda en `saldos` (gafetes por cara y material, y envíos), con vigencia de 12 meses. Al hacer un pedido de impresión se usa primero el saldo (`src/lib/pedidos/saldo.ts`): se cobra solo la diferencia de vuelta o de material y los gafetes que falten; si el saldo cubre todo, el pedido queda pagado sin pasar por Stripe. El saldo se aparta con `usar_saldo` (todo o nada) y regresa si el pedido se cancela. Migración `20261123070000_carrito_y_saldo.sql`.
+
 ### Administración (solo quien opera LaGafetería)
 
 `/8admins` es el panel interno (la ruta está en `src/lib/admin/ruta.ts`; no es `/admin` a propósito, y no se anuncia en `robots.txt` ni en el sitemap). No aparece en ningún menú de las empresas y, a quien no es administradora o no ha iniciado sesión, le responde «no existe». Trae ocho cosas:

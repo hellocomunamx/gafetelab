@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { RUTA_ADMIN } from "@/lib/admin/ruta";
 import { requerirAdmin } from "@/lib/admin/sesion";
 import { requiereRevision } from "@/lib/pedidos/reglas";
-import { anotar, avisarEnvio, cancelarAutorizado, cerrarCobro, type Pedido, type Servicio } from "@/lib/pedidos/servidor";
+import { anotar, avisarEnvio, cancelarAutorizado, cerrarCobro, liberarSaldo, type Pedido, type Servicio } from "@/lib/pedidos/servidor";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -50,7 +50,8 @@ export async function revisarPedido(d: FormData) {
 /** Pasa a producción. Solo con el pago confirmado, sin disputa abierta y, si hacía falta, ya revisado. */
 export async function producirPedido(d: FormData) {
   const x = await abrir(d);
-  if (!x || x.pedido.estado !== "pagado" || x.pedido.disputa === "abierta") return;
+  // Las compras del carrito no se producen: su contenido ya está en el saldo de la empresa.
+  if (!x || x.pedido.tipo === "prepago" || x.pedido.estado !== "pagado" || x.pedido.disputa === "abierta") return;
   if (requiereRevision(x.pedido) && !x.pedido.revisado_en) return;
   await mover(x, "pagado", { estado: "en_produccion", produccion_en: new Date().toISOString() }, "en_produccion", "en_produccion");
   refrescar(x.pedido.id);
@@ -101,6 +102,7 @@ export async function cancelarPedidoAdmin(d: FormData) {
       .select("id");
     if (movido?.length) {
       await servicio.from("gafetes").update({ estado: "cancelado" }).eq("pedido_id", pedido.id);
+      await liberarSaldo(servicio, pedido.id);
       await anotar(servicio, pedido.id, "cancelado", { por: "administracion" }, usuario);
     }
   }

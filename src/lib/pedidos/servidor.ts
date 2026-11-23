@@ -5,8 +5,12 @@ import { pesos } from "@/lib/precios";
 import { site, urlAbsoluta } from "@/lib/site";
 import { escapar } from "@/lib/solicitudes";
 import { centavos, ErrorStripe, stripe } from "@/lib/stripe";
+import type { SaldoNuevo } from "@/lib/carrito";
+import type { MaterialId } from "@/lib/materiales";
+import { paqueteVigenciaMeses } from "@/lib/precios";
 import type { Database, Json } from "@/lib/supabase/tipos";
 import { type AprobacionPedido, type MetodoPago, pago } from "./reglas";
+import type { ConceptoCobro, SaldoDisponible } from "./saldo";
 
 /**
  * Lo que el servidor hace con un pedido: abrir su cobro en Stripe y moverlo de
@@ -94,6 +98,7 @@ export async function abrirCobro(
     price_data: { currency: "mxn", unit_amount: centavos(importe), product_data: { name: nombre, description: descripcion } },
   });
   const regreso = urlAbsoluta(`/cuenta/pedidos/${pedido.id}`);
+  const conceptos = conceptosDe(pedido);
 
   const sesion = await stripe<SesionStripe>(
     "POST",
@@ -114,13 +119,15 @@ export async function abrirCobro(
         customer_balance: { funding_type: "bank_transfer", bank_transfer: { type: "mx_bank_transfer" } },
       },
       line_items: [
-        articulo(`Gafetes y credenciales, pedido ${pedido.folio}`, Number(pedido.por_pieza), pedido.piezas, `Impresos en PVC, ${caras}.`),
+        ...(conceptos
+          ? conceptos.filter((x) => x.precio > 0).map((x) => articulo(x.nombre, x.precio, x.cantidad))
+          : [articulo(`Gafetes y credenciales, pedido ${pedido.folio}`, Number(pedido.por_pieza), pedido.piezas, `Impresos en PVC, ${caras}.`)]),
         ...(Number(pedido.envio) > 0 ? [articulo("Envío", Number(pedido.envio))] : []),
         articulo("IVA (16%)", Number(pedido.iva)),
       ],
       metadata: { pedido_id: pedido.id, folio: pedido.folio },
       payment_intent_data: {
-        description: `Pedido ${pedido.folio} de ${site.nombre}`,
+        description: `${pedido.tipo === "prepago" ? "Compra" : "Pedido"} ${pedido.folio} de ${site.nombre}`,
         metadata: { pedido_id: pedido.id, folio: pedido.folio, empresa_id: empresa.id },
       },
     },
@@ -172,6 +179,18 @@ export async function marcarPagado(
     await servicio.from("gafetes").update({ estado: "en_pedido" }).eq("pedido_id", pedido.id).eq("estado", "cancelado");
   }
   await anotar(servicio, pedido.id, estabaCancelado ? "pago_tras_cancelar" : "pagado", { metodo: datos.metodo, pago: datos.pago });
+  if (pedido.tipo === "prepago") {
+    await crearSaldos(servicio, pedido);
+    await avisarInterno(
+      `Compra ${pedido.folio} pagada`,
+      [
+        `Se confirmó el pago de la compra ${pedido.folio}: ${pedido.piezas} gafetes y credenciales prepagados, ${pesos(Number(pedido.total))} con IVA.`,
+        "Ya quedaron en el saldo de la empresa. Se imprimen cuando haga un pedido con su equipo y su diseño.",
+      ],
+      pedido.id,
+    );
+    return true;
+  }
   await avisarInterno(
     `Pedido ${pedido.folio} pagado${estabaCancelado ? " (estaba cancelado)" : ""}`,
     [
@@ -272,6 +291,7 @@ export async function cancelarAutorizado(servicio: Servicio, pedido: Pedido, por
     .select("id");
   if (!movido?.length) return false;
   await servicio.from("gafetes").update({ estado: "cancelado" }).eq("pedido_id", pedido.id);
+  await liberarSaldo(servicio, pedido.id);
   await anotar(servicio, pedido.id, "cancelado", { por: quien, en_gracia: true }, por);
   return true;
 }
@@ -312,4 +332,87 @@ export async function avisarEnvio(pedido: Pedido) {
   } catch {
     // El aviso es una cortesía: el pedido ya quedó marcado como enviado.
   }
+}
+
+// ---------------------------------------------------------------------------
+// Saldo de gafetes prepagados
+// ---------------------------------------------------------------------------
+
+/** Los renglones del cobro guardados en el pedido, o null en pedidos de antes del carrito. */
+export function conceptosDe(pedido: Pick<Pedido, "conceptos">): ConceptoCobro[] | null {
+  return Array.isArray(pedido.conceptos) ? (pedido.conceptos as unknown as ConceptoCobro[]) : null;
+}
+
+/** Lo que se compró en el carrito, con el saldo que deja. */
+export type ArticuloComprado = { nombre: string; detalle: string[]; subtotal: number; saldos: SaldoNuevo[] };
+export const articulosDe = (pedido: Pick<Pedido, "articulos">) =>
+  Array.isArray(pedido.articulos) ? (pedido.articulos as unknown as ArticuloComprado[]) : [];
+
+/** Pasa al saldo de la empresa lo que se compró. Si ya estaba, no lo repite. */
+export async function crearSaldos(servicio: Servicio, pedido: Pedido) {
+  const vence = new Date();
+  vence.setMonth(vence.getMonth() + paqueteVigenciaMeses);
+  const renglones = articulosDe(pedido)
+    .flatMap((a) => a.saldos)
+    .map((s, i) => ({
+      empresa_id: pedido.empresa_id,
+      compra_id: pedido.id,
+      renglon: i,
+      concepto: s.concepto,
+      material: s.concepto === "gafetes" ? s.material : null,
+      dos_caras: s.concepto === "gafetes" ? s.dosCaras : false,
+      cantidad: s.cantidad,
+      vence_en: vence.toISOString(),
+    }));
+  if (!renglones.length) return;
+  const { error } = await servicio.from("saldos").upsert(renglones, { onConflict: "compra_id,renglon", ignoreDuplicates: true });
+  if (error) throw new Error(error.message);
+  await anotar(servicio, pedido.id, "saldo_creado", { renglones: renglones.length, vence_en: vence.toISOString() });
+}
+
+/** Si la compra se devolvió, su saldo deja de servir. */
+export async function anularSaldos(servicio: Servicio, compraId: string) {
+  await servicio.from("saldos").update({ anulado_en: new Date().toISOString() }).eq("compra_id", compraId).is("anulado_en", null);
+}
+
+/** Regresa al saldo lo que había apartado un pedido que se canceló. */
+export async function liberarSaldo(servicio: Servicio, pedidoId: string) {
+  const { data } = await servicio.from("saldo_usos").delete().eq("pedido_id", pedidoId).select("id");
+  if (data?.length) await anotar(servicio, pedidoId, "saldo_liberado", { usos: data.length });
+}
+
+/**
+ * El saldo vigente de una empresa: lo comprado menos lo que ya apartaron sus
+ * pedidos. Funciona con la llave secreta o con la sesión de alguien de la empresa.
+ */
+export async function saldoDe(cliente: Servicio, empresaId: string): Promise<SaldoDisponible[]> {
+  const { data: saldos } = await cliente
+    .from("saldos")
+    .select("id, concepto, material, dos_caras, cantidad, vence_en")
+    .eq("empresa_id", empresaId)
+    .is("anulado_en", null)
+    .gt("vence_en", new Date().toISOString())
+    .order("vence_en")
+    .limit(500);
+  if (!saldos?.length) return [];
+  const { data: usos } = await cliente
+    .from("saldo_usos")
+    .select("saldo_id, cantidad")
+    .in(
+      "saldo_id",
+      saldos.map((s) => s.id),
+    )
+    .limit(20000);
+  const usado = new Map<string, number>();
+  for (const u of usos ?? []) usado.set(u.saldo_id, (usado.get(u.saldo_id) ?? 0) + u.cantidad);
+  return saldos
+    .map((s) => ({
+      id: s.id,
+      concepto: s.concepto as SaldoDisponible["concepto"],
+      material: (s.material as MaterialId | null) ?? null,
+      dosCaras: s.dos_caras,
+      disponible: s.cantidad - (usado.get(s.id) ?? 0),
+      venceEn: s.vence_en,
+    }))
+    .filter((s) => s.disponible > 0);
 }
