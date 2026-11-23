@@ -18,6 +18,7 @@ import {
   tramos,
 } from "@/lib/precios";
 import { entregaTexto } from "@/lib/site";
+import { ArmaPaquete } from "./ArmaPaquete";
 import { BotonAgregar } from "./carrito/BotonAgregar";
 import { MuestraMaterial } from "./MuestraMaterial";
 import { VistaGafete } from "./VistaGafete";
@@ -39,27 +40,39 @@ export function Cotizador() {
   const [modalidad, setModalidad] = useState<Modalidad>("impreso");
   const [dosCaras, setDosCaras] = useState(false);
   const [material, setMaterial] = useState<MaterialId>("estandar");
-  // Piezas del paquete prepagado elegido; null cotiza piezas sueltas.
-  const [paqueteElegido, setPaqueteElegido] = useState<number | null>(null);
+  // Dos caminos: elegir las piezas que se necesitan hoy, o un paquete prepagado.
+  const [modo, setModo] = useState<"piezas" | "paquetes">("piezas");
+  // Piezas del paquete de lista elegido, o "medida" para armar uno propio.
+  const [paqueteElegido, setPaqueteElegido] = useState<number | "medida">(25);
   const [empresa, setEmpresa] = useState("");
   const [correo, setCorreo] = useState("");
   const [sitioWeb, setSitioWeb] = useState("");
   const [generando, setGenerando] = useState(false);
   const [estado, setEstado] = useState<Estado>({ tipo: "inactivo" });
 
-  // Los paquetes son de gafetes impresos: con digital se vuelve a piezas sueltas.
-  const paqueteActivo = modalidad === "impreso" ? paqueteElegido : null;
-  const opciones = { modalidad, dosCaras, material, paquete: paqueteActivo ?? undefined };
+  // Los paquetes son de gafetes impresos.
+  const enPaquetes = modo === "paquetes";
+  const paqueteActivo = enPaquetes && typeof paqueteElegido === "number" ? paqueteElegido : null;
+  const opciones = {
+    modalidad: enPaquetes ? ("impreso" as const) : modalidad,
+    dosCaras,
+    material,
+    paquete: paqueteActivo ?? undefined,
+  };
   const c = cotizar(cantidad, opciones);
   const siguiente = c.paquete ? undefined : tramos.find((t) => t.desde > c.piezas);
   const ahorro = siguiente ? c.porPieza - cotizar(siguiente.desde, opciones).porPieza : 0;
   // Pedidos chicos: se sugiere el paquete prepagado más pequeño que los cubre.
-  const paquete = !c.paquete && modalidad === "impreso" && c.piezas < paquetes[0].piezas ? paquetes[0] : null;
+  const paquete = !enPaquetes && modalidad === "impreso" && c.piezas < paquetes[0].piezas ? paquetes[0] : null;
 
-  function elegirPaquete(piezasPaquete: number | null) {
+  function verPaquetes(piezasPaquete: number | "medida") {
+    setModo("paquetes");
     setPaqueteElegido(piezasPaquete);
-    if (piezasPaquete) setPiezas(String(piezasPaquete));
   }
+
+  // Los pasos se numeran según lo que se muestra en cada camino.
+  let pasos = 0;
+  const paso = () => ++pasos;
 
   async function descargarPdf() {
     setGenerando(true);
@@ -113,11 +126,95 @@ export function Cotizador() {
       activa ? "border-tinta bg-tinta text-white" : "border-linea hover:border-tinta"
     }`;
 
+  const chip = (activo: boolean) =>
+    `rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors ${
+      activo ? "border-tinta bg-tinta text-white" : "border-linea bg-white hover:border-tinta"
+    }`;
+
+  const caminos = [
+    {
+      id: "piezas" as const,
+      nombre: "Elegir por pieza",
+      resumen: "Compras justo los gafetes que necesitas hoy.",
+    },
+    {
+      id: "paquetes" as const,
+      nombre: "Paquetes prepagados",
+      resumen: `Pagas hoy y los pides de a poquitos durante ${paqueteVigenciaMeses} meses, con envíos incluidos.`,
+    },
+  ];
+
   return (
+    <div className="space-y-8">
+      <fieldset className="min-w-0">
+        <legend className="font-semibold">¿Cómo quieres comprar?</legend>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          {caminos.map((m) => (
+            <label key={m.id} className={opcion(modo === m.id)}>
+              <input
+                type="radio"
+                name="modo"
+                className="sr-only"
+                checked={modo === m.id}
+                onChange={() => setModo(m.id)}
+              />
+              <span className="block text-lg font-semibold">{m.nombre}</span>
+              <span className={`block text-sm ${modo === m.id ? "text-white/75" : "text-gris"}`}>{m.resumen}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      {enPaquetes ? (
+        <fieldset className="min-w-0">
+          <legend className="font-semibold">¿Qué paquete?</legend>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {paquetes.map((p) => (
+              <label key={p.piezas} className={`cursor-pointer ${chip(paqueteElegido === p.piezas)}`}>
+                <input
+                  type="radio"
+                  name="paquete"
+                  className="sr-only"
+                  checked={paqueteElegido === p.piezas}
+                  onChange={() => setPaqueteElegido(p.piezas)}
+                />
+                {p.piezas} gafetes
+                <span className={`font-normal ${paqueteElegido === p.piezas ? "text-white/75" : "text-gris"}`}>
+                  {" "}· {pesos(p.porPieza)} c/u
+                </span>
+              </label>
+            ))}
+            <label className={`cursor-pointer ${chip(paqueteElegido === "medida")}`}>
+              <input
+                type="radio"
+                name="paquete"
+                className="sr-only"
+                checked={paqueteElegido === "medida"}
+                onChange={() => setPaqueteElegido("medida")}
+              />
+              A la medida
+              <span className={`font-normal ${paqueteElegido === "medida" ? "text-white/75" : "text-gris"}`}>
+                {" "}· combina tipos
+              </span>
+            </label>
+          </div>
+          <p className="mt-2 text-sm text-gris">
+            {c.paquete
+              ? `Pagas hoy los ${c.paquete.piezas} gafetes y los pides cuando quieras, en uno o varios pedidos, con ${c.paquete.envios} envíos incluidos. El precio por pieza no cambia aunque pidas de uno en uno.`
+              : "Arma tu paquete con varios tipos de gafete: cada uno con su cantidad, su impresión y su material."}
+          </p>
+        </fieldset>
+      ) : null}
+
+      {enPaquetes && paqueteElegido === "medida" ? (
+        <ArmaPaquete enCotizador />
+      ) : (
     <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr]">
       <div className="min-w-0 space-y-7">
+        {!enPaquetes ? (
+        <>
         <fieldset className="min-w-0">
-          <legend className="font-semibold">1. ¿Qué necesitas?</legend>
+          <legend className="font-semibold">{paso()}. ¿Qué necesitas?</legend>
           <div className="mt-3 grid gap-2 sm:grid-cols-3">
             {modalidades.map((m) => (
               <label key={m.id} className={opcion(modalidad === m.id)}>
@@ -138,7 +235,7 @@ export function Cotizador() {
         </fieldset>
 
         <label className="block">
-          <span className="block font-semibold">2. ¿Cuántos gafetes?</span>
+          <span className="block font-semibold">{paso()}. ¿Cuántos gafetes?</span>
           <input
             type="number"
             inputMode="numeric"
@@ -146,11 +243,7 @@ export function Cotizador() {
             max={CANTIDAD_MAXIMA}
             value={piezas}
             // Solo dígitos y sin ceros a la izquierda: "010" se vuelve "10".
-            // Escribir una cantidad propia deja el paquete y cotiza piezas sueltas.
-            onChange={(e) => {
-              setPaqueteElegido(null);
-              setPiezas(e.target.value.replace(/\D/g, "").replace(/^0+(?=\d)/, "").slice(0, 6));
-            }}
+            onChange={(e) => setPiezas(e.target.value.replace(/\D/g, "").replace(/^0+(?=\d)/, "").slice(0, 6))}
             // Al salir, el campo muestra la cantidad con la que se cotizó (mínimo 1).
             onBlur={() => setPiezas(String(cantidad))}
             className="mt-3 w-full max-w-48 rounded-tarjeta-chica border border-linea px-4 py-3 text-lg font-semibold"
@@ -161,50 +254,12 @@ export function Cotizador() {
             </span>
           ) : null}
         </label>
-
-        {modalidad === "impreso" ? (
-          <div className="-mt-3 min-w-0 rounded-tarjeta-chica bg-papel p-4">
-            <p id="paquetes-cotizador" className="text-sm font-semibold">
-              ¿Los vas a pedir de a poquitos? Llévate un paquete prepagado
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2" role="group" aria-labelledby="paquetes-cotizador">
-              {paquetes.map((p) => {
-                const activo = paqueteActivo === p.piezas;
-                return (
-                  <button
-                    key={p.piezas}
-                    type="button"
-                    aria-pressed={activo}
-                    onClick={() => elegirPaquete(activo ? null : p.piezas)}
-                    className={`rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors ${
-                      activo ? "border-tinta bg-tinta text-white" : "border-linea bg-white hover:border-tinta"
-                    }`}
-                  >
-                    {p.piezas} gafetes
-                    <span className={`font-normal ${activo ? "text-white/75" : "text-gris"}`}> · {pesos(p.porPieza)} c/u</span>
-                  </button>
-                );
-              })}
-            </div>
-            <p className="mt-2 text-sm text-gris">
-              {c.paquete ? (
-                <>
-                  Pagas hoy los {c.paquete.piezas} gafetes y los pides cuando quieras durante {paqueteVigenciaMeses}{" "}
-                  meses, con {c.paquete.envios} envíos incluidos.{" "}
-                  <button type="button" onClick={() => elegirPaquete(null)} className="underline underline-offset-4">
-                    Mejor por piezas
-                  </button>
-                </>
-              ) : (
-                "Mismo precio por pieza aunque pidas de uno en uno, y los envíos ya van incluidos."
-              )}
-            </p>
-          </div>
+        </>
         ) : null}
 
         {c.llevaEnvio ? (
           <fieldset className="min-w-0">
-            <legend className="font-semibold">3. Impresión</legend>
+            <legend className="font-semibold">{paso()}. Impresión</legend>
             <div className="mt-3 grid max-w-md grid-cols-2 gap-2">
               {[
                 { valor: false, texto: "Una cara" },
@@ -230,7 +285,7 @@ export function Cotizador() {
 
         {c.llevaEnvio ? (
           <fieldset className="min-w-0">
-            <legend className="font-semibold">4. Material</legend>
+            <legend className="font-semibold">{paso()}. Material</legend>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {materiales.map((m) => {
                 const activo = material === m.id;
@@ -281,7 +336,7 @@ export function Cotizador() {
         ) : null}
 
         <fieldset className="min-w-0">
-          <legend className="font-semibold">{c.llevaEnvio ? "5" : "3"}. Entrega</legend>
+          <legend className="font-semibold">{paso()}. Entrega</legend>
           <div className="mt-3 grid max-w-md grid-cols-2 gap-2">
             <label className={opcion(true)}>
               <input type="radio" name="entrega" className="sr-only" checked readOnly />
@@ -353,8 +408,8 @@ export function Cotizador() {
               <strong>¿Pides de a poquitos?</strong> El paquete de {paquete.piezas} gafetes cuesta{" "}
               {pesos(precioPaquete(paquete))} e incluye {paquete.envios} envíos: usas{" "}
               {c.piezas === 1 ? "uno" : c.piezas} hoy y el resto queda a tu favor.{" "}
-              <button type="button" onClick={() => elegirPaquete(paquete.piezas)} className="font-semibold underline">
-                Cotizar el paquete
+              <button type="button" onClick={() => verPaquetes(paquete.piezas)} className="font-semibold underline">
+                Ver paquetes
               </button>
             </p>
           ) : null}
@@ -468,6 +523,8 @@ export function Cotizador() {
           {envio.gratisDesde > 0 && c.envioGratis ? <li>Tu pedido ya tiene envío gratis.</li> : null}
         </ul>
       </div>
+    </div>
+      )}
     </div>
   );
 }

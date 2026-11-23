@@ -34,12 +34,16 @@ export function BotonAgregar({
   deshabilitado?: boolean;
 }) {
   const router = useRouter();
-  const [estado, setEstado] = useState<"inactivo" | "agregado" | "lleno">("inactivo");
+  // El aviso es de lo que se agregó: si la persona cambia su elección, desaparece
+  // y el botón vuelve a ofrecer agregar lo nuevo.
+  const clave = JSON.stringify(articulo);
+  const [aviso, setAviso] = useState<{ tipo: "agregado" | "lleno"; clave: string } | null>(null);
+  const estado = aviso && aviso.clave === clave ? aviso.tipo : "inactivo";
 
   function agregar() {
-    if (!agregarAlCarrito(articulo)) return setEstado("lleno");
+    if (!agregarAlCarrito(articulo)) return setAviso({ tipo: "lleno", clave });
     if (irAlCarrito) router.push("/carrito");
-    else setEstado("agregado");
+    else setAviso({ tipo: "agregado", clave });
   }
 
   return (
@@ -50,7 +54,7 @@ export function BotonAgregar({
         disabled={deshabilitado}
         className={`inline-flex w-full items-center justify-center rounded-full px-5 py-2.5 font-semibold transition-colors disabled:opacity-50 ${estilos[variante]}`}
       >
-        {estado === "agregado" ? "Agregar otro igual" : texto}
+        {texto}
       </button>
       {estado === "inactivo" ? null : (
       <p role="status" className="mt-2 text-center text-sm">
@@ -60,6 +64,7 @@ export function BotonAgregar({
             <Link href="/carrito" className="font-semibold text-rojo underline underline-offset-4">
               Ver carrito y pagar
             </Link>
+            <span className="mt-1 block text-gris">O sigue eligiendo: por pieza o en paquete, todo va al mismo carrito.</span>
           </>
         ) : estado === "lleno" ? (
           <span className="text-rojo-oscuro">

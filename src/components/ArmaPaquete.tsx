@@ -24,7 +24,7 @@ const chip = (activo: boolean) =>
  * Paquete prepagado a la medida: la empresa combina varios tipos de gafete, cada
  * uno con su cantidad, sus caras y su material, y ve el precio al momento.
  */
-export function ArmaPaquete() {
+export function ArmaPaquete({ enCotizador = false }: { enCotizador?: boolean } = {}) {
   const [renglones, setRenglones] = useState<Renglon[]>([
     { clave: 1, piezas: "10", dosCaras: true, material: "estandar" },
     { clave: 2, piezas: "100", dosCaras: false, material: "estandar" },
@@ -156,8 +156,9 @@ export function ArmaPaquete() {
             ) : null}
             <BotonAgregar
               articulo={{ tipo: "medida", renglones: c.renglones.map((r) => ({ piezas: r.piezas, dosCaras: r.dosCaras, material: r.material.id })) }}
-              texto="Lo quiero"
-              irAlCarrito
+              // En el cotizador se queda en la página para seguir eligiendo.
+              texto={enCotizador ? "Agregar al carrito" : "Lo quiero"}
+              irAlCarrito={!enCotizador}
               className="mt-5"
               deshabilitado={c.piezas > carritoMaximoPiezas}
             />
