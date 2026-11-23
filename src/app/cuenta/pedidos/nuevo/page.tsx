@@ -97,7 +97,9 @@ export default async function Nuevo({
         <p className="font-semibold">
           {constancia?.estado === "pendiente"
             ? "La verificación de tu empresa está en revisión."
-            : "Antes de tu primer pedido necesitamos verificar tu empresa."}
+            : constancia?.estado === "retirada"
+              ? "Quitamos la verificación de tu empresa. Para pedir, verifícala otra vez."
+              : "Antes de tu primer pedido necesitamos verificar tu empresa."}
         </p>
         <p className="mt-1 text-gris">
           {constancia?.estado === "pendiente"

@@ -2,14 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Bloque } from "@/components/cuenta/Entrada";
+import { claseEntrada } from "@/components/cuenta/Formulario";
 import { EstadoPedido } from "@/components/cuenta/EstadoPedido";
 import { cobrado, cuentas, fechaCorta, nombreConstancia } from "@/lib/admin/clientes";
 import { RUTA_ADMIN } from "@/lib/admin/ruta";
+import { nombreMetodo } from "@/lib/cuenta/constancia";
 import { requerirAdmin } from "@/lib/admin/sesion";
 import { roles } from "@/lib/cuenta/roles";
 import type { Rol } from "@/lib/cuenta/sesion";
 import { esMetodoPago, fechaHora, metodosPago } from "@/lib/pedidos/reglas";
 import { pesos } from "@/lib/precios";
+import { quitarVerificacion } from "../../acciones";
 
 export const metadata: Metadata = { title: "Cliente" };
 
@@ -37,7 +40,7 @@ export default async function Cliente({ params }: { params: Promise<{ id: string
     servicio.from("miembros").select("usuario_id, rol, creado_en").eq("empresa_id", id).order("creado_en"),
     servicio.from("datos_fiscales").select("id, rfc, razon_social, regimen_fiscal, cp_fiscal, correo, predeterminado").eq("empresa_id", id).order("predeterminado", { ascending: false }),
     servicio.from("direcciones").select("id, alias, destinatario, calle, colonia, ciudad, estado, cp, telefono, predeterminada").eq("empresa_id", id).order("predeterminada", { ascending: false }),
-    servicio.from("constancias").select("estado, fecha_emision, creado_en").eq("empresa_id", id).order("creado_en", { ascending: false }).limit(1).maybeSingle(),
+    servicio.from("constancias").select("estado, metodo, negocio, motivo, fecha_emision, creado_en, revisada_en, retirada_en, retirada_por").eq("empresa_id", id).order("creado_en", { ascending: false }).limit(1).maybeSingle(),
     servicio.from("empleados").select("id", { count: "exact", head: true }).eq("empresa_id", id).eq("estatus", "activo"),
     servicio.from("disenos").select("id", { count: "exact", head: true }).eq("empresa_id", id),
     servicio.from("gafetes_listos").select("id", { count: "exact", head: true }).eq("empresa_id", id),
@@ -60,6 +63,10 @@ export default async function Cliente({ params }: { params: Promise<{ id: string
   const total = pagados.reduce((s, p) => s + Number(p.total), 0);
   const gafetes = pagados.reduce((s, p) => s + p.piezas, 0);
   const paraImprimir = (disenos.count ?? 0) + (listos.count ?? 0) > 0;
+  const verificacion = constancia.data;
+  // Pedidos ya pagados que todavía no salen: si se quitó la verificación, se revisan a mano.
+  const porRevisar = verificacion?.estado === "retirada" ? lista.filter((p) => ["pagado", "en_produccion"].includes(p.estado)) : [];
+  const quienRetiro = verificacion?.retirada_por ? personas.get(verificacion.retirada_por)?.correo : null;
 
   return (
     <div className="space-y-6">
@@ -88,6 +95,68 @@ export default async function Cliente({ params }: { params: Promise<{ id: string
               Abrir el PDF de impresión de esta empresa
             </Link>
           </p>
+        ) : null}
+      </Bloque>
+
+      <Bloque titulo="Verificación">
+        {verificacion ? (
+          <p className="text-sm">
+            <strong>{nombreConstancia(verificacion.estado)}</strong> · {nombreMetodo(verificacion.metodo)}
+            {verificacion.negocio ? ` · «${verificacion.negocio}»` : ""} · mandada el {fechaCorta(verificacion.creado_en)}
+            {verificacion.revisada_en ? ` · revisada el ${fechaCorta(verificacion.revisada_en)}` : ""}
+          </p>
+        ) : (
+          <p className="text-sm text-gris">Todavía no manda su verificación.</p>
+        )}
+        {verificacion?.estado === "retirada" ? (
+          <div className="mt-3 rounded-tarjeta-chica border border-rojo/30 p-4 text-sm">
+            <p>
+              <strong>Le quitaste la verificación</strong>
+              {verificacion.retirada_en ? ` el ${fechaHora(verificacion.retirada_en)}` : ""}
+              {quienRetiro ? ` (${quienRetiro})` : ""}.
+            </p>
+            <p className="mt-1">Motivo: {verificacion.motivo}</p>
+            <p className="mt-1 text-gris">
+              No puede hacer pedidos nuevos hasta verificarse otra vez. Se le avisó por correo a sus dueños y administradores.
+            </p>
+            {porRevisar.length ? (
+              <p className="mt-2 font-semibold text-rojo-oscuro">
+                Revisa {porRevisar.length === 1 ? "este pedido pagado" : `estos ${porRevisar.length} pedidos pagados`} antes de
+                producir o enviar:{" "}
+                {porRevisar.map((p, i) => (
+                  <span key={p.id}>
+                    {i ? ", " : ""}
+                    <Link href={`${RUTA_ADMIN}/pedidos/${p.id}`} className="underline">{p.folio}</Link>
+                  </span>
+                ))}
+                . Tú decides si se producen, se cancelan o se devuelven.
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+        {verificacion?.estado === "aprobada" ? (
+          <details className="mt-4 text-sm">
+            <summary className="cursor-pointer font-semibold text-rojo-oscuro underline underline-offset-4">Quitar verificación</summary>
+            <form action={quitarVerificacion} className="mt-3 space-y-3 rounded-tarjeta-chica bg-papel p-4">
+              <input type="hidden" name="empresa" value={empresa.id} />
+              <p>
+                Al quitarla, la empresa pasa a «sin verificar»: no puede hacer pedidos nuevos hasta verificarse de nuevo, ve el
+                motivo en su cuenta y a sus dueños y administradores les llega un correo. Sus pedidos ya pagados no se tocan;
+                aquí te los marcamos para que decidas.
+              </p>
+              <label className="block">
+                <span className="font-semibold">Motivo (lo ve la empresa)</span>
+                <input name="motivo" required maxLength={300} placeholder="Por ejemplo: los gafetes son de otra empresa" className={claseEntrada} />
+              </label>
+              <label className="flex items-start gap-2">
+                <input type="checkbox" name="seguro" value="si" required className="mt-0.5 size-4 accent-rojo" />
+                <span>Sí, quiero quitarle la verificación a {empresa.nombre}.</span>
+              </label>
+              <button type="submit" className="rounded-full bg-rojo-oscuro px-4 py-2 font-semibold text-white">
+                Quitar verificación
+              </button>
+            </form>
+          </details>
         ) : null}
       </Bloque>
 

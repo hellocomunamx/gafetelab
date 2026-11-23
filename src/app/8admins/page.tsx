@@ -36,7 +36,7 @@ export default async function Admin() {
   const nombreDe = new Map((empresas ?? []).map((e) => [e.id, e.nombre]));
   const estadoConstancia = (empresaId: string) => {
     const estado = constanciaDe.get(empresaId)?.estado;
-    return estado === "aprobada" ? "Aprobada" : estado === "pendiente" ? "Por revisar" : estado === "rechazada" ? "Rechazada" : "Sin verificar";
+    return estado === "aprobada" ? "Aprobada" : estado === "pendiente" ? "Por revisar" : estado === "rechazada" ? "Rechazada" : estado === "retirada" ? "Retirada" : "Sin verificar";
   };
 
   // Palabras que piden revisión, por empresa: su nombre y los textos fijos de sus diseños.

@@ -58,6 +58,19 @@ export default async function PaginaConstancia({ searchParams }: { searchParams:
         </Bloque>
       ) : null}
 
+      {actual?.estado === "retirada" ? (
+        <div role="alert" className="rounded-tarjeta border border-rojo/30 bg-white p-5">
+          <p className="font-semibold text-rojo-oscuro">Quitamos la verificación de tu empresa.</p>
+          <p className="mt-1 text-sm">Motivo: {actual.motivo}</p>
+          <p className="mt-1 text-sm text-gris">
+            Mientras no la verifiques de nuevo no puedes hacer pedidos nuevos. Tu equipo, tus diseños y tus datos siguen
+            aquí. Si ya tenías un pedido pagado, lo revisamos y te escribimos. Si crees que es un error, escríbenos a{" "}
+            <a href={`mailto:${site.correo}`} className="underline">{site.correo}</a>.
+          </p>
+          {administra ? <p className="mt-1 text-sm text-gris">Para verificarla otra vez, elige una opción aquí abajo.</p> : null}
+        </div>
+      ) : null}
+
       {actual?.estado === "rechazada" ? (
         <div role="alert" className="rounded-tarjeta border border-rojo/30 bg-white p-5">
           <p className="font-semibold text-rojo-oscuro">No pudimos aceptar tu verificación.</p>

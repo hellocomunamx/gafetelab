@@ -19,7 +19,7 @@ export async function cuentas(servicio: Servicio): Promise<Map<string, Persona>>
   return mapa;
 }
 
-const constancias = { aprobada: "Aprobada", pendiente: "Por revisar", rechazada: "Rechazada" } as const;
+const constancias = { aprobada: "Aprobada", pendiente: "Por revisar", rechazada: "Rechazada", retirada: "Retirada" } as const;
 export const nombreConstancia = (estado: string | null | undefined) =>
   estado && estado in constancias ? constancias[estado as keyof typeof constancias] : "Sin verificar";
 
@@ -156,6 +156,7 @@ export function pasoPendiente(c: Cliente): { orden: number; falta: string } | nu
   if (c.activos === 0) return { orden: 6, falta: "No ha cargado a su equipo" };
   if (c.disenos + c.listos === 0) return { orden: 5, falta: "No ha hecho su diseño" };
   if (c.constancia === "Rechazada") return { orden: 4, falta: "Su verificación se rechazó y no ha mandado otra" };
+  if (c.constancia === "Retirada") return { orden: 4, falta: "Le quitaste la verificación y no ha mandado otra" };
   if (c.constancia === "Sin verificar") return { orden: 4, falta: "No ha verificado su empresa" };
   return { orden: 3, falta: "Tiene todo listo y no ha pedido" };
 }
