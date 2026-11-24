@@ -221,7 +221,19 @@ export function plataforma() {
 
 /** Página de contacto: enlaza el formulario con la organización. */
 /** El video de presentación de la página de inicio. */
-export const videoPitch = {
+export type VideoSitio = {
+  src: string;
+  portada: string;
+  titulo: string;
+  descripcion: string;
+  /** Texto corto, por ejemplo "50 segundos". */
+  duracion: string;
+  duracionIso: string;
+  /** Fecha y hora de publicación, con zona horaria (Sonora, UTC-7): Google la pide completa. */
+  publicado: string;
+};
+
+export const videoPitch: VideoSitio = {
   src: "/video/pitch-lagafeteria.mp4",
   portada: "/video/pitch-lagafeteria-portada.jpg",
   titulo: `${site.nombre} en 50 segundos`,
@@ -229,20 +241,30 @@ export const videoPitch = {
     "Cómo pasar de fotos por chat y un Excel a los gafetes y credenciales de todo tu equipo: eliges una plantilla, subes a tu equipo, cada quien manda su foto y cotizas en línea al momento.",
   duracion: "50 segundos",
   duracionIso: "PT50S",
-  /** Fecha y hora de publicación, con zona horaria (Sonora, UTC-7): Google la pide completa. */
   publicado: "2026-11-22T12:00:00-07:00",
 };
 
-export function video() {
+export const videoEventos: VideoSitio = {
+  src: "/video/pitch-eventos.mp4",
+  portada: "/video/pitch-eventos-portada.jpg",
+  titulo: `${site.nombre} para eventos en 50 segundos`,
+  descripcion:
+    "Gafetes y credenciales para congresos, expos y capacitaciones: creas tu evento con una categoría y un color para cada quien, subes tu lista de registro, cada persona lleva su QR de acceso y cotizas en línea al momento, con tu fecha límite para pedir a tiempo.",
+  duracion: "50 segundos",
+  duracionIso: "PT50S",
+  publicado: "2026-11-24T12:00:00-07:00",
+};
+
+export function video(v: VideoSitio = videoPitch) {
   return {
     "@context": "https://schema.org",
     "@type": "VideoObject",
-    name: videoPitch.titulo,
-    description: videoPitch.descripcion,
-    thumbnailUrl: urlAbsoluta(videoPitch.portada),
-    contentUrl: urlAbsoluta(videoPitch.src),
-    uploadDate: videoPitch.publicado,
-    duration: videoPitch.duracionIso,
+    name: v.titulo,
+    description: v.descripcion,
+    thumbnailUrl: urlAbsoluta(v.portada),
+    contentUrl: urlAbsoluta(v.src),
+    uploadDate: v.publicado,
+    duration: v.duracionIso,
     inLanguage: "es-MX",
     publisher: { "@id": ORG_ID },
   };

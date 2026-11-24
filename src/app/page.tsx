@@ -14,7 +14,7 @@ import { giros } from "@/lib/giros";
 import { formasDeEmpezar, pasos } from "@/lib/pasos";
 import { confianzaPlataforma, funcionesPlataforma, modalidadesDetalle, portalEmpleados } from "@/lib/plataforma";
 import { envio, notaIva, paqueteVigenciaMeses, paquetes, pesos, precioMinimo, precioPaquete } from "@/lib/precios";
-import { paginaFaq, producto, video, videoPitch } from "@/lib/schema";
+import { paginaFaq, producto, video, videoEventos, videoPitch } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
 import { entregaTexto, site, verificacion } from "@/lib/site";
 
@@ -97,19 +97,26 @@ export default function Inicio() {
 
       <section id="video" className="scroll-mt-28">
         <Contenedor className="py-12 sm:py-16">
-          <div className="mx-auto max-w-4xl">
-            <p className="text-center font-mano text-2xl text-rojo">Te lo contamos rapidito</p>
-            <h2 className="mt-1 text-center text-3xl font-extrabold">{videoPitch.titulo}</h2>
-            <p className="mx-auto mt-3 mb-8 max-w-2xl text-center text-lg text-gris">
-              De las fotos por chat y el Excel a los gafetes y credenciales de todo tu equipo, sin
-              mandar archivos por correo.
-            </p>
-            <VideoPitch
-              src={videoPitch.src}
-              portada={videoPitch.portada}
-              titulo={videoPitch.titulo}
-              duracion={videoPitch.duracion}
-            />
+          <p className="text-center font-mano text-2xl text-rojo">Te lo contamos rapidito</p>
+          <h2 className="mt-1 text-center text-3xl font-extrabold">
+            {site.nombre} en 50 segundos
+          </h2>
+          <p className="mx-auto mt-3 mb-8 max-w-2xl text-center text-lg text-gris">
+            Gafetes y credenciales para tu equipo de trabajo o para tu próximo evento, sin mandar
+            archivos por correo.
+          </p>
+          <div className="grid gap-8 lg:grid-cols-2 lg:gap-6">
+            {[
+              { v: videoPitch, etiqueta: "Para tu equipo" },
+              { v: videoEventos, etiqueta: "Para tus eventos" },
+            ].map(({ v, etiqueta }) => (
+              <figure key={v.src}>
+                <VideoPitch src={v.src} portada={v.portada} titulo={v.titulo} duracion={v.duracion} />
+                <figcaption className="mt-3 text-center font-titulos text-lg font-extrabold">
+                  {etiqueta}
+                </figcaption>
+              </figure>
+            ))}
           </div>
         </Contenedor>
       </section>
@@ -340,7 +347,7 @@ export default function Inicio() {
         titulo="¿Listo para decir “Hola, soy”?"
       />
 
-      <JsonLd data={[producto(), paginaFaq(faqsInicio), video()]} />
+      <JsonLd data={[producto(), paginaFaq(faqsInicio), video(), video(videoEventos)]} />
     </>
   );
 }
