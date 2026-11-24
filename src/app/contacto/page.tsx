@@ -52,7 +52,7 @@ export default function Contacto() {
       </Portada>
 
       <Seccion>
-        <div className="grid gap-8 lg:grid-cols-[1.5fr_1fr]">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.5fr_1fr]">
           <FormularioContacto correoSitio={site.correo} nombreSitio={site.nombre} />
 
           <aside className="space-y-4">

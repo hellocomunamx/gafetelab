@@ -4,6 +4,7 @@ import { GruposFunciones, MuyPronto, Palomita, SinCostoExtra } from "@/component
 import { JsonLd } from "@/components/JsonLd";
 import { CelularPortal, VentanaPlataforma } from "@/components/Muestras";
 import { Boton, Contenedor, CTA_TEXTO, Portada, Seccion } from "@/components/ui";
+import { funcionesEvento } from "@/lib/eventos-publico";
 import { type Faq as FaqItem, faqsGenerales } from "@/lib/faqs";
 import { formasDeCargar, funcionesPlataforma, portalEmpleados, verificaciones } from "@/lib/plataforma";
 import { migas, paginaFaq, plataforma } from "@/lib/schema";
@@ -141,6 +142,29 @@ export default function Plataforma() {
           </div>
         </Contenedor>
       </section>
+
+      <Seccion id="eventos" titulo="También para tus eventos" fondo>
+        <p className="-mt-2 mb-8 max-w-2xl text-lg text-gris">
+          Congresos, expos, capacitaciones y graduaciones: cada evento es un proyecto aparte dentro
+          de tu organización, con lo mismo que ya usas para tu equipo y esto de más.
+        </p>
+        <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {funcionesEvento.map((f) => (
+            <li key={f.titulo} className="flex gap-2.5 rounded-tarjeta bg-white p-5">
+              <Palomita className="mt-0.5 text-rojo" />
+              <div>
+                <h3 className="font-bold">{f.titulo}</h3>
+                <p className="mt-1 text-sm text-gris">{f.texto}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-6">
+          <Link href="/gafetes-para/eventos" className="font-semibold text-rojo underline underline-offset-4">
+            Ver gafetes y credenciales para eventos
+          </Link>
+        </p>
+      </Seccion>
 
       <Seccion id="cargar" titulo="Cuatro formas de subir a tu equipo">
         <p className="-mt-2 mb-8 max-w-2xl text-lg text-gris">

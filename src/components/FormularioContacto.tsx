@@ -113,8 +113,8 @@ export function FormularioContacto({ correoSitio, nombreSitio }: { correoSitio: 
   }
 
   return (
-    <form id="formulario" onSubmit={enviar} className="scroll-mt-28 rounded-tarjeta border border-linea p-6 sm:p-8">
-      <fieldset>
+    <form id="formulario" onSubmit={enviar} className="min-w-0 scroll-mt-28 rounded-tarjeta border border-linea p-6 sm:p-8">
+      <fieldset className="min-w-0">
         <legend className="text-sm font-semibold">¿Sobre qué nos escribes?</legend>
         <div className="mt-2 flex flex-wrap gap-2">
           {motivosContacto.map((m) => (
@@ -133,7 +133,7 @@ export function FormularioContacto({ correoSitio, nombreSitio }: { correoSitio: 
         </div>
       </fieldset>
 
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+      <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className="block">
           <span className="text-sm font-semibold">Tu nombre</span>
           <input

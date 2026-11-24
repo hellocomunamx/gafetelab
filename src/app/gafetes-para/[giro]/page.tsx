@@ -48,7 +48,7 @@ export default async function PaginaGiro({ params }: PageProps<"/gafetes-para/[g
     { nombre: "Por giro", ruta: "/gafetes-para" },
     { nombre: giro.nombre.charAt(0).toUpperCase() + giro.nombre.slice(1), ruta },
   ];
-  const faqs = [...giro.faqs, ...faqsBase];
+  const faqs = [...giro.faqs, ...faqsBase.filter((f) => !(giro.sinPortal && f.pregunta.includes("Mi gafete")))];
   const otros = giros.filter((g) => g.slug !== giro.slug);
 
   return (
@@ -87,11 +87,40 @@ export default async function PaginaGiro({ params }: PageProps<"/gafetes-para/[g
         </ul>
       </Seccion>
 
+      {giro.tipos ? (
+        <Seccion titulo={giro.tipos.titulo}>
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {giro.tipos.lista.map((t) => (
+              <li key={t.nombre} className="rounded-tarjeta border border-linea p-5">
+                <h3 className="font-bold">{t.nombre}</h3>
+                <p className="mt-1 text-sm text-gris">{t.texto}</p>
+              </li>
+            ))}
+          </ul>
+        </Seccion>
+      ) : null}
+
+      {giro.funciones ? (
+        <Seccion titulo={giro.funciones.titulo} fondo={Boolean(giro.tipos)}>
+          <p className="-mt-2 mb-8 max-w-2xl text-lg text-gris">{giro.funciones.intro}</p>
+          <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {giro.funciones.lista.map((f) => (
+              <li key={f.titulo} className="flex gap-2.5 rounded-tarjeta bg-white p-5">
+                <Palomita className="mt-0.5 text-rojo" />
+                <div>
+                  <h3 className="font-bold">{f.titulo}</h3>
+                  <p className="mt-1 text-sm text-gris">{f.texto}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Seccion>
+      ) : null}
+
       <Seccion titulo={`Lo que te resuelve la plataforma en ${giro.nombre}`}>
         <p className="-mt-2 mb-8 max-w-2xl text-lg text-gris">
-          Con tu cuenta de {site.nombre} tienes, sin costo extra, una plataforma para administrar los
-          gafetes de tu equipo. Pides desde una pieza y cada ingreso tiene su gafete sin esperar al
-          siguiente pedido grande.
+          {giro.introPlataforma ??
+            `Con tu cuenta de ${site.nombre} tienes, sin costo extra, una plataforma para administrar los gafetes de tu equipo. Pides desde una pieza y cada ingreso tiene su gafete sin esperar al siguiente pedido grande.`}
         </p>
         <ul className="grid gap-4 md:grid-cols-3">
           {giro.plataforma.map((f) => (
@@ -147,7 +176,7 @@ export default async function PaginaGiro({ params }: PageProps<"/gafetes-para/[g
 
       <JsonLd
         data={[
-          servicio({ nombre: titulo, descripcion: giro.descripcion, ruta, audiencia: giro.nombre }),
+          servicio({ nombre: titulo, descripcion: giro.descripcion, ruta, audiencia: giro.nombre, tipoServicio: giro.tipoServicio }),
           paginaFaq(faqs),
           migas(rutaMigas),
         ]}

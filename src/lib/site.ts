@@ -10,7 +10,7 @@ export const site = {
   dominio,
   url: process.env.NEXT_PUBLIC_SITE_URL ?? `https://${dominio}`,
   lema: "Hola, soy ___",
-  titulo: "Gafetes y credenciales para empleados en todo México",
+  titulo: "Gafetes y credenciales para empleados y eventos en México",
   descripcion:
     "Gafetes y credenciales para todo tu equipo o asistentes a eventos, impresos en PVC o digitales. Automático y simplificado: diseña tu gafete, sube a tu equipo y revisa cada uno antes de pagar. Plataforma incluida, sin costo extra. Envíos a todo México.",
   descripcionCorta:

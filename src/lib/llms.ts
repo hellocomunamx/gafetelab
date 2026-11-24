@@ -20,6 +20,7 @@ import {
   paqueteVigenciaMeses,
   paquetes,
   pesos,
+  precioCordon,
   precioDigital,
   precioMaximo,
   precioMinimo,
@@ -30,6 +31,7 @@ import { grosorTexto, materiales, medidas, zonas } from "./materiales";
 import { accionesPlataforma, ajustesPlataforma, formasDeCargar, funcionesPlataforma, verificaciones } from "./plataforma";
 import { rutasCiudades, rutasGiros, rutasPrincipales } from "./rutas";
 import { adicionalesPendientes } from "./contacto";
+import { eventosResumen } from "./eventos-publico";
 import { constancia, entregaTexto, legal, site, urlAbsoluta } from "./site";
 
 type Enlace = { ruta: string; titulo: string; resumen: string };
@@ -69,13 +71,15 @@ const datosClave = () =>
     `- Usuarios: la empresa invita por correo a otras personas con rol de dueño, administrador o editor; la invitación vence a las 24 horas y se puede reenviar. Una misma cuenta puede administrar varias empresas. Se entra con correo y contraseña o con Google.`,
     `- Diseño: los datos del equipo se guardan una vez y en cada diseño se elige qué se imprime y en qué cara; el nombre es opcional (gafetes genéricos). Diseños por reglas: un diseño distinto según puesto, departamento, sucursal, tipo de contrato o cualquier dato propio.`,
     `- Compra en línea: carrito con paquetes prepagados de lista o a la medida, o lo calculado en el cotizador; se pide cuenta solo al pagar. Los gafetes prepagados quedan a favor de la empresa y se usan primero en los siguientes pedidos.`,
-    `- Seguimiento: la plataforma muestra el estado de cada pedido (pagado, en producción, enviado, entregado) y al enviarse llega un correo con la paquetería y el número de guía.`,
+    `- Seguimiento: la plataforma muestra el estado de cada pedido (pagado, en producción, enviado, entregado) y el cliente recibe un correo en cada paso: pedido recibido, en producción, enviado (con la paquetería y el número de guía) y entregado.`,
+    `- Eventos: ${eventosResumen}.`,
+    `- Calculadora «¿Cuánto te cuesta imprimirlo tú mismo?» (${urlAbsoluta("/calculadora")}): compara el costo real de hacer los gafetes en la oficina (materiales, tiempo de quien los hace y los que se repiten) contra pedirlos impresos en PVC, con los precios vigentes. Gratis y sin dejar datos.`,
     `- Verificaciones (todo lo que se verifica, sin costo extra): ${verificaciones.map((c) => `${c.titulo.charAt(0).toLowerCase()}${c.titulo.slice(1)} (${c.texto.charAt(0).toLowerCase()}${c.texto.slice(1).replace(/\.$/, "")})`).join("; ")}.`,
     `- Cómo se pide: en línea, con plantillas o diseño propio, campos variables (nombre, puesto, número, foto, código QR), carga del equipo y vista previa de cada gafete antes de pagar.`,
     `- Paquete a la medida: desde ${paqueteMinimoPiezas} gafetes, combinando cantidades, una cara o frente y vuelta, y materiales; el precio base por pieza es el del paquete de lista que corresponde al total.`,
     `- Requisito antes del primer pedido: verificar la empresa, con la opción que elija: su ${constancia.nombre} (no más de ${site.constanciaMeses} meses de antigüedad), INE más una prueba del negocio (liga a redes o Google Maps, o foto del local) si no tiene RFC, o un correo con el dominio de la empresa. Además acepta una carta de responsabilidad y la revisión es manual. El nombre debe coincidir con la empresa que aparece en los gafetes.`,
     `- Devoluciones: los gafetes son personalizados y no se devuelven por cambio de opinión. Se puede cancelar sin costo antes de producción. Los defectos de impresión o de material se reportan dentro de ${legal.plazoDefectosDias} días naturales desde la entrega y se reponen sin costo.`,
-    `- Adicionales: todavía no se venden ${adicionalesPendientes}.`,
+    `- Adicionales: en pedidos de eventos se puede agregar un cordón con broche del color de cada categoría (${pesos(precioCordon)} MXN por pieza, ${notaIva}). Todavía no se venden ${adicionalesPendientes}.`,
     `- Factura: sí (CFDI).`,
     `- Contacto: formulario en ${urlAbsoluta("/contacto")} o ${site.correo}`,
   ].join("\n");

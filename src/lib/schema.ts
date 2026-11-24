@@ -12,6 +12,7 @@ import {
   precioMinimo,
   tramos,
 } from "./precios";
+import { funcionesEvento } from "./eventos-publico";
 import { funcionesPlataforma } from "./plataforma";
 import { figalo, site, urlAbsoluta } from "./site";
 
@@ -44,6 +45,8 @@ export function organizacion() {
       "credenciales de PVC",
       "gafetes digitales con código QR",
       "identificación de personal",
+      "gafetes para eventos y congresos",
+      "gafetes para expos, conferencias y graduaciones",
     ],
     contactPoint: {
       "@type": "ContactPoint",
@@ -158,13 +161,15 @@ export function servicio(opts: {
   ruta: string;
   audiencia?: string;
   ciudad?: { nombre: string; estado: string };
+  /** Sin esto, el servicio es de gafetes para empleados. */
+  tipoServicio?: string;
 }) {
   return {
     "@context": "https://schema.org",
     "@type": "Service",
     name: opts.nombre,
     description: opts.descripcion,
-    serviceType: "Impresión de gafetes y credenciales para empleados",
+    serviceType: opts.tipoServicio ?? "Impresión de gafetes y credenciales para empleados",
     url: urlAbsoluta(opts.ruta),
     provider: { "@id": ORG_ID },
     areaServed: opts.ciudad
@@ -215,7 +220,27 @@ export function plataforma() {
     inLanguage: site.idioma,
     provider: { "@id": ORG_ID },
     offers: { "@type": "Offer", price: 0, priceCurrency: site.moneda },
-    featureList: funcionesPlataforma.flatMap((g) => g.funciones.filter((f) => !f.pronto).map((f) => f.titulo)),
+    featureList: [
+      ...funcionesPlataforma.flatMap((g) => g.funciones.filter((f) => !f.pronto).map((f) => f.titulo)),
+      ...funcionesEvento.map((f) => `Eventos: ${f.titulo.charAt(0).toLowerCase()}${f.titulo.slice(1)}`),
+    ],
+  };
+}
+
+/** La calculadora «¿Cuánto te cuesta imprimirlo tú mismo?» como herramienta web gratuita. */
+export function calculadora(opts: { nombre: string; descripcion: string; ruta: string }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: opts.nombre,
+    url: urlAbsoluta(opts.ruta),
+    description: opts.descripcion,
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web",
+    inLanguage: site.idioma,
+    isAccessibleForFree: true,
+    provider: { "@id": ORG_ID },
+    offers: { "@type": "Offer", price: 0, priceCurrency: site.moneda },
   };
 }
 
