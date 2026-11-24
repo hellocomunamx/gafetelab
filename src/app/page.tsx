@@ -5,14 +5,14 @@ import { Faq } from "@/components/Faq";
 import { GruposFunciones, MuyPronto, Palomita, SinCostoExtra } from "@/components/Funciones";
 import { HeroAnimado } from "@/components/HeroAnimado";
 import { JsonLd } from "@/components/JsonLd";
-import { Celular, GafeteHorizontal, VentanaPlataforma } from "@/components/Muestras";
+import { Celular, CelularPortal, GafeteHorizontal, VentanaPlataforma } from "@/components/Muestras";
 import { TablaPrecios } from "@/components/TablaPrecios";
 import { VideoPitch } from "@/components/VideoPitch";
 import { Boton, Cierre, Contenedor, CTA_TEXTO, Seccion } from "@/components/ui";
 import { faqsGenerales } from "@/lib/faqs";
 import { giros } from "@/lib/giros";
 import { formasDeEmpezar, pasos } from "@/lib/pasos";
-import { modalidadesDetalle } from "@/lib/plataforma";
+import { confianzaPlataforma, funcionesPlataforma, modalidadesDetalle, portalEmpleados } from "@/lib/plataforma";
 import { envio, notaIva, paqueteVigenciaMeses, paquetes, pesos, precioMinimo, precioPaquete } from "@/lib/precios";
 import { paginaFaq, producto, video, videoPitch } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
@@ -25,7 +25,18 @@ export const metadata = metadatos({
   ruta: "/",
 });
 
-const faqsInicio = faqsGenerales.slice(0, 6);
+const preguntasInicio = [
+  `¿Qué es ${site.nombre}?`,
+  "¿Cuánto cuesta un gafete o credencial para empleado?",
+  "¿Hay que pagar una suscripción o mensualidad?",
+  "¿Qué es «Mi gafete», el portal para empleados?",
+  "¿Qué es un gafete digital?",
+  "¿Qué pasa cuando alguien escanea el código QR de un gafete?",
+  "¿Puedo comprar en línea sin hablar con nadie?",
+  "¿Hay pedido mínimo?",
+];
+const faqsInicio = preguntasInicio.flatMap((p) => faqsGenerales.filter((f) => f.pregunta === p));
+const hayPronto = funcionesPlataforma.some((g) => g.funciones.some((f) => f.pronto));
 const mayuscula = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
 export default function Inicio() {
@@ -115,7 +126,8 @@ export default function Inicio() {
               <p className="mt-4 max-w-xl text-lg text-white/75">
                 {site.nombre} no es solo una tienda. Al crear tu cuenta, tu empresa tiene su propia
                 plataforma: ahí viven tu equipo, tu diseño y tus datos de envío y facturación. Das
-                de alta a quien entra, de baja a quien se va y pides solo lo que hace falta.
+                de alta a quien entra, de baja a quien se va y pides solo lo que hace falta. Y tu
+                equipo pide sus cambios desde su propio portal, para que tú solo apruebes.
               </p>
               <SinCostoExtra oscuro className="mt-6 max-w-xl" />
               <div className="mt-8 flex flex-wrap gap-3">
@@ -135,10 +147,57 @@ export default function Inicio() {
             </div>
           </div>
           <p className="mt-14 mb-5 max-w-2xl text-white/75">
-            Esto es lo que incluye. Lo marcado como <MuyPronto oscuro /> ya está en camino.
+            Esto es todo lo que ya incluye, desde el primer gafete.
+            {hayPronto ? (
+              <>
+                {" "}Lo marcado como <MuyPronto oscuro /> ya está en camino.
+              </>
+            ) : null}
           </p>
           <div>
             <GruposFunciones oscuro />
+          </div>
+        </Contenedor>
+      </section>
+
+      <section id="mi-gafete" className="scroll-mt-28 border-b border-linea">
+        <Contenedor className="grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-[1.25fr_1fr]">
+          <div>
+            <p className="font-mano text-2xl text-rojo">Nuevo: «Mi gafete»</p>
+            <h2 className="mt-1 text-3xl leading-tight font-extrabold sm:text-4xl">
+              Tu equipo pide, tú solo apruebas.
+            </h2>
+            <p className="mt-4 max-w-xl text-lg text-gris">
+              Cada empresa tiene su propio portal para empleados. Ahí cada persona pide cambiar su
+              foto, corregir sus datos o reponer su gafete desde el celular, sin crear cuenta y sin
+              que tengas que perseguir a nadie por chat.
+            </p>
+            <ol className="mt-8 grid gap-4 sm:grid-cols-2">
+              {portalEmpleados.map((p, i) => (
+                <li key={p.titulo} className="rounded-tarjeta border border-linea p-5">
+                  <span aria-hidden className="font-mano text-3xl text-rojo">
+                    {i + 1}
+                  </span>
+                  <h3 className="mt-1 font-bold">{p.titulo}</h3>
+                  <p className="mt-1 text-sm text-gris">{p.texto}</p>
+                </li>
+              ))}
+            </ol>
+            <p className="mt-6">
+              <Link href="/plataforma#mi-gafete" className="font-semibold text-rojo underline underline-offset-4">
+                Conocer «Mi gafete»
+              </Link>
+            </p>
+          </div>
+          <div
+            role="img"
+            aria-label="El portal «Mi gafete» en un celular: cambiar mi foto, corregir mis datos, reponer mi gafete y el estado de cada solicitud."
+            className="flex justify-center"
+          >
+            <div aria-hidden className="flex items-end gap-4">
+              <CelularPortal className="scale-110" />
+              <Celular className="hidden -rotate-3 sm:block" />
+            </div>
           </div>
         </Contenedor>
       </section>
@@ -163,6 +222,18 @@ export default function Inicio() {
             Por qué lo pedimos
           </Link>
         </p>
+        <h3 className="mt-12 text-2xl font-extrabold">Nadie hace gafetes a nombre de tu empresa</h3>
+        <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {confianzaPlataforma.map((c) => (
+            <li key={c.titulo} className="flex gap-2.5 rounded-tarjeta bg-papel p-5">
+              <Palomita className="mt-0.5 text-[#0a7d4f]" />
+              <div>
+                <p className="font-semibold">{c.titulo}</p>
+                <p className="mt-1 text-sm text-gris">{c.texto}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
       </Seccion>
 
       <Seccion titulo="Tres formas de empezar tu gafete" fondo>

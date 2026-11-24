@@ -83,13 +83,22 @@ export const faqsGenerales: Faq[] = [
     respuesta: `El envío cuesta ${pesos(envio.tarifa)} a cualquier parte de México y es gratis en pedidos desde ${pesos(envio.gratisDesde)} antes de IVA. El cotizador te muestra el envío, el IVA y el total antes de que des ningún dato.`,
   },
   {
+    pregunta: "¿Cómo sé dónde viene mi pedido?",
+    respuesta:
+      "En tu plataforma ves el estado de cada pedido: pagado, en producción, enviado y entregado. Cuando sale, te mandamos un correo con la paquetería y el número de guía para que lo sigas.",
+  },
+  {
+    pregunta: "¿Puedo comprar en línea sin hablar con nadie?",
+    respuesta: `Sí. Agregas al carrito un paquete prepagado de lista o uno a la medida, o los gafetes que calculaste en el cotizador, y pagas en línea. Solo te pedimos entrar o crear tu cuenta al momento de pagar. Los gafetes de un paquete quedan a tu favor durante ${paqueteVigenciaMeses} meses y se usan solos en tus siguientes pedidos.`,
+  },
+  {
     pregunta: "¿Puedo cotizar sin dejar mis datos?",
     respuesta:
       "Sí. El cotizador muestra el precio por pieza, el envío, el IVA, el total y el tiempo de entrega sin pedirte nada. Si quieres, descargas la cotización en PDF o la recibes en tu correo para compartirla en tu empresa.",
   },
   {
     pregunta: "¿Qué necesito para abrir la cuenta de mi empresa?",
-    respuesta: `Tu correo y verificar tu empresa antes del primer pedido. Tú eliges cómo: con la ${constancia.nombre} (de no más de ${site.constanciaMeses} meses), con tu INE y una prueba de tu negocio (la liga a tus redes o a Google Maps, o una foto de tu local), o con un correo con el dominio de tu empresa. En todos los casos aceptas una carta de responsabilidad y lo revisamos a mano. Así nadie puede mandar a hacer gafetes con el nombre o el logo de tu empresa. Se hace una sola vez.`,
+    respuesta: `Tu correo y verificar tu empresa antes del primer pedido. Tú eliges cómo: con la ${constancia.nombre} (de no más de ${site.constanciaMeses} meses), con tu INE y una prueba de tu negocio (la liga a tus redes o a Google Maps, o una foto de tu local), o con un correo con el dominio de tu empresa. En todos los casos aceptas una carta de responsabilidad y lo revisamos a mano. Así nadie puede mandar a hacer gafetes con el nombre o el logo de tu empresa. Se hace una sola vez y, al aprobarse, tu plataforma muestra la insignia «Empresa verificada».`,
   },
   {
     pregunta: "¿Puedo pedir gafetes si no tengo RFC?",
@@ -98,12 +107,31 @@ export const faqsGenerales: Faq[] = [
   },
   {
     pregunta: "¿Qué puedo hacer en mi cuenta?",
-    respuesta: `Al crear tu cuenta tienes tu plataforma de ${site.nombre}, donde administras a tu equipo: altas de empleados nuevos, bajas, reposiciones de gafetes perdidos o dañados, y desactivaciones y reactivaciones de gafetes digitales.`,
+    respuesta: `Al crear tu cuenta tienes tu plataforma de ${site.nombre}, sin costo extra. Ahí das de alta y de baja a tu equipo, armas tus diseños, eliges qué muestra el código QR, revisas la vista previa de cada gafete, compras paquetes prepagados, pagas, sigues tus envíos y pides tus facturas. También pides reposiciones de gafetes perdidos o dañados, desactivas y reactivas gafetes, invitas a otras personas con su propio rol y apruebas lo que tu equipo pide desde su portal «Mi gafete».`,
+  },
+  {
+    pregunta: "¿Qué es «Mi gafete», el portal para empleados?",
+    respuesta: `Es una liga propia de tu empresa (por ejemplo, ${site.dominio}/e/tu-empresa) donde cada persona de tu equipo entra desde su celular, sin crear cuenta: con un código que le llega a su correo, o con su número de empleado y un NIP de 6 números. Desde ahí pide cambiar su foto, corregir un dato como su nombre o su puesto, o reponer su gafete perdido o dañado. Todo te llega a una sola bandeja para aprobar o rechazar con un motivo, y la persona ve en qué va su solicitud. Viene incluido, sin costo extra.`,
+  },
+  {
+    pregunta: "¿Un empleado puede cambiar la foto de su gafete?",
+    respuesta:
+      "Sí, pero siempre con tu aprobación. Desde su gafete digital o desde su portal «Mi gafete», la persona se toma o sube una foto nueva, y tú la comparas con la anterior antes de aceptarla o rechazarla con un motivo. Si la aceptas, su gafete digital se actualiza, y si también tiene gafete impreso, puedes pedir su reposición.",
+  },
+  {
+    pregunta: "¿Me avisan cuando alguien de mi equipo pide algo?",
+    respuesta:
+      "Sí, y tú eliges cómo. En tu plataforma decides, para cada tipo de aviso (cambios de foto, datos y fotos por aprobar, y solicitudes del portal), si te llega un correo al momento, un resumen semanal los lunes solo cuando hay pendientes, o nada. Si no eliges, te llega el resumen semanal.",
+  },
+  {
+    pregunta: "¿Puedo darle acceso a otras personas de mi empresa?",
+    respuesta:
+      "Sí. Invitas por correo a quien te ayuda con los gafetes y eliges su rol: dueño, administrador o editor. La invitación vence a las 24 horas y la puedes reenviar. Con una sola cuenta, una persona puede administrar varias empresas y cambiar entre ellas, y puedes entrar con tu correo o con tu cuenta de Google.",
   },
   {
     pregunta: "¿Cómo mando los datos de mis empleados?",
     respuesta:
-      "Como te acomode: con la plantilla de Excel, capturándolos uno por uno o subiendo las fotos de todos juntas, que se asignan solas por número de empleado o por nombre. Cada columna de tu Excel (nombre, puesto, número de empleado) se conecta con un campo del gafete, y el sistema genera un gafete por cada renglón. También puedes mandar una liga para que cada persona llene sus datos y suba su propia foto, sin crear cuenta; tú apruebas o rechazas antes de imprimir.",
+      "Como te acomode: con la plantilla de Excel, capturándolos uno por uno o subiendo las fotos de todos juntas, que se asignan solas por número de empleado o por nombre. Cada columna de tu Excel (nombre, puesto, número de empleado) se conecta con un campo del gafete, y el sistema genera un gafete por cada renglón. También puedes mandar una liga para que cada persona llene sus datos y se tome su propia foto, sin crear cuenta. La liga se cierra al enviar; si algo no sirve, pides una corrección con el motivo y se la mandas por correo o WhatsApp. Tú apruebas antes de imprimir.",
   },
   {
     pregunta: "¿Puedo usar el diseño que ya tiene mi empresa?",
@@ -164,6 +192,11 @@ export const faqsGenerales: Faq[] = [
     pregunta: "¿Qué gafetes o credenciales no hacen?",
     respuesta:
       "No hacemos identificaciones oficiales ni documentos de gobierno, y tampoco gafetes o credenciales de una empresa distinta a la que hace el pedido. Solo producimos identificaciones internas de tu propia organización, y por eso verificamos tu empresa antes del primer pedido (con tu constancia fiscal, tu INE y una prueba de tu negocio, o un correo de tu empresa): el nombre debe coincidir con el de los gafetes.",
+  },
+  {
+    pregunta: "¿Cómo protegen mi cuenta y la de mi equipo?",
+    respuesta:
+      "Con varias capas. Verificamos cada empresa a mano antes de su primer pedido, limitamos los intentos para entrar, usamos una verificación contra robots en los formularios y revisamos de forma automática cada foto e identificación que se sube. En el portal «Mi gafete», el NIP no puede ser fácil de adivinar y se bloquea tras varios intentos fallidos, y las invitaciones a tu plataforma vencen a las 24 horas.",
   },
   {
     pregunta: "¿Qué pasa con los datos y las fotos de mis empleados?",

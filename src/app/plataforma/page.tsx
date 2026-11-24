@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { Faq } from "@/components/Faq";
-import { GruposFunciones, MuyPronto, SinCostoExtra } from "@/components/Funciones";
+import { GruposFunciones, MuyPronto, Palomita, SinCostoExtra } from "@/components/Funciones";
 import { JsonLd } from "@/components/JsonLd";
-import { VentanaPlataforma } from "@/components/Muestras";
+import { CelularPortal, VentanaPlataforma } from "@/components/Muestras";
 import { Boton, Contenedor, CTA_TEXTO, Portada, Seccion } from "@/components/ui";
 import { type Faq as FaqItem, faqsGenerales } from "@/lib/faqs";
-import { formasDeCargar } from "@/lib/plataforma";
+import { confianzaPlataforma, formasDeCargar, funcionesPlataforma, portalEmpleados } from "@/lib/plataforma";
 import { migas, paginaFaq, plataforma } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
 import { site } from "@/lib/site";
@@ -15,13 +15,18 @@ const rutaMigas = [{ nombre: "Plataforma", ruta }];
 
 export const metadata = metadatos({
   titulo: "Plataforma para administrar gafetes y credenciales de empleados, sin costo extra",
-  descripcion: `La plataforma de ${site.nombre} viene incluida con tu cuenta: altas y bajas de tu equipo, carga con Excel, editor de diseño, vista previa de cada gafete y datos de envío y facturación guardados. Sin mensualidad ni costo por usuario.`,
+  descripcion: `La plataforma de ${site.nombre} viene incluida con tu cuenta: altas y bajas, carga con Excel o por liga, portal de empleados «Mi gafete», editor de diseño, código QR de verificación, paquetes prepagados, envíos con rastreo y facturas. Sin mensualidad ni costo por usuario.`,
   ruta,
 });
 
 const preguntas = [
   "¿Hay que pagar una suscripción o mensualidad?",
   "¿Cómo mando los datos de mis empleados?",
+  "¿Qué es «Mi gafete», el portal para empleados?",
+  "¿Un empleado puede cambiar la foto de su gafete?",
+  "¿Me avisan cuando alguien de mi equipo pide algo?",
+  "¿Puedo darle acceso a otras personas de mi empresa?",
+  "¿Cómo protegen mi cuenta y la de mi equipo?",
   "¿Puedo ver cómo quedan antes de pagar?",
   "¿Puedo usar el diseño que ya tiene mi empresa?",
   "¿Qué pasa con los datos y las fotos de mis empleados?",
@@ -40,6 +45,8 @@ const faqs: FaqItem[] = [
   },
   ...preguntas.flatMap((p) => faqsGenerales.filter((f) => f.pregunta === p)),
 ];
+
+const hayPronto = funcionesPlataforma.some((g) => g.funciones.some((f) => f.pronto));
 
 export default function Plataforma() {
   return (
@@ -88,10 +95,51 @@ export default function Plataforma() {
       <Seccion id="funciones" titulo="¿Qué incluye la plataforma?" fondo>
         <p className="-mt-2 mb-8 max-w-2xl text-lg text-gris">
           Todo lo que tu área de Recursos Humanos necesita para tener al día los gafetes de la
-          empresa. Lo marcado como <MuyPronto /> ya está en camino.
+          empresa.{" "}
+          {hayPronto ? (
+            <>
+              Lo marcado como <MuyPronto /> ya está en camino.
+            </>
+          ) : (
+            "Todo ya está disponible."
+          )}
         </p>
         <GruposFunciones />
       </Seccion>
+
+      <section id="mi-gafete" className="scroll-mt-28 border-b border-linea">
+        <Contenedor className="grid items-center gap-10 py-14 lg:grid-cols-[1.3fr_1fr]">
+          <div>
+            <h2 className="text-3xl font-extrabold">«Mi gafete»: el portal para tu equipo</h2>
+            <p className="mt-3 max-w-2xl text-lg text-gris">
+              Deja de juntar fotos por chat y de pasar correcciones a mano. Cada persona de tu equipo
+              entra a su portal desde el celular y te pide lo que necesita. Tú lo apruebas en una
+              sola bandeja y te avisamos por correo como prefieras: al momento o en un resumen
+              semanal.
+            </p>
+            <ol className="mt-8 grid gap-4 sm:grid-cols-2">
+              {portalEmpleados.map((p, i) => (
+                <li key={p.titulo} className="rounded-tarjeta border border-linea p-5">
+                  <span aria-hidden className="font-mano text-3xl text-rojo">
+                    {i + 1}
+                  </span>
+                  <h3 className="mt-1 font-bold">{p.titulo}</h3>
+                  <p className="mt-1 text-sm text-gris">{p.texto}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div
+            role="img"
+            aria-label="El portal «Mi gafete» en un celular: cambiar mi foto, corregir mis datos, reponer mi gafete y el estado de cada solicitud."
+            className="flex justify-center"
+          >
+            <div aria-hidden>
+              <CelularPortal className="scale-110" />
+            </div>
+          </div>
+        </Contenedor>
+      </section>
 
       <Seccion id="cargar" titulo="Cuatro formas de subir a tu equipo">
         <p className="-mt-2 mb-8 max-w-2xl text-lg text-gris">
@@ -116,7 +164,25 @@ export default function Plataforma() {
         </ul>
       </Seccion>
 
-      <Seccion titulo="Preguntas sobre la plataforma" fondo>
+      <Seccion id="confianza" titulo="Segura para tu empresa y para tu equipo" fondo>
+        <p className="-mt-2 mb-8 max-w-2xl text-lg text-gris">
+          Verificamos cada empresa antes de su primer pedido para que nadie pueda hacer gafetes con
+          tu nombre o tu logo, y cuidamos cada entrada a tu plataforma.
+        </p>
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {confianzaPlataforma.map((c) => (
+            <li key={c.titulo} className="flex gap-2.5 rounded-tarjeta bg-white p-5">
+              <Palomita className="mt-0.5 text-[#0a7d4f]" />
+              <div>
+                <h3 className="font-semibold">{c.titulo}</h3>
+                <p className="mt-1 text-sm text-gris">{c.texto}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </Seccion>
+
+      <Seccion titulo="Preguntas sobre la plataforma">
         <Faq faqs={faqs} />
       </Seccion>
 

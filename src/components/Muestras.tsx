@@ -307,3 +307,38 @@ export function VentanaPlataforma({ compacta = false, className = "" }: { compac
     </div>
   );
 }
+
+/** El portal «Mi gafete» en un celular: lo que la persona puede pedir y en qué va. */
+export function CelularPortal({ className = "" }: { className?: string }) {
+  const opciones = ["Cambiar mi foto", "Corregir mis datos", "Reponer mi gafete"];
+  return (
+    <div className={`h-[330px] w-[170px] rounded-[30px] bg-tinta p-2 text-tinta ${sombra} ${className}`}>
+      <div className="relative flex h-full flex-col overflow-hidden rounded-[23px] bg-papel text-left">
+        <span className="absolute top-1.5 left-1/2 h-1.5 w-12 -translate-x-1/2 rounded-full bg-tinta" />
+        <div className="flex items-center gap-2 bg-white px-3 pt-6 pb-3">
+          <Retrato tono="tinta" className="size-8 shrink-0 rounded-full" />
+          <div className="min-w-0">
+            <p className="text-[9px] font-semibold tracking-widest text-rojo uppercase">Mi gafete</p>
+            <p className="truncate font-titulos text-[13px] leading-tight font-extrabold">Hola, Luis</p>
+          </div>
+        </div>
+        <div className="space-y-1.5 px-2.5 pt-3">
+          {opciones.map((o) => (
+            <p key={o} className="rounded-lg bg-white px-2.5 py-2 text-[11px] font-semibold ring-1 ring-linea">
+              {o}
+            </p>
+          ))}
+        </div>
+        <p className="mt-3 px-3 text-[9px] font-semibold tracking-widest text-gris uppercase">Mis solicitudes</p>
+        <div className="mx-2.5 mt-1.5 flex items-center justify-between rounded-lg bg-white px-2.5 py-2 ring-1 ring-linea">
+          <span className="text-[11px] font-semibold">Foto nueva</span>
+          <span className="shrink-0 whitespace-nowrap rounded-full bg-[#e3f4ec] px-1.5 py-0.5 text-[9px] font-bold text-[#0a5c3b]">Aprobada</span>
+        </div>
+        <div className="mx-2.5 mt-1.5 flex items-center justify-between rounded-lg bg-white px-2.5 py-2 ring-1 ring-linea">
+          <span className="text-[11px] font-semibold">Reposición</span>
+          <span className="shrink-0 whitespace-nowrap rounded-full bg-resaltador/60 px-1.5 py-0.5 text-[9px] font-bold">En revisión</span>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -24,7 +24,7 @@ import {
   tramos,
 } from "./precios";
 import { grosorTexto, materiales, medidas, zonas } from "./materiales";
-import { accionesPlataforma, ajustesPlataforma, formasDeCargar, funcionesPlataforma } from "./plataforma";
+import { accionesPlataforma, ajustesPlataforma, confianzaPlataforma, formasDeCargar, funcionesPlataforma } from "./plataforma";
 import { rutasCiudades, rutasGiros, rutasPrincipales } from "./rutas";
 import { adicionalesPendientes } from "./contacto";
 import { constancia, entregaTexto, legal, site, urlAbsoluta } from "./site";
@@ -59,6 +59,15 @@ const datosClave = () =>
     `- Plataforma: incluida con la cuenta, sin costo extra (sin mensualidad, sin costo por usuario y sin pedido mínimo). Hoy incluye: ${funciones(false)}.${funciones(true) ? ` Próximamente: ${funciones(true)}.` : ""}`,
     `- Administración del equipo: ${accionesPlataforma.map((a) => a.titulo.toLowerCase()).join(", ")}. Ajustes de la empresa: ${ajustesPlataforma.map((a) => a.titulo.toLowerCase()).join(", ")}.`,
     `- Carga de datos del equipo: ${formasDeCargar.map((f) => `${f.titulo.charAt(0).toLowerCase()}${f.titulo.slice(1)}${f.pronto ? " (próximamente)" : ""}`).join("; ")}.`,
+    `- Portal de empleados «Mi gafete»: cada empresa tiene su liga (${site.dominio}/e/<empresa>). Cada persona entra desde su celular, sin crear cuenta, con un código que le llega a su correo o con su número de empleado y un NIP de 6 números (la empresa le da uno temporal y la persona crea el suyo; se bloquea tras varios intentos fallidos). Desde ahí pide cambiar su foto, corregir sus datos o reponer su gafete; la empresa aprueba o rechaza con motivo en una sola bandeja y la persona ve el estado. Incluido sin costo extra.`,
+    `- Liga para subir datos y foto: la empresa manda una liga por persona (copiada, por correo o por WhatsApp con el mensaje ya escrito); la persona llena sus datos y se toma la foto sin crear cuenta. La liga se cierra al enviar y solo se reabre si la empresa pide una corrección, que explica qué cambiar y por qué.`,
+    `- Cambio de foto desde el gafete digital: la persona propone una foto nueva y la empresa la compara con la anterior antes de aceptarla; si también tiene gafete impreso, la empresa puede pedir su reposición.`,
+    `- Avisos por correo para quien administra: por cada tipo (cambios de foto, datos y fotos por aprobar, solicitudes del portal) se elige al momento, resumen semanal los lunes (solo si hay pendientes) o ninguno. Sin elegir, llega el resumen semanal.`,
+    `- Usuarios: la empresa invita por correo a otras personas con rol de dueño, administrador o editor; la invitación vence a las 24 horas y se puede reenviar. Una misma cuenta puede administrar varias empresas. Se entra con correo y contraseña o con Google.`,
+    `- Diseño: los datos del equipo se guardan una vez y en cada diseño se elige qué se imprime y en qué cara; el nombre es opcional (gafetes genéricos). Diseños por reglas: un diseño distinto según puesto, departamento, sucursal, tipo de contrato o cualquier dato propio.`,
+    `- Compra en línea: carrito con paquetes prepagados de lista o a la medida, o lo calculado en el cotizador; se pide cuenta solo al pagar. Los gafetes prepagados quedan a favor de la empresa y se usan primero en los siguientes pedidos.`,
+    `- Seguimiento: la plataforma muestra el estado de cada pedido (pagado, en producción, enviado, entregado) y al enviarse llega un correo con la paquetería y el número de guía.`,
+    `- Seguridad y confianza: ${confianzaPlataforma.map((c) => `${c.titulo.charAt(0).toLowerCase()}${c.titulo.slice(1)} (${c.texto.charAt(0).toLowerCase()}${c.texto.slice(1).replace(/\.$/, "")})`).join("; ")}.`,
     `- Cómo se pide: en línea, con plantillas o diseño propio, campos variables (nombre, puesto, número, foto, código QR), carga del equipo y vista previa de cada gafete antes de pagar.`,
     `- Paquete a la medida: desde ${paqueteMinimoPiezas} gafetes, combinando cantidades, una cara o frente y vuelta, y materiales; el precio base por pieza es el del paquete de lista que corresponde al total.`,
     `- Requisito antes del primer pedido: verificar la empresa, con la opción que elija: su ${constancia.nombre} (no más de ${site.constanciaMeses} meses de antigüedad), INE más una prueba del negocio (liga a redes o Google Maps, o foto del local) si no tiene RFC, o un correo con el dominio de la empresa. Además acepta una carta de responsabilidad y la revisión es manual. El nombre debe coincidir con la empresa que aparece en los gafetes.`,
@@ -71,7 +80,7 @@ const datosClave = () =>
 export function llmsTxt(): string {
   return `# ${site.nombre}
 
-> ${site.nombre} es una tienda en línea mexicana dedicada a la administración e impresión de gafetes y credenciales para empleados o asistentes a eventos. Los hace impresos en PVC o digitales. El pedido es guiado: plantilla o diseño propio, carga del equipo con Excel, una por una, con las fotos de todos juntas o con una liga para que cada persona suba sus datos y su foto, vista previa de cada gafete y precio con envío desde el primer paso. Incluye, sin costo extra, una plataforma para administrar los gafetes del equipo. Envía a todo México.
+> ${site.nombre} es una tienda en línea mexicana dedicada a la administración e impresión de gafetes y credenciales para empleados o asistentes a eventos. Los hace impresos en PVC o digitales. El pedido es guiado: plantilla o diseño propio, carga del equipo con Excel, una por una, con las fotos de todos juntas o con una liga para que cada persona suba sus datos y su foto, vista previa de cada gafete y precio con envío desde el primer paso. Incluye, sin costo extra, una plataforma para administrar los gafetes del equipo y un portal de empleados, «Mi gafete», donde cada persona pide cambiar su foto, corregir sus datos o reponer su gafete y la empresa solo aprueba. Envía a todo México.
 
 Nota de vocabulario: en México, "gafete" y "credencial" se usan para la tarjeta de identificación del empleado. El "portagafete" es la funda o broche donde se coloca. ${site.nombre} hace la tarjeta, impresa o digital.
 
@@ -113,7 +122,7 @@ export function llmsFullTxt(): string {
   const porGiro = giros
     .map(
       (g) =>
-        `### Gafetes y credenciales para ${g.nombre}\n\n${g.respuesta}\n\nCampos recomendados: ${g.campos.join(", ")}.\n\nConsejo: ${g.consejo}\n\nMás información: ${urlAbsoluta(`/gafetes-para/${g.slug}`)}`,
+        `### Gafetes y credenciales para ${g.nombre}\n\n${g.respuesta}\n\nCampos recomendados: ${g.campos.join(", ")}.\n\nConsejo: ${g.consejo}\n\nLo que más le sirve de la plataforma: ${g.plataforma.map((f) => `${f.titulo}: ${f.texto}`).join(" ")}\n\nMás información: ${urlAbsoluta(`/gafetes-para/${g.slug}`)}`,
     )
     .join("\n\n");
 

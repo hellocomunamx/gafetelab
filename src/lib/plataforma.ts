@@ -13,6 +13,10 @@ export const accionesPlataforma = [
     texto: "Vuelve a pedir un gafete perdido o dañado sin capturar otra vez sus datos.",
   },
   {
+    titulo: "Solicitudes de tu equipo",
+    texto: "Aprueba en una sola bandeja los cambios de foto, las correcciones de datos y las reposiciones que pide tu gente.",
+  },
+  {
     titulo: "Desactivaciones",
     texto: "Desactiva un gafete al momento: quien escanee su código QR ya no lo ve como vigente.",
   },
@@ -89,7 +93,7 @@ export const formasDeCargar: Funcion[] = [
   {
     titulo: "Con una liga para cada persona",
     texto:
-      "Mandas una liga por correo o WhatsApp y cada quien sube sus datos y su foto, sin crear cuenta. Tú apruebas o rechazas antes de imprimir.",
+      "Mandas una liga por correo o WhatsApp y cada quien sube sus datos y se toma su foto, sin crear cuenta. La liga se cierra al enviar y tú apruebas o pides una corrección antes de imprimir.",
   },
 ];
 
@@ -108,6 +112,11 @@ export const funcionesPlataforma: { grupo: string; resumen: string; funciones: F
           "Agrega a quien entra y da de baja a quien se va. Filtra por departamento, puesto, estatus o tipo de contrato.",
       },
       {
+        titulo: "Equipo guiado, paso a paso",
+        texto:
+          "Primero los datos de tu equipo, luego las fotos y al final el diseño. Siempre sabes qué falta y a quién.",
+      },
+      {
         titulo: "Carga como te acomode",
         texto: "Con Excel, una persona a la vez, las fotos de todos juntas o una liga para cada persona. Nadie se captura dos veces.",
       },
@@ -117,11 +126,42 @@ export const funcionesPlataforma: { grupo: string; resumen: string; funciones: F
       },
       {
         titulo: "Usuarios con roles",
-        texto: "Invita a quien te ayuda con los gafetes y decide qué puede hacer: dueño, administrador o editor.",
+        texto:
+          "Invita a quien te ayuda y decide qué puede hacer: dueño, administrador o editor. Con una sola cuenta puedes llevar varias empresas.",
       },
       {
-        titulo: "Liga para cada persona",
-        texto: "Cada quien sube sus datos y su foto desde su celular, y tú apruebas o rechazas.",
+        titulo: "Avisos a tu manera",
+        texto: "Elige qué te avisamos por correo y cuándo: al momento, en un resumen semanal los lunes o nunca.",
+      },
+    ],
+  },
+  {
+    grupo: "Tu gente, por su cuenta",
+    resumen: "Cada persona resuelve lo suyo desde su celular, y tú solo apruebas.",
+    funciones: [
+      {
+        titulo: "Portal «Mi gafete»",
+        texto:
+          "Tu empresa tiene su propia liga. Cada persona entra con un código que le llega a su correo, o con su número de empleado y su NIP.",
+      },
+      {
+        titulo: "Solicitudes con seguimiento",
+        texto:
+          "Desde su portal piden cambiar su foto, corregir un dato o reponer su gafete. Tú lo apruebas en una sola bandeja y ellos ven en qué va.",
+      },
+      {
+        titulo: "Liga para subir datos y foto",
+        texto:
+          "Cada quien llena sus datos y se toma la foto, sin crear cuenta. La liga se cierra al enviar y solo se reabre si tú pides una corrección.",
+      },
+      {
+        titulo: "Correcciones con motivo",
+        texto:
+          "Si una foto no sirve, dices qué cambiar y por qué, y se lo mandas por correo o por WhatsApp con el mensaje ya escrito.",
+      },
+      {
+        titulo: "Cambio de foto desde el gafete digital",
+        texto: "La persona propone su foto nueva desde su celular y tú decides si la aceptas, comparando la de antes con la de ahora.",
       },
     ],
   },
@@ -140,13 +180,14 @@ export const funcionesPlataforma: { grupo: string; resumen: string; funciones: F
           "Si ya tienes el gafete terminado de cada persona, súbelos de forma masiva. Cada uno se asigna solo por el nombre del archivo y revisamos su medida y su calidad.",
       },
       {
-        titulo: "Campos a tu medida",
-        texto: "Tú decides qué lleva tu gafete: puesto, área, tipo de sangre, vigencia o lo que tu empresa necesite.",
+        titulo: "Qué va impreso, por diseño",
+        texto:
+          "Guardas todos los datos de tu equipo y, en cada diseño, eliges cuáles se imprimen y en qué cara. El nombre es opcional, para gafetes genéricos.",
       },
       {
         titulo: "Tú decides qué muestra tu QR",
         texto:
-          "Una página de verificación que dice si el gafete está vigente o expirado, una liga tuya o un dato. Va incluida en todos los gafetes, sin costo extra.",
+          "Una página de verificación que dice si el gafete está vigente, con los campos que tú elijas, una liga tuya o un dato. Incluido en todos los gafetes, sin costo extra.",
       },
       {
         titulo: "Vista previa de cada gafete",
@@ -154,7 +195,7 @@ export const funcionesPlataforma: { grupo: string; resumen: string; funciones: F
       },
       {
         titulo: "Diseños por reglas",
-        texto: "Un diseño distinto según el puesto, el departamento, la sucursal o el tipo de contrato.",
+        texto: "Un diseño distinto según el puesto, el departamento, la sucursal, el tipo de contrato o cualquier otro dato de tu equipo.",
       },
     ],
   },
@@ -163,22 +204,75 @@ export const funcionesPlataforma: { grupo: string; resumen: string; funciones: F
     resumen: "Pide lo de hoy sin empezar de cero cada vez.",
     funciones: [
       {
-        titulo: "Envío y facturación guardados",
-        texto: "Tus direcciones y tus datos fiscales se capturan una vez y quedan listos para cada pedido.",
+        titulo: "Carrito y paquetes prepagados",
+        texto:
+          "Compra en línea un paquete de lista o uno a la medida. Tus gafetes quedan a tu favor y se usan solos en tus siguientes pedidos.",
+      },
+      {
+        titulo: "Pago en línea",
+        texto: "Con tarjeta, en efectivo en OXXO o por transferencia (SPEI). Con tarjeta tienes unos minutos para cancelar sin cargo.",
+      },
+      {
+        titulo: "Envíos con rastreo",
+        texto: "Ves el estado de cada pedido y, cuando sale, te llega un correo con la paquetería y la guía para seguirlo.",
+      },
+      {
+        titulo: "Facturas",
+        texto: "Tus datos fiscales se capturan una vez. Pides tu factura al pagar o después, dentro del mismo mes.",
       },
       {
         titulo: "Reposiciones",
         texto: "Vuelve a pedir un gafete perdido o dañado sin capturar otra vez sus datos.",
       },
       {
-        titulo: "Predeterminados de tu negocio",
-        texto: "Tu material, tu diseño y tu dirección de entrega ya vienen elegidos en cada pedido nuevo.",
-      },
-      {
-        titulo: "Pedido abierto con aviso",
-        texto: "Ve sumando altas y reposiciones, y te avisamos cuando llegues a la cantidad que tú elijas.",
+        titulo: "Predeterminados y pedido abierto",
+        texto:
+          "Tu material, tu diseño y tu dirección ya vienen elegidos. Ve sumando altas y reposiciones, y te avisamos cuando llegues a la cantidad que tú elijas.",
       },
     ],
+  },
+];
+
+/** Lo que cuida que nadie haga gafetes a nombre de tu empresa ni abuse de la plataforma. */
+export const confianzaPlataforma: Funcion[] = [
+  {
+    titulo: "Verificación a tu elección",
+    texto:
+      "Con tu constancia de situación fiscal, con tu INE y una prueba de tu negocio, o con un correo de tu empresa. La revisamos a mano y se hace una sola vez.",
+  },
+  {
+    titulo: "Insignia «Empresa verificada»",
+    texto: "Cuando tu empresa queda verificada, lo ves en tu plataforma y ya puedes pedir.",
+  },
+  {
+    titulo: "Entra con Google",
+    texto: "Crea tu cuenta o entra con tu cuenta de Google en un clic, o con tu correo y contraseña.",
+  },
+  {
+    titulo: "Protección contra abuso",
+    texto:
+      "Límites de intentos, verificación contra robots y revisión automática de cada foto e identificación que se sube, para que tu plataforma solo tenga lo que debe.",
+  },
+];
+
+/** El portal de empleados «Mi gafete», contado en pasos para quien lo usa. */
+export const portalEmpleados: Funcion[] = [
+  {
+    titulo: "Una liga para toda tu empresa",
+    texto: "Por ejemplo, lagafeteria.com/e/tu-empresa. La compartes una vez en tu grupo de WhatsApp o en tu intranet.",
+  },
+  {
+    titulo: "Entra en segundos",
+    texto:
+      "Con un código que le llega a su correo, o con su número de empleado y un NIP de 6 números: tú le das uno temporal y la persona crea el suyo.",
+  },
+  {
+    titulo: "Pide lo que necesita",
+    texto: "Cambiar su foto, corregir su nombre o su puesto, o reponer su gafete perdido o dañado.",
+  },
+  {
+    titulo: "Tú apruebas, y ve en qué va",
+    texto: "Todo llega a una sola bandeja. Apruebas o rechazas con un motivo, y la persona ve el estado desde su celular.",
   },
 ];
 

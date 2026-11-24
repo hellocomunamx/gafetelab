@@ -36,11 +36,11 @@ export function SinCostoExtra({ oscuro = false, className = "" }: { oscuro?: boo
   );
 }
 
-/** Las funciones de la plataforma en tres tarjetas, una por grupo. */
+/** Las funciones de la plataforma en tarjetas, una por grupo. */
 export function GruposFunciones({ oscuro = false }: { oscuro?: boolean }) {
   const tenue = oscuro ? "text-white/70" : "text-gris";
   return (
-    <div className="grid gap-5 lg:grid-cols-3">
+    <div className="grid gap-5 md:grid-cols-2">
       {funcionesPlataforma.map((g) => (
         <section
           key={g.grupo}

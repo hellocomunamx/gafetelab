@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Etiqueta } from "@/components/Etiqueta";
 import { Faq } from "@/components/Faq";
+import { Palomita } from "@/components/Funciones";
 import { JsonLd } from "@/components/JsonLd";
 import { TablaPrecios } from "@/components/TablaPrecios";
 import { Cierre, Portada, Seccion } from "@/components/ui";
@@ -11,6 +12,7 @@ import { giroPorSlug, giros } from "@/lib/giros";
 import { notaIva } from "@/lib/precios";
 import { migas, paginaFaq, servicio } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
+import { site } from "@/lib/site";
 
 // Solo existen las rutas de la lista; cualquier otra responde 404 real.
 export const dynamicParams = false;
@@ -31,9 +33,9 @@ export async function generateMetadata({
   });
 }
 
-// Preguntas generales que aplican a cualquier giro: precio, mínimo y entrega.
+// Preguntas generales que aplican a cualquier giro: mínimo, entrega y portal de empleados.
 const faqsBase = faqsGenerales.filter((f) =>
-  ["¿Hay pedido mínimo?", "¿Cuánto tarda en llegar mi pedido?"].includes(f.pregunta),
+  ["¿Hay pedido mínimo?", "¿Cuánto tarda en llegar mi pedido?", "¿Qué es «Mi gafete», el portal para empleados?"].includes(f.pregunta),
 );
 
 export default async function PaginaGiro({ params }: PageProps<"/gafetes-para/[giro]">) {
@@ -83,17 +85,33 @@ export default async function PaginaGiro({ params }: PageProps<"/gafetes-para/[g
             </li>
           ))}
         </ul>
-        <p className="mt-6 max-w-2xl text-gris">
-          En LaGafetería cargas tu lista con Excel, revisas la vista previa de cada gafete y pides
-          desde una pieza, así que cada ingreso tiene su gafete sin esperar al siguiente pedido
-          grande.{" "}
-          <Link href="/como-funciona" className="font-semibold text-rojo underline underline-offset-4">
-            Ver cómo funciona
+      </Seccion>
+
+      <Seccion titulo={`Lo que te resuelve la plataforma en ${giro.nombre}`}>
+        <p className="-mt-2 mb-8 max-w-2xl text-lg text-gris">
+          Con tu cuenta de {site.nombre} tienes, sin costo extra, una plataforma para administrar los
+          gafetes de tu equipo. Pides desde una pieza y cada ingreso tiene su gafete sin esperar al
+          siguiente pedido grande.
+        </p>
+        <ul className="grid gap-4 md:grid-cols-3">
+          {giro.plataforma.map((f) => (
+            <li key={f.titulo} className="flex gap-2.5 rounded-tarjeta border border-linea p-5">
+              <Palomita className="mt-0.5 text-rojo" />
+              <div>
+                <h3 className="font-bold">{f.titulo}</h3>
+                <p className="mt-1 text-sm text-gris">{f.texto}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-6">
+          <Link href="/plataforma" className="font-semibold text-rojo underline underline-offset-4">
+            Ver todo lo que incluye la plataforma
           </Link>
         </p>
       </Seccion>
 
-      <Seccion titulo={`¿Cuánto cuestan los gafetes para ${giro.nombre}?`}>
+      <Seccion titulo={`¿Cuánto cuestan los gafetes para ${giro.nombre}?`} fondo>
         <p className="-mt-2 mb-6 max-w-2xl text-lg text-gris">
           El precio depende solo de la cantidad de piezas, no del giro. Precios en pesos mexicanos,{" "}
           {notaIva}.
@@ -101,13 +119,13 @@ export default async function PaginaGiro({ params }: PageProps<"/gafetes-para/[g
         <TablaPrecios />
       </Seccion>
 
-      <Seccion titulo={`Preguntas sobre gafetes para ${giro.nombre}`} fondo>
+      <Seccion titulo={`Preguntas sobre gafetes para ${giro.nombre}`}>
         <div className="max-w-3xl">
           <Faq faqs={faqs} />
         </div>
       </Seccion>
 
-      <Seccion titulo="Otros giros">
+      <Seccion titulo="Otros giros" fondo>
         <ul className="flex flex-wrap gap-2">
           {otros.map((g) => (
             <li key={g.slug}>

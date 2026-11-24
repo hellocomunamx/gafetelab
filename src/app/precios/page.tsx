@@ -57,7 +57,7 @@ const faqsPrecios: FaqItem[] = [
   {
     pregunta: "¿Hay suscripción, mensualidad o costo por usar la plataforma?",
     respuesta:
-      "No. Pagas una sola vez por cada gafete. Diseñar, usar plantillas, cargar tu Excel, revisar la vista previa y administrar altas, bajas, reposiciones, desactivaciones y reactivaciones en tu plataforma no tiene costo.",
+      "No. Pagas una sola vez por cada gafete. Diseñar, usar plantillas, cargar tu Excel, mandar ligas para que cada quien suba su foto, revisar la vista previa, administrar altas, bajas, reposiciones, desactivaciones y reactivaciones, invitar a otros usuarios y darle a tu equipo su portal «Mi gafete» no tiene costo.",
   },
   {
     pregunta: "¿Cuánto cuesta el envío?",
@@ -65,7 +65,7 @@ const faqsPrecios: FaqItem[] = [
   },
   {
     pregunta: "¿Qué son los paquetes prepagados?",
-    respuesta: `Son gafetes impresos que compras por adelantado y vas pidiendo conforme los necesitas, sin pagar envío cada vez. Hay paquetes de ${paquetes.map((p) => p.piezas).join(", ")} gafetes; el de ${paquetes[0].piezas} cuesta ${pesos(precioPaquete(paquetes[0]))} e incluye ${paquetes[0].envios} envíos. También puedes armar un paquete a la medida, combinando cantidades, caras y materiales. Los gafetes se pueden usar durante ${paqueteVigenciaMeses} meses.`,
+    respuesta: `Son gafetes impresos que compras en línea por adelantado, desde el carrito, y vas pidiendo conforme los necesitas, sin pagar envío cada vez. Hay paquetes de ${paquetes.map((p) => p.piezas).join(", ")} gafetes; el de ${paquetes[0].piezas} cuesta ${pesos(precioPaquete(paquetes[0]))} e incluye ${paquetes[0].envios} envíos. También puedes armar un paquete a la medida, combinando cantidades, caras y materiales. Quedan a tu favor durante ${paqueteVigenciaMeses} meses y se usan solos en tus siguientes pedidos.`,
   },
   {
     pregunta: "¿Cuánto cuesta cambiar de material?",

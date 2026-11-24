@@ -15,6 +15,8 @@ export type Giro = {
   retos: string[];
   campos: string[];
   consejo: string;
+  /** Tres funciones de la plataforma que más le sirven a este giro, contadas en su idioma. */
+  plataforma: { titulo: string; texto: string }[];
   faqs: Faq[];
 };
 
@@ -36,6 +38,11 @@ export const giros: Giro[] = [
     campos: ["Nombre de pila", "Puesto", "Sucursal", "Número de empleado", "Logo de la tienda"],
     consejo:
       "Usa solo el nombre de pila en letra grande. El apellido casi nunca hace falta frente al cliente y le quita espacio al nombre.",
+    plataforma: [
+      { titulo: "Una liga para cada ingreso", texto: "El cajero nuevo llena sus datos y se toma la foto desde su celular. Tú apruebas y pides su gafete el mismo día." },
+      { titulo: "Diseño por sucursal", texto: "Con diseños por reglas, cada tienda o cada puesto recibe el gafete que le toca, sin armar pedidos por separado." },
+      { titulo: "Pedido abierto", texto: "Ve sumando altas y reposiciones de todas tus sucursales y te avisamos cuando llegues a la cantidad que elegiste." },
+    ],
     faqs: [
       {
         pregunta: "¿Puedo pedir gafetes para varias sucursales en un solo pedido?",
@@ -66,6 +73,11 @@ export const giros: Giro[] = [
     campos: ["Nombre de pila", "Puesto", "Área", "Logo del restaurante"],
     consejo:
       "El PVC se limpia con un trapo húmedo, así que aguanta la operación diaria. Evita fondos muy claros en cocina, donde las manchas se notan más.",
+    plataforma: [
+      { titulo: "Paquetes prepagados", texto: "Deja pagados tus gafetes, con envíos incluidos, y pide uno cada vez que entra alguien." },
+      { titulo: "Un color por área", texto: "Con diseños por reglas, salón, cocina, barra y reparto reciben su versión sin que tú elijas una por una." },
+      { titulo: "Reposición desde el celular", texto: "Si un mesero pierde su gafete, lo pide desde «Mi gafete» y tú solo apruebas la reposición." },
+    ],
     faqs: [
       {
         pregunta: "¿Los gafetes aguantan el uso en cocina y salón?",
@@ -103,6 +115,11 @@ export const giros: Giro[] = [
     ],
     consejo:
       "Imprime frente y vuelta: al frente la identificación, y atrás los datos de contacto de la empresa para que cualquier persona pueda verificar al elemento.",
+    plataforma: [
+      { titulo: "QR que dice si está vigente", texto: "Quien escanea el gafete ve al momento si el guardia sigue activo, con los datos que tú elijas mostrar." },
+      { titulo: "Baja en un clic", texto: "Si alguien deja la empresa, lo das de baja y su página de verificación deja de mostrar sus datos." },
+      { titulo: "Foto siempre al día", texto: "El guardia propone su foto nueva desde su gafete digital y tú la comparas con la anterior antes de aceptarla." },
+    ],
     faqs: [
       {
         pregunta: "¿Imprimen credenciales oficiales o de gobierno para guardias?",
@@ -133,6 +150,11 @@ export const giros: Giro[] = [
     campos: ["Fotografía", "Nombre completo", "Puesto", "Cliente o sitio asignado", "Logo de la empresa"],
     consejo:
       "Si un mismo empleado cubre varios sitios, deja fuera el nombre del cliente y pon solo tu empresa; así el gafete sirve en todos.",
+    plataforma: [
+      { titulo: "Gafete digital en el celular", texto: "Para quien cambia de instalación seguido: lo muestra en el celular, con su QR de verificación." },
+      { titulo: "Fotos sin perseguir a nadie", texto: "Mandas una liga por WhatsApp y cada persona se toma su foto. La liga se cierra al enviar." },
+      { titulo: "Portal para tu personal", texto: "Cada quien pide sus correcciones o su reposición desde «Mi gafete», con su número de empleado y su NIP." },
+    ],
     faqs: [
       {
         pregunta: "¿Puedo pedir pocos gafetes cada mes?",
@@ -158,6 +180,11 @@ export const giros: Giro[] = [
     campos: ["Fotografía", "Nombre completo", "Número de empleado", "Campaña", "Puesto"],
     consejo:
       "Para grupos de capacitación, sube el Excel de toda la generación de una vez: se genera un gafete por renglón y revisas la vista previa de cada uno.",
+    plataforma: [
+      { titulo: "Altas masivas con Excel", texto: "Sube a toda una generación de agentes con la plantilla, y quien ya estaba se actualiza en lugar de repetirse." },
+      { titulo: "Diseño por campaña", texto: "Con diseños por reglas, cada campaña o área recibe su versión del gafete." },
+      { titulo: "Avisos a tu manera", texto: "Recibe las solicitudes de tu equipo al momento o en un resumen semanal, para no llenar tu bandeja." },
+    ],
     faqs: [
       {
         pregunta: "¿Cuántos gafetes puedo cargar con un Excel?",
@@ -183,6 +210,11 @@ export const giros: Giro[] = [
     campos: ["Fotografía", "Nombre y título", "Especialidad o puesto", "Área", "Logo de la clínica"],
     consejo:
       "Usa un color por función (médicos, enfermería, administración). Ayuda a pacientes y también al personal nuevo.",
+    plataforma: [
+      { titulo: "Datos a tu medida", texto: "Guarda cédula, especialidad o área, y en cada diseño eliges cuáles se imprimen y en qué cara." },
+      { titulo: "QR con tus campos", texto: "Quien escanea ve el nombre, el puesto y si el gafete está vigente, con solo los datos que tú autorizas." },
+      { titulo: "Varias personas administrando", texto: "Invita a recepción o a RH con su propio rol, sin compartir contraseñas." },
+    ],
     faqs: [
       {
         pregunta: "¿Se pueden limpiar o desinfectar los gafetes?",
@@ -213,6 +245,11 @@ export const giros: Giro[] = [
     campos: ["Fotografía", "Nombre completo", "Grado y grupo o puesto", "Matrícula", "Ciclo escolar"],
     consejo:
       "Exporta la lista de tu sistema escolar a Excel y úsala tal cual: solo conectas cada columna con su campo en el gafete.",
+    plataforma: [
+      { titulo: "Una liga por persona", texto: "Docentes y personal llenan sus datos y se toman la foto desde su celular, y tú apruebas antes de imprimir." },
+      { titulo: "Diseño por tipo de persona", texto: "Con diseños por reglas, docentes, administrativos y alumnos reciben su versión." },
+      { titulo: "Pedido abierto", texto: "Junta altas durante el ciclo escolar y pide cuando llegues a la cantidad que tú elijas." },
+    ],
     faqs: [
       {
         pregunta: "¿Puedo pedir credenciales para alumnos y para personal en el mismo pedido?",
@@ -238,6 +275,11 @@ export const giros: Giro[] = [
     campos: ["Nombre", "Empresa", "Categoría", "Código QR", "Logo del evento"],
     consejo:
       "Considera el tiempo de producción y envío al cerrar tu registro, y pide algunas piezas extra con el campo de nombre en blanco para registros de última hora.",
+    plataforma: [
+      { titulo: "Nombre opcional", texto: "El nombre es opcional, así que también haces gafetes genéricos de staff o de prensa, sin nombre." },
+      { titulo: "Diseño por categoría", texto: "Con diseños por reglas, staff, expositores y asistentes reciben su versión." },
+      { titulo: "Carga masiva", texto: "Sube tu lista de registro con Excel y revisa la vista previa de cada gafete antes de pagar." },
+    ],
     faqs: [
       {
         pregunta: "¿Pueden enviar los gafetes directo a la sede del evento?",
