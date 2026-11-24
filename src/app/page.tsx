@@ -8,7 +8,7 @@ import { HeroAnimado } from "@/components/HeroAnimado";
 import { JsonLd } from "@/components/JsonLd";
 import { Celular, CelularPortal, GafeteHorizontal, VentanaPlataforma } from "@/components/Muestras";
 import { TablaPrecios } from "@/components/TablaPrecios";
-import { VideoPitch } from "@/components/VideoPitch";
+import { VideosAlternados } from "@/components/VideosAlternados";
 import { Boton, Cierre, Contenedor, CTA_TEXTO, Seccion } from "@/components/ui";
 import { faqsGenerales } from "@/lib/faqs";
 import { giros } from "@/lib/giros";
@@ -100,25 +100,18 @@ export default function Inicio() {
         <Contenedor className="py-12 sm:py-16">
           <p className="text-center font-mano text-2xl text-rojo">Te lo contamos rapidito</p>
           <h2 className="mt-1 text-center text-3xl font-extrabold">
-            {site.nombre} en 50 segundos
+            {site.nombre} en menos de un minuto
           </h2>
           <p className="mx-auto mt-3 mb-8 max-w-2xl text-center text-lg text-gris">
             Gafetes y credenciales para tu equipo de trabajo o para tu próximo evento, sin mandar
             archivos por correo.
           </p>
-          <div className="grid gap-8 lg:grid-cols-2 lg:gap-6">
-            {[
-              { v: videoPitch, etiqueta: "Para tu equipo" },
-              { v: videoEventos, etiqueta: "Para tus eventos" },
-            ].map(({ v, etiqueta }) => (
-              <figure key={v.src}>
-                <VideoPitch src={v.src} portada={v.portada} titulo={v.titulo} duracion={v.duracion} />
-                <figcaption className="mt-3 text-center font-titulos text-lg font-extrabold">
-                  {etiqueta}
-                </figcaption>
-              </figure>
-            ))}
-          </div>
+          <VideosAlternados
+            videos={[
+              { ...videoPitch, etiqueta: "Para tu equipo" },
+              { ...videoEventos, etiqueta: "Para tus eventos" },
+            ]}
+          />
         </Contenedor>
       </section>
 
