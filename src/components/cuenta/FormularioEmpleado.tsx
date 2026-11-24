@@ -1,6 +1,7 @@
 import { guardarEmpleado } from "@/app/cuenta/acciones";
 import { estatusEmpleado } from "@/lib/cuenta/catalogos";
 import type { Campo, Empleado } from "@/lib/cuenta/tipos";
+import { CampoSugerencias } from "./CampoSugerencias";
 import { Entrada, Seleccion } from "./Entrada";
 import { Formulario } from "./Formulario";
 
@@ -35,8 +36,21 @@ export function FormularioEmpleado({
         />
         <Entrada etiqueta={etiqueta("numero_empleado", "Número de empleado")} name="numero_empleado" maxLength={40} defaultValue={empleado?.numero_empleado ?? ""} />
         <Entrada etiqueta={etiqueta("puesto", "Puesto")} name="puesto" maxLength={120} defaultValue={empleado?.puesto ?? ""} />
-        <Entrada etiqueta={etiqueta("departamento", "Departamento")} name="departamento" maxLength={120} list="departamentos" autoComplete="off" defaultValue={empleado?.departamento ?? ""} />
-        <Entrada etiqueta={etiqueta("tipo_contrato", "Tipo de contrato")} name="tipo_contrato" maxLength={60} list="contratos" autoComplete="off" defaultValue={empleado?.tipo_contrato ?? ""} ayuda="Por ejemplo: Planta, Temporal o Visitante." />
+        <CampoSugerencias
+          etiqueta={etiqueta("departamento", "Departamento")}
+          name="departamento"
+          maxLength={120}
+          sugerencias={departamentos}
+          defaultValue={empleado?.departamento ?? ""}
+        />
+        <CampoSugerencias
+          etiqueta={etiqueta("tipo_contrato", "Tipo de contrato")}
+          name="tipo_contrato"
+          maxLength={60}
+          sugerencias={[...contratos, "Planta", "Temporal", "Visitante"]}
+          defaultValue={empleado?.tipo_contrato ?? ""}
+          ayuda="Elige una opción o escribe la tuya."
+        />
         <Entrada etiqueta="Correo" name="correo" type="email" maxLength={200} defaultValue={empleado?.correo ?? ""} ayuda="Para mandarle su liga. No se imprime en el gafete." />
         {propios.map((c) => (
           <Entrada
@@ -56,16 +70,6 @@ export function FormularioEmpleado({
           </Seleccion>
         )}
       </div>
-      <datalist id="departamentos">
-        {departamentos.map((d) => (
-          <option key={d} value={d} />
-        ))}
-      </datalist>
-      <datalist id="contratos">
-        {[...new Set([...contratos, "Planta", "Temporal", "Visitante"])].map((c) => (
-          <option key={c} value={c} />
-        ))}
-      </datalist>
     </Formulario>
   );
 }
