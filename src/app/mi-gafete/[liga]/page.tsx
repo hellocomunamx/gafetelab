@@ -70,11 +70,10 @@ export default async function MiGafete({ params }: { params: Promise<{ liga: str
   // Ya mandó su información: la liga queda cerrada hasta que la empresa pida una corrección.
   const cerrada = Boolean(propuesta && propuesta.estado !== "rechazada");
   const loEnviado = empresa.liga_foto ? "Tu fotografía ya fue enviada" : "Tu información ya fue enviada";
-  const alDepartamento = `solicítalo al departamento correspondiente de ${empresa.nombre}`;
-  // Con gafete digital, la foto se cambia en el bloque «Cambiar mi foto»; lo demás, con la empresa.
+  // Con gafete digital, la foto se cambia desde «Cambiar mi foto»; lo demás, con su empresa.
   const paraCambiar = digital
-    ? `Para cambiar tu foto, usa «Cambiar mi foto», arriba.${lista.length ? ` Si necesitas cambiar un dato, ${alDepartamento}.` : ""}`
-    : `Si necesitas cambiar${empresa.liga_foto ? "la" : " algo"}, ${alDepartamento}.`;
+    ? `Si necesitas cambiar tu foto, hazlo desde «Cambiar mi foto». Para cualquier otro dato, solicítalo al departamento correspondiente de ${empresa.nombre}.`
+    : `Si necesitas cambiar${empresa.liga_foto ? "la" : " algo"}, solicítalo al departamento correspondiente de ${empresa.nombre}.`;
   const aviso =
     propuesta?.estado === "pendiente"
       ? {
