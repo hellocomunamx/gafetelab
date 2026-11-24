@@ -2,7 +2,7 @@ import Link from "next/link";
 import { JsonLd } from "@/components/JsonLd";
 import { Apartado, fechaLegal } from "@/components/Legal";
 import { Contenedor, Portada } from "@/components/ui";
-import { envio, notaIva, paqueteVigenciaMeses, pesos } from "@/lib/precios";
+import { envio, notaIva, paqueteDistinto, paqueteNoIncluye, paqueteSaldoIguales, paqueteVigenciaMeses, pesos } from "@/lib/precios";
 import { pago } from "@/lib/pedidos/reglas";
 import { migas } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
@@ -240,9 +240,12 @@ export default function Terminos() {
 
           <Apartado numero={10} titulo="Paquetes prepagados">
             <p>
-              Cuando estén disponibles, los paquetes prepagados funcionarán así: compras por
-              adelantado cierta cantidad de gafetes impresos, con un número de envíos incluidos, y los
-              vas pidiendo conforme los necesitas. Se compran gafetes, no saldo en pesos. Cada paquete
+              Con un paquete prepagado compras por adelantado cierta cantidad de gafetes impresos, con
+              un número de envíos incluidos, y los vas pidiendo conforme los necesitas. Se compran
+              gafetes, no saldo en pesos. Los paquetes de lista son de gafetes de PVC estándar impresos
+              a una cara y no incluyen {paqueteNoIncluye}; en un paquete a la medida, cada tipo de
+              gafete lleva las caras y el material que elegiste al comprarlo. {paqueteSaldoIguales}{" "}
+              {paqueteDistinto} Cada paquete
               tiene una vigencia de {paqueteVigenciaMeses} meses desde su compra; los gafetes y envíos
               que no uses en ese plazo se pierden. Los paquetes no son reembolsables, ni completos ni por la
               parte que no se haya usado, pero sí puedes transferirlos sin costo a la cuenta de otra empresa.

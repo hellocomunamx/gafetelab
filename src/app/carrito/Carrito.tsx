@@ -6,7 +6,7 @@ import { useState, useSyncExternalStore, useTransition } from "react";
 import { carritoMaximoPiezas, cotizarCarrito } from "@/lib/carrito";
 import { cambiarPiezas, quitarDelCarrito, useCarrito, vaciarCarrito } from "@/lib/carrito-navegador";
 import { pago, soloTransferencia } from "@/lib/pedidos/reglas";
-import { notaIva, paqueteVigenciaMeses, pesos } from "@/lib/precios";
+import { notaIva, paqueteDistinto, paqueteSaldoIguales, paqueteVigenciaMeses, pesos } from "@/lib/precios";
 import { entregaTexto } from "@/lib/site";
 import { comprarCarrito } from "./acciones";
 
@@ -172,6 +172,10 @@ export function Carrito({ estado }: { estado: EstadoCompra }) {
             <li>En tu plataforma subes a tu equipo y tu diseño, cuando quieras.</li>
             <li>Pides los gafetes que necesites: salen de tu saldo y te llegan en {entregaTexto}.</li>
           </ol>
+          <p className="mt-2 text-gris">
+            {paqueteSaldoIguales} Los paquetes de lista son de PVC estándar impresos a una cara, sin
+            gafete digital. {paqueteDistinto}
+          </p>
           <p className="mt-2 text-gris">
             Se pueden usar durante {paqueteVigenciaMeses} meses. No son reembolsables y sí se pueden transferir a la cuenta de otra empresa.
           </p>

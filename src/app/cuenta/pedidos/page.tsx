@@ -74,7 +74,9 @@ export default async function Pedidos() {
             </span>
           </p>
           <p className="mt-1 text-sm text-gris">
-            Se usan primero cada vez que haces un pedido.{vence ? ` Los que vencen antes, el ${fechaLarga(vence)}.` : ""}
+            Se usan primero cada vez que pides gafetes iguales a los que compraste. Lo distinto (frente y
+            vuelta, otro material, gafete digital que no hayas prepagado o cordón) no se toma de tu saldo:
+            se cobra aparte.{vence ? ` Los que vencen antes, el ${fechaLarga(vence)}.` : ""}
           </p>
           {administra ? (
             <Link href="/cuenta/pedidos/nuevo" className={`${claseBoton} mt-4`}>
