@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { type ChangeEvent, type DragEvent, useEffect, useMemo, useRef, useState } from "react";
 import { asignarFotos } from "@/app/cuenta/acciones";
 import { crearEmparejador, type PersonaFoto, type Via } from "@/lib/cuenta/emparejar";
+import { AjustarFoto, type FotoAjustada } from "@/components/AjustarFoto";
 import { prepararFoto, rutaFoto } from "@/lib/cuenta/imagen";
 import { extraerImagenes, type ImagenSuelta } from "@/lib/cuenta/zip";
 import { crearClienteNavegador } from "@/lib/supabase/client";
@@ -20,6 +21,8 @@ type Foto = {
   via: Via | "manual" | null;
   /** Se reconoció a la persona, pero otra foto de la tanda ya era para ella. */
   choque?: string;
+  /** Encuadre elegido a mano; sin él, la foto se centra sola al subir. */
+  ajuste?: Omit<FotoAjustada, "foto"> & { lista: Blob };
 };
 
 const MAXIMO = 500;
@@ -39,6 +42,8 @@ export function SubirFotos({ empresaId, personas }: { empresaId: string; persona
   const [encima, setEncima] = useState(false);
   const [avance, setAvance] = useState<{ hechas: number; total: number }>();
   const [resultado, setResultado] = useState<{ subidas: number; fallas: string[] }>();
+  /** Foto abierta en el editor de encuadre. */
+  const [ajustando, setAjustando] = useState<string>();
   const urls = useRef<string[]>([]);
   const actuales = useRef<Foto[]>([]);
   useEffect(() => {
@@ -98,6 +103,7 @@ export function SubirFotos({ empresaId, personas }: { empresaId: string; persona
     asignadas.map((f) => f.empleadoId).filter((id, i, todas) => todas.indexOf(id) !== i),
   );
   const porPersona = new Map(personas.map((p) => [p.id, p]));
+  const editando = fotos.find((f) => f.clave === ajustando);
   const subiendo = Boolean(avance);
 
   async function subir() {
@@ -115,7 +121,7 @@ export function SubirFotos({ empresaId, personas }: { empresaId: string; persona
         while (siguiente < pendientes.length) {
           const foto = pendientes[siguiente++];
           try {
-            const lista = await prepararFoto(foto.contenido);
+            const lista = foto.ajuste?.lista ?? (await prepararFoto(foto.contenido));
             const ruta = rutaFoto(empresaId, foto.empleadoId);
             const { error } = await supabase.storage
               .from("fotos")
@@ -222,8 +228,19 @@ export function SubirFotos({ empresaId, personas }: { empresaId: string; persona
                     key={f.clave}
                     className={`flex gap-3 rounded-tarjeta-chica border p-3 ${doble ? "border-rojo" : f.empleadoId ? "border-linea" : "border-dashed border-tinta bg-papel"}`}
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element -- vista previa local */}
-                    <img src={f.url} alt="" loading="lazy" className="h-24 w-[4.5rem] shrink-0 rounded object-cover" />
+                    <button
+                      type="button"
+                      disabled={subiendo}
+                      onClick={() => setAjustando(f.clave)}
+                      title="Acomodar la foto"
+                      className="group relative h-24 w-[4.5rem] shrink-0 overflow-hidden rounded"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element -- vista previa local */}
+                      <img src={f.url} alt="" loading="lazy" className="size-full object-cover" />
+                      <span className="absolute inset-x-0 bottom-0 bg-tinta/75 py-0.5 text-[0.65rem] font-semibold text-white group-hover:bg-tinta">
+                        Acomodar
+                      </span>
+                    </button>
                     <div className="min-w-0 flex-1 text-sm">
                       <p className="truncate font-medium" title={f.archivo}>{f.archivo}</p>
                       <select
@@ -265,6 +282,7 @@ export function SubirFotos({ empresaId, personas }: { empresaId: string; persona
                         >
                           Quitar
                         </button>
+                        {f.ajuste ? <span>Acomodada a mano</span> : null}
                       </p>
                     </div>
                   </li>
@@ -272,6 +290,23 @@ export function SubirFotos({ empresaId, personas }: { empresaId: string; persona
               })}
           </ul>
         </div>
+      ) : null}
+
+      {editando ? (
+        <AjustarFoto
+          fuente={editando.contenido}
+          inicial={editando.ajuste?.encuadre}
+          espejoInicial={editando.ajuste?.espejo}
+          alCancelar={() => setAjustando(undefined)}
+          alListo={({ foto: lista, encuadre, espejo }) => {
+            const url = URL.createObjectURL(lista);
+            urls.current.push(url);
+            setFotos((previas) =>
+              previas.map((p) => (p.clave === editando.clave ? { ...p, url, ajuste: { lista, encuadre, espejo } } : p)),
+            );
+            setAjustando(undefined);
+          }}
+        />
       ) : null}
     </div>
   );

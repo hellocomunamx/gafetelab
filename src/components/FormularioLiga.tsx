@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { type ChangeEvent, type FormEvent, useEffect, useState } from "react";
 import { enviarMisDatos } from "@/app/mi-gafete/acciones";
 import { claseBoton, claseEntrada } from "@/components/cuenta/Formulario";
-import { prepararFoto } from "@/lib/cuenta/imagen";
+import type { Encuadre } from "@/lib/cuenta/imagen";
+import { AjustarFoto, type FotoAjustada } from "./AjustarFoto";
 import { CamaraFoto } from "./CamaraFoto";
 import { Turnstile } from "./Turnstile";
 
@@ -31,29 +32,27 @@ export function FormularioLiga({
   const [error, setError] = useState("");
   const [ocupado, setOcupado] = useState(false);
   const [camara, setCamara] = useState(false);
-  /** La imagen original y si va volteada, para poder corregir una selfie en espejo. */
-  const [original, setOriginal] = useState<{ fuente: Blob | ImageBitmap; espejo: boolean }>();
+  /** La imagen original con su encuadre, para volver a acomodarla. */
+  const [original, setOriginal] = useState<{ fuente: Blob | ImageBitmap; encuadre?: Encuadre; espejo: boolean }>();
+  /** Foto abierta en el editor de encuadre. */
+  const [ajustando, setAjustando] = useState<{ fuente: Blob | ImageBitmap; encuadre?: Encuadre; espejo: boolean }>();
 
   useEffect(() => () => {
     if (vista) URL.revokeObjectURL(vista);
   }, [vista]);
 
-  async function usar(fuente: Blob | ImageBitmap, espejo: boolean) {
-    setError("");
-    try {
-      const lista = await prepararFoto(fuente, { espejo });
-      setOriginal({ fuente, espejo });
-      setFoto(lista);
-      setVista(URL.createObjectURL(lista));
-    } catch {
-      setError("No pudimos leer esa imagen. Usa una foto JPG o PNG.");
-    }
+  function listo(fuente: Blob | ImageBitmap, { foto: lista, encuadre, espejo }: FotoAjustada) {
+    setAjustando(undefined);
+    setOriginal({ fuente, encuadre, espejo });
+    setFoto(lista);
+    setVista(URL.createObjectURL(lista));
   }
 
-  async function elegir(evento: ChangeEvent<HTMLInputElement>) {
+  function elegir(evento: ChangeEvent<HTMLInputElement>) {
     const archivo = evento.target.files?.[0];
     evento.target.value = "";
-    if (archivo) await usar(archivo, false);
+    setError("");
+    if (archivo) setAjustando({ fuente: archivo, espejo: false });
   }
 
   async function enviar(evento: FormEvent<HTMLFormElement>) {
@@ -123,11 +122,11 @@ export function FormularioLiga({
               {original ? (
                 <button
                   type="button"
-                  onClick={() => void usar(original.fuente, !original.espejo)}
+                  onClick={() => setAjustando(original)}
                   disabled={ocupado}
                   className="mt-2 font-semibold underline underline-offset-4"
                 >
-                  ¿Salió al revés? Voltear foto
+                  Acomodar o voltear la foto
                 </button>
               ) : null}
               <ul className="mt-3 list-disc space-y-0.5 pl-5 text-gris">
@@ -145,8 +144,19 @@ export function FormularioLiga({
           alCerrar={() => setCamara(false)}
           alTomar={(cuadro) => {
             setCamara(false);
-            void usar(cuadro, false);
+            setError("");
+            setAjustando({ fuente: cuadro, espejo: false });
           }}
+        />
+      ) : null}
+
+      {ajustando ? (
+        <AjustarFoto
+          fuente={ajustando.fuente}
+          inicial={ajustando.encuadre}
+          espejoInicial={ajustando.espejo}
+          alCancelar={() => setAjustando(undefined)}
+          alListo={(r) => listo(ajustando.fuente, r)}
         />
       ) : null}
 
