@@ -17,7 +17,7 @@ async function llaveCron(secreto: string): Promise<string> {
   return [...new Uint8Array(huella)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-export default {
+const trabajador = {
   fetch: sitio.fetch,
 
   async scheduled(_evento: unknown, entorno: Entorno, contexto: Contexto) {
@@ -30,6 +30,8 @@ export default {
     console.log("Resumen semanal:", respuesta.status, await respuesta.text());
   },
 };
+
+export default trabajador;
 
 // @ts-expect-error -- igual que arriba.
 export * from "./.open-next/worker.js";
