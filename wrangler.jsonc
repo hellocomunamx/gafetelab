@@ -9,7 +9,11 @@
     "binding": "ASSETS",
     // Los videos pasan por worker.ts para responder pedazos (Range / 206) y
     // así poder adelantar o regresar tocando la barra.
-    "run_worker_first": ["/video/*"]
+    "run_worker_first": ["/video/*"],
+    // OpenNext lo exige cuando hay `run_worker_first`: los archivos públicos
+    // se sirven solo en su ruta exacta, para que nada se salte el middleware.
+    "html_handling": "none",
+    "not_found_handling": "none"
   },
   "services": [
     {
