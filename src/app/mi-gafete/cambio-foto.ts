@@ -8,6 +8,8 @@ import { personaDeLiga } from "@/lib/cuenta/liga-publica";
 import { PESO_MAXIMO_FOTO, RUTA_LIGA } from "@/lib/cuenta/ligas";
 import { tieneImpreso, rutaCambioFoto } from "@/lib/cuenta/cambio-foto";
 import type { Resultado } from "@/lib/cuenta/tipos";
+import { dentroDelLimite, ipActual, MENSAJE_LIMITE } from "@/lib/seguridad/limites";
+import { anotarRevision, moderarAlMomento } from "@/lib/seguridad/revisar";
 
 const ERROR_GENERAL = "No pudimos mandar tu foto. Intenta de nuevo.";
 
@@ -18,6 +20,7 @@ const ERROR_GENERAL = "No pudimos mandar tu foto. Intenta de nuevo.";
  * necesitará una reposición.
  */
 export async function solicitarCambioFoto(datos: FormData): Promise<Resultado> {
+  if (!(await dentroDelLimite("LIMITE_FORMULARIOS", `cambio-foto:${await ipActual()}`))) return { error: MENSAJE_LIMITE };
   const liga = String(datos.get("liga") ?? "");
   const encontrada = await personaDeLiga(liga);
   if (!encontrada) return { error: "Esta liga ya no está activa. Pide una nueva en tu empresa." };
@@ -37,9 +40,15 @@ export async function solicitarCambioFoto(datos: FormData): Promise<Resultado> {
   const bytes = new Uint8Array(await archivo.arrayBuffer());
   // Solo JPEG: el navegador ya la recortó y la convirtió antes de mandarla.
   if (bytes[0] !== 0xff || bytes[1] !== 0xd8 || bytes[2] !== 0xff) return { error: "No pudimos leer la foto. Elige otra." };
+  // Revisión automática al momento: lo claramente inapropiado ni se guarda.
+  const revision = await moderarAlMomento(bytes, "liga");
+  if (revision?.veredicto === "bloquear") {
+    return { error: "Esta foto no se puede usar para un gafete. Usa una foto tuya, de frente, con buena luz y fondo liso." };
+  }
   const ruta = rutaCambioFoto(empresa.id, persona.id);
   const { error: errorFoto } = await servicio.storage.from("fotos").upload(ruta, bytes, { contentType: "image/jpeg", upsert: true });
   if (errorFoto) return { error: ERROR_GENERAL };
+  await anotarRevision("fotos", ruta, "liga", bytes, revision);
 
   // Si ya había una solicitud abierta, se reemplaza la foto y vuelve a la fila.
   const { data: abierta } = await servicio

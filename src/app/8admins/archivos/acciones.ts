@@ -35,6 +35,12 @@ export async function decidirArchivo(d: FormData) {
           resuelto_en: new Date().toISOString(),
         })
         .eq("foto_path", fila.ruta);
+      // Si era un cambio de foto pedido desde el gafete digital, se cierra rechazado.
+      await servicio
+        .from("solicitudes_foto")
+        .update({ estado: "rechazada", motivo: "La foto no se puede usar para un gafete." })
+        .eq("foto_path", fila.ruta)
+        .eq("estado", "pendiente");
     }
     if (fila.bucket === "gafetes") {
       await servicio.from("gafetes_listos").update({ frente_path: null }).eq("frente_path", fila.ruta);
