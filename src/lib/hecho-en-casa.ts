@@ -6,7 +6,7 @@
  * para que la calculadora se actualice sola cuando cambien los precios.
  */
 
-import { cotizar } from "./precios";
+import { cotizar, type Paquete, paqueteVigenciaMeses, paquetes } from "./precios";
 
 export type Rango = { min: number; max: number; omision: number; paso: number };
 
@@ -69,4 +69,15 @@ export function gafetesParaQueConvenga(materiales: number, minutos: number, cost
     }
   }
   return 1;
+}
+
+/**
+ * Para quien pide pocos al mes: el paquete prepagado más grande que se alcanza
+ * a usar dentro de su vigencia, con su precio por pieza (envíos incluidos) y
+ * para cuántos meses rinde. null si ninguno cabe.
+ */
+export function paqueteSugerido(gafetesMes: number): { paquete: Paquete; meses: number } | null {
+  const n = Math.max(1, Math.floor(gafetesMes));
+  const paquete = [...paquetes].reverse().find((p) => p.piezas <= n * paqueteVigenciaMeses);
+  return paquete ? { paquete, meses: Math.floor(paquete.piezas / n) } : null;
 }

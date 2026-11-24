@@ -10,6 +10,7 @@ import {
   gafetesParaQueConvenga,
   materialesCasa,
   minutosCasa,
+  paqueteSugerido,
   type Rango,
 } from "@/lib/hecho-en-casa";
 import { pesos } from "@/lib/precios";
@@ -82,6 +83,9 @@ export function CalculadoraCasa() {
   const c = compararCasa(n, materiales, minutos, costoHora);
   const desde = gafetesParaQueConvenga(materiales, minutos, costoHora);
   const conviene = c.ahorroMes >= 0;
+  const sugerido = paqueteSugerido(n);
+  // El paquete solo se sugiere si de verdad baja el precio por pieza del pedido mensual.
+  const paquete = !conviene && sugerido && sugerido.paquete.porPieza < c.nosotros.porPieza ? sugerido : null;
   const maximo = Math.max(c.casa.mes, c.nosotros.mes) || 1;
 
   const barras = [
@@ -147,8 +151,8 @@ export function CalculadoraCasa() {
             Te ahorras <span className="text-resaltador">{redondo(c.ahorroMes)}</span> al mes
           </p>
         ) : (
-          <p className="mt-1 font-titulos text-2xl leading-tight font-extrabold">
-            Hacerlo tú sale {redondo(-c.ahorroMes)} más barato al mes
+          <p className="mt-1 font-titulos text-3xl leading-tight font-extrabold">
+            Te ahorras <span className="text-resaltador">{horasTexto(c.casa.horasMes)}</span> de trabajo al mes
           </p>
         )}
         <p className="mt-2 text-white/80">
@@ -160,12 +164,23 @@ export function CalculadoraCasa() {
             </>
           ) : (
             <>
-              Pero le cuesta a tu equipo <strong className="text-white">{horasTexto(c.casa.horasMes)} al mes</strong>{" "}
-              y el gafete queda de papel enmicado.
+              En dinero, hacerlo tú sale <strong className="text-white">{redondo(-c.ahorroMes)} más barato al mes</strong>,
+              pero tu equipo deja de recortar y enmicar, y el gafete es de PVC, no de papel.
               {desde ? <> Desde {desde.toLocaleString("es-MX")} gafetes al mes, con nosotros sale más barato.</> : null}
             </>
           )}
         </p>
+        {paquete ? (
+          <p className="mt-4 rounded-tarjeta-chica bg-white/10 p-3 text-sm text-white/90">
+            <strong className="text-resaltador">¿Pides pocos?</strong> Con un paquete prepagado de{" "}
+            {paquete.paquete.piezas} gafetes cada uno sale en {pesos(paquete.paquete.porPieza)}, con{" "}
+            {paquete.paquete.envios} envíos incluidos, y te alcanza para{" "}
+            {paquete.meses === 1 ? "un mes" : `${paquete.meses} meses`}.{" "}
+            <Link href="/precios#paquete-a-la-medida" className="font-semibold text-white underline underline-offset-4">
+              Ver paquetes
+            </Link>
+          </p>
+        ) : null}
 
         <ul className="mt-6 space-y-4">
           {barras.map((b) => (
