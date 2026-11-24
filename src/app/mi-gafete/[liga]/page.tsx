@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { type CampoDeLiga, FormularioLiga } from "@/components/FormularioLiga";
+import { CambiarFotoDigital } from "@/components/CambiarFotoDigital";
 import { GafeteDigitalVista } from "@/components/GafeteDigitalVista";
 import { Contenedor } from "@/components/ui";
+import { cambioFotoDe } from "@/lib/cuenta/cambio-foto";
 import { gafeteDigitalDe } from "@/lib/cuenta/gafete-digital";
 import { personaDeLiga } from "@/lib/cuenta/liga-publica";
 import { datosPropuestos, FORMATO_LIGA, RUTA_LIGA, valorDe } from "@/lib/cuenta/ligas";
@@ -56,6 +58,14 @@ export default async function MiGafete({ params }: { params: Promise<{ liga: str
   // Si ya tiene su gafete digital activo, la liga lo muestra primero.
   const digital = await gafeteDigitalDe(servicio, persona);
   const verificado = digital?.verificable ? await verificarGafete(persona.codigo) : null;
+  // Con gafete digital, la persona puede pedir cambiar su foto (la empresa la aprueba).
+  const cambioFoto = digital ? await cambioFotoDe(servicio, persona.id, empresa.id) : null;
+  const fotoVigente =
+    digital && persona.foto_path
+      ? digital.tipo === "diseno" && digital.foto
+        ? digital.foto
+        : ((await servicio.storage.from("fotos").createSignedUrl(persona.foto_path, 3600)).data?.signedUrl ?? null)
+      : null;
 
   const aviso =
     propuesta?.estado === "pendiente"
@@ -89,6 +99,11 @@ export default async function MiGafete({ params }: { params: Promise<{ liga: str
             <div className="mt-5">
               <GafeteDigitalVista gafete={digital} estado={verificado?.estado ?? null} />
             </div>
+            {cambioFoto ? (
+              <div className="mt-5">
+                <CambiarFotoDigital liga={liga} empresa={empresa.nombre} fotoActual={fotoVigente} cambio={cambioFoto} />
+              </div>
+            ) : null}
             <details className="mt-5 rounded-tarjeta border border-linea bg-white p-5 text-sm">
               <summary className="cursor-pointer font-semibold">Guárdalo en tu pantalla de inicio</summary>
               <ul className="mt-3 list-disc space-y-2 pl-5 text-gris">
@@ -119,12 +134,15 @@ export default async function MiGafete({ params }: { params: Promise<{ liga: str
         ) : null}
 
         {nadaQuePedir ? null : digital ? (
+          // Con gafete digital, la foto se cambia arriba («Cambiar mi foto»); aquí solo los datos.
+          lista.length ? (
           <details className="mt-5 rounded-tarjeta border border-linea bg-white p-5 sm:p-6" open={propuesta?.estado === "rechazada"}>
             <summary className="cursor-pointer text-sm font-semibold">¿Cambió algún dato? Mándale una corrección a {empresa.nombre}</summary>
             <div className="mt-4">
-              <FormularioLiga liga={liga} campos={lista} conFoto={empresa.liga_foto} fotoActual={fotoActual} boton={`Enviar a ${empresa.nombre}`} />
+              <FormularioLiga liga={liga} campos={lista} conFoto={false} fotoActual={fotoActual} boton={`Enviar a ${empresa.nombre}`} />
             </div>
           </details>
+          ) : null
         ) : (
           <div className="mt-5 rounded-tarjeta border border-linea bg-white p-5 sm:p-6">
             <FormularioLiga

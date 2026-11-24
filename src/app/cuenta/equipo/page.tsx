@@ -43,6 +43,11 @@ export default async function Equipo({
   const departamentos = unicos((todas ?? []).map((t) => t.departamento));
   const contratos = unicos((todas ?? []).map((t) => t.tipo_contrato));
   const fotos = await ligasDeFotos(supabase, (personas ?? []).map((p) => p.foto_path));
+  const { count: cambiosFoto } = await supabase
+    .from("solicitudes_foto")
+    .select("id", { count: "exact", head: true })
+    .eq("empresa_id", empresa.id)
+    .eq("estado", "pendiente");
   const hayFiltros = Boolean(f.estatus || f.departamento || f.contrato || f.foto || q);
 
   return (
@@ -62,6 +67,14 @@ export default async function Equipo({
           {porAprobar === 1 ? "1 persona mandó" : `${porAprobar.toLocaleString("es-MX")} personas mandaron`} sus datos desde su liga y{" "}
           {porAprobar === 1 ? "espera" : "esperan"} tu aprobación.{" "}
           <Link href="/cuenta/equipo/ligas" className="font-semibold underline underline-offset-4">Revisar</Link>
+        </p>
+      ) : null}
+
+      {cambiosFoto ? (
+        <p className="rounded-tarjeta border border-linea bg-resaltador/30 px-4 py-3 text-sm">
+          {cambiosFoto === 1 ? "1 persona pide" : `${cambiosFoto.toLocaleString("es-MX")} personas piden`} cambiar la foto de su gafete
+          digital.{" "}
+          <Link href="/cuenta/equipo/cambios-foto" className="font-semibold underline underline-offset-4">Ver anterior y nueva</Link>
         </p>
       ) : null}
 
