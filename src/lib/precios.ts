@@ -79,7 +79,7 @@ export const paquetes: Paquete[] = [
   { piezas: 10, porPieza: 55, envios: 2 },
   { piezas: 25, porPieza: 52, envios: 3 },
   { piezas: 50, porPieza: 36, envios: 4 },
-  { piezas: 100, porPieza: 20, envios: 6 },
+  { piezas: 100, porPieza: 20, envios: 4 },
 ];
 
 export const paqueteVigenciaMeses = 12;

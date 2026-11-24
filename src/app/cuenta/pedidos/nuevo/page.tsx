@@ -30,7 +30,7 @@ export default async function Nuevo({
 }: {
   searchParams: Promise<{ personas?: string; razon?: string; abierto?: string }>;
 }) {
-  const { supabase, empresa, administra } = await requerirEmpresa();
+  const { supabase, empresa, administra, esEvento } = await requerirEmpresa();
   const q = await searchParams;
   const encabezado = (
     <>
@@ -115,10 +115,12 @@ export default async function Nuevo({
   } else if (!personas.length) {
     falta = (
       <>
-        <p className="font-semibold">Todavía no tienes personas activas en tu equipo.</p>
+        <p className="font-semibold">
+          {esEvento ? "Todavía no tienes asistentes en tu evento." : "Todavía no tienes personas activas en tu equipo."}
+        </p>
         <p className="mt-1 text-gris">
           Súbelas con tu plantilla de Excel o una por una.{" "}
-          <Link href="/cuenta/equipo/importar" className={liga}>Subir a mi equipo</Link>
+          <Link href="/cuenta/equipo/importar" className={liga}>{esEvento ? "Subir a mis asistentes" : "Subir a mi equipo"}</Link>
         </p>
       </>
     );
