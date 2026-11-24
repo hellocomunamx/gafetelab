@@ -16,8 +16,23 @@ export const metadata: Metadata = { title: "Verificación de tu empresa" };
 const PORTAL_SAT = "https://www.sat.gob.mx/aplicacion/53027/genera-tu-constancia-de-situacion-fiscal";
 
 export default async function PaginaConstancia({ searchParams }: { searchParams: Promise<{ nueva?: string }> }) {
-  const { supabase, empresa, usuario, administra } = await requerirEmpresa();
+  const { supabase, empresa, empresas, usuario, administra } = await requerirEmpresa();
   const [actual, { nueva }] = await Promise.all([constanciaDe(supabase, empresa.id), searchParams]);
+  // Un evento usa la verificación de su organización: se hace desde ella.
+  if (empresa.tipo === "evento" && actual?.estado !== "aprobada") {
+    const organizacion = empresas.find((e) => e.id === empresa.padre_id);
+    return (
+      <div className="mx-auto max-w-2xl space-y-5">
+        <h1 className="text-3xl font-extrabold">{textos.nombre}</h1>
+        <Bloque>
+          <p>
+            Tu evento usa la verificación de {organizacion ? <strong>{organizacion.nombre}</strong> : "tu organización"}. Elige tu empresa en
+            el selector de arriba y verifícala desde ahí; en cuanto quede, también puedes pedir para este evento.
+          </p>
+        </Bloque>
+      </div>
+    );
+  }
   const { desde, hasta } = ventanaDeEmision();
   const reciente = Boolean(nueva) && !actual;
   const puedeSubir = administra && actual?.estado !== "aprobada" && actual?.estado !== "pendiente";

@@ -17,7 +17,7 @@ const TIPOS: Record<string, string> = { texto: "Texto", fecha: "Fecha", foto: "F
 const entradaChica = "w-full rounded-tarjeta-chica border border-linea bg-white px-2.5 py-1.5";
 
 export default async function Campos() {
-  const { supabase, empresa, administra } = await requerirEmpresa();
+  const { supabase, empresa, administra, esEvento } = await requerirEmpresa();
   const [campos, { data: ejemplo }] = await Promise.all([
     camposDe(supabase, empresa.id),
     supabase.from("empleados").select("nombre, codigo").eq("empresa_id", empresa.id).eq("estatus", "activo").neq("nombre", "").order("nombre").limit(1).maybeSingle(),
@@ -31,7 +31,7 @@ export default async function Campos() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold">Los datos de tu equipo</h1>
+        <h1 className="text-3xl font-extrabold">{esEvento ? "Los datos de tus asistentes" : "Los datos de tu equipo"}</h1>
         <p className="mt-2 max-w-2xl text-gris">
           Aquí decides qué datos guardas de cada persona. No todos tienen que imprimirse: eso lo eliges en cada
           diseño. Así funciona, en tres partes:

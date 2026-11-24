@@ -10,6 +10,10 @@ export type Verificacion = {
   /** AAAA-MM-DD, si la empresa usa un campo de fecha como vigencia. */
   vigente_hasta?: string;
   con_foto?: boolean;
+  /** Si el gafete es de un evento: su nombre, fechas (AAAA-MM-DD) y sede. */
+  evento?: { nombre: string; inicio: string; fin: string; sede: string | null };
+  /** En un evento, la categoría de la persona con su color. */
+  categoria?: { nombre: string; color: string };
   /** Campos elegidos por la empresa, en su orden y con su nombre actual. */
   datos?: { clave: string; etiqueta: string; tipo: string; valor: string }[];
 };

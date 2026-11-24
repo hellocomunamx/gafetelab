@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { ConfigPortal, type PersonaAcceso } from "@/components/portal/ConfigPortal";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
 import { estadoBloqueo, sugerirHandle, urlPortal } from "@/lib/portal/reglas";
@@ -9,6 +10,8 @@ const MAXIMO = 500;
 
 export default async function PortalEmpresa() {
   const { supabase, empresa, administra } = await requerirEmpresa();
+  // Los eventos no tienen portal «Mi gafete» ni solicitudes.
+  if (empresa.tipo === "evento") redirect("/cuenta/evento");
   const [{ data: ajuste }, { data: personas, count }, { data: accesos }] = await Promise.all([
     supabase.from("empresas").select("handle, portal_activo").eq("id", empresa.id).maybeSingle(),
     supabase

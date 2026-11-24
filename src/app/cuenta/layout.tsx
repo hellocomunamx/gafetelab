@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 export default async function CuentaLayout({ children }: { children: ReactNode }) {
   const { supabase, usuario } = await requerirUsuario();
   const [{ data: empresas }, invitaciones, esAdmin] = await Promise.all([
-    supabase.from("empresas").select("id, nombre").order("creado_en"),
+    supabase.from("empresas").select("id, nombre, tipo, padre_id, datos_borrados_en").order("creado_en"),
     misInvitaciones(),
     esAdminPlataforma(),
   ]);
@@ -51,7 +51,7 @@ export default async function CuentaLayout({ children }: { children: ReactNode }
               </form>
             </div>
           </div>
-          {actual ? <NavCuenta /> : null}
+          {actual ? <NavCuenta evento={actual.tipo === "evento"} /> : null}
         </Contenedor>
       </div>
       <Contenedor className="py-8 sm:py-10">{children}</Contenedor>

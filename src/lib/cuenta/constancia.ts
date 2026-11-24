@@ -62,10 +62,12 @@ export function ventanaDeEmision(): { desde: string; hasta: string } {
 
 /** La constancia más reciente de la empresa, o null si no ha subido ninguna. */
 export async function constanciaDe(supabase: SupabaseClient<Database>, empresaId: string): Promise<Constancia | null> {
+  // Un evento se verifica con la constancia de su organización.
+  const { data: proyecto } = await supabase.from("empresas").select("padre_id").eq("id", empresaId).maybeSingle();
   const { data } = await supabase
     .from("constancias")
     .select("*")
-    .eq("empresa_id", empresaId)
+    .eq("empresa_id", proyecto?.padre_id ?? empresaId)
     .order("creado_en", { ascending: false })
     .limit(1)
     .maybeSingle();
