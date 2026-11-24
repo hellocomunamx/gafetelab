@@ -43,7 +43,7 @@ export const materiales: Material[] = [
     tecnico: "Tarjeta compuesta CR80 de 30 mil (60% PVC, 40% poliéster)",
     grosorMm: 0.76,
     grosorMil: 30,
-    extra: 5,
+    extra: 6,
     disponible: true,
     resumen: "Para uso rudo: aguanta más calor y más dobleces sin deformarse.",
     detalle:
@@ -56,7 +56,7 @@ export const materiales: Material[] = [
     tecnico: "Tarjeta de PVC adhesiva CR80 de 10 mil",
     grosorMm: 0.25,
     grosorMil: 10,
-    extra: 4,
+    extra: 5,
     disponible: true,
     resumen: "Delgado y con adhesivo: se pega sobre la tarjeta de acceso que ya tienes.",
     detalle:

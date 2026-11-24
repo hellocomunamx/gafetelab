@@ -10,18 +10,18 @@ import { type Material, type MaterialId, materialPara } from "./materiales";
 export type Tramo = { desde: number; hasta: number | null; precio: number };
 
 export const tramos: Tramo[] = [
-  { desde: 1, hasta: 9, precio: 51 },
-  { desde: 10, hasta: 29, precio: 36 },
-  { desde: 30, hasta: 99, precio: 27 },
-  { desde: 100, hasta: 499, precio: 22 },
-  { desde: 500, hasta: null, precio: 18 },
+  { desde: 1, hasta: 9, precio: 61 },
+  { desde: 10, hasta: 29, precio: 43 },
+  { desde: 30, hasta: 99, precio: 32 },
+  { desde: 100, hasta: 499, precio: 26 },
+  { desde: 500, hasta: null, precio: 22 },
 ];
 
 /** Extra por pieza cuando el gafete va impreso por frente y vuelta: también baja con la cantidad. */
 export const tramosDosCaras: Tramo[] = [
-  { desde: 1, hasta: 29, precio: 7 },
-  { desde: 30, hasta: 99, precio: 6 },
-  { desde: 100, hasta: null, precio: 5 },
+  { desde: 1, hasta: 29, precio: 8 },
+  { desde: 30, hasta: 99, precio: 7 },
+  { desde: 100, hasta: null, precio: 6 },
 ];
 
 export function extraDosCaras(cantidad: number): number {
@@ -75,10 +75,10 @@ export const precioMaximo = Math.max(...tramos.map((t) => t.precio));
 export type Paquete = { piezas: number; porPieza: number; envios: number };
 
 export const paquetes: Paquete[] = [
-  { piezas: 10, porPieza: 47.4, envios: 2 },
-  { piezas: 25, porPieza: 37.2, envios: 3 },
-  { piezas: 50, porPieza: 31.2, envios: 4 },
-  { piezas: 100, porPieza: 25.2, envios: 6 },
+  { piezas: 10, porPieza: 56.9, envios: 2 },
+  { piezas: 25, porPieza: 44.64, envios: 3 },
+  { piezas: 50, porPieza: 37.44, envios: 4 },
+  { piezas: 100, porPieza: 30.24, envios: 6 },
 ];
 
 export const paqueteVigenciaMeses = 12;
