@@ -13,6 +13,8 @@ import {
   extraDosCarasDetalle,
   extraDosCarasRango,
   notaIva,
+  paqueteDistinto,
+  paqueteSaldoIguales,
   paqueteVigenciaMeses,
   paquetes,
   pesos,
@@ -65,7 +67,11 @@ const faqsPrecios: FaqItem[] = [
   },
   {
     pregunta: "¿Qué son los paquetes prepagados?",
-    respuesta: `Son gafetes impresos que compras en línea por adelantado, desde el carrito, y vas pidiendo conforme los necesitas, sin pagar envío cada vez. Hay paquetes de ${paquetes.map((p) => p.piezas).join(", ")} gafetes; el de ${paquetes[0].piezas} cuesta ${pesos(precioPaquete(paquetes[0]))} e incluye ${paquetes[0].envios} envíos. También puedes armar un paquete a la medida, combinando cantidades, caras y materiales. Quedan a tu favor durante ${paqueteVigenciaMeses} meses y se usan solos en tus siguientes pedidos.`,
+    respuesta: `Son gafetes impresos que compras en línea por adelantado, desde el carrito, y vas pidiendo conforme los necesitas, sin pagar envío cada vez. Hay paquetes de ${paquetes.map((p) => p.piezas).join(", ")} gafetes; el de ${paquetes[0].piezas} cuesta ${pesos(precioPaquete(paquetes[0]))} e incluye ${paquetes[0].envios} envíos. Los paquetes de lista son de PVC estándar impresos a una cara y no incluyen gafete digital. También puedes armar un paquete a la medida, combinando cantidades, caras y materiales. Quedan a tu favor durante ${paqueteVigenciaMeses} meses y se usan solos en tus siguientes pedidos.`,
+  },
+  {
+    pregunta: "¿Puedo usar mi paquete para frente y vuelta, otro material o gafete digital?",
+    respuesta: `No. ${paqueteSaldoIguales} ${paqueteDistinto} Si ya sabes que vas a necesitar frente y vuelta u otro material, arma un paquete a la medida con esos gafetes.`,
   },
   {
     pregunta: "¿Cuánto cuesta cambiar de material?",
@@ -127,7 +133,8 @@ export default function Precios() {
         <p className="mt-2 mb-5 max-w-2xl text-gris">
           Combina lo que tu empresa necesita: por ejemplo, 10 gafetes por frente y vuelta para
           gerencia y 100 a una cara para el resto, cada tipo con su material. Entre más gafetes
-          dejes prepagados, menos cuesta cada uno.
+          dejes prepagados, menos cuesta cada uno. Cada gafete prepagado cubre solo un gafete igual
+          al que elegiste, y el gafete digital y los cordones se cobran aparte.
         </p>
         <ArmaPaquete />
       </Seccion>

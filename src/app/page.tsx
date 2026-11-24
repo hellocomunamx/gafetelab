@@ -14,7 +14,7 @@ import { faqsGenerales } from "@/lib/faqs";
 import { giros } from "@/lib/giros";
 import { formasDeEmpezar, pasos } from "@/lib/pasos";
 import { funcionesPlataforma, modalidadesDetalle, portalEmpleados, verificaciones } from "@/lib/plataforma";
-import { envio, notaIva, paqueteVigenciaMeses, paquetes, pesos, precioMinimo, precioPaquete } from "@/lib/precios";
+import { envio, notaIva, paqueteDistinto, paqueteVigenciaMeses, paquetes, pesos, precioMinimo, precioPaquete } from "@/lib/precios";
 import { paginaFaq, producto, video, videoEventos, videoPitch } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
 import { entregaTexto, site } from "@/lib/site";
@@ -288,7 +288,8 @@ export default function Inicio() {
         <h3 className="mt-12 text-2xl font-extrabold">¿Pides de a poquitos? Paquetes prepagados</h3>
         <p className="mt-2 mb-5 max-w-2xl text-gris">
           Deja pagados tus gafetes y pídelos conforme los necesites: uno hoy, tres el mes que entra.
-          Cada paquete incluye varios envíos y dura {paqueteVigenciaMeses} meses.
+          Cada paquete incluye varios envíos y dura {paqueteVigenciaMeses} meses. Son gafetes de PVC
+          estándar impresos a una cara, sin gafete digital.
         </p>
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {paquetes.map((p) => (
@@ -296,11 +297,18 @@ export default function Inicio() {
               <p className="font-titulos text-2xl font-extrabold">{p.piezas} gafetes</p>
               <p className="mt-1 text-gris">{pesos(p.porPieza)} por pieza</p>
               <p className="text-gris">{p.envios} envíos incluidos</p>
+              <p className="mt-2 text-sm text-gris">PVC estándar · una cara</p>
               <p className="mt-3 font-titulos text-xl font-extrabold">{pesos(precioPaquete(p))}</p>
               <BotonAgregar articulo={{ tipo: "paquete", piezas: p.piezas }} texto="Lo quiero" irAlCarrito className="mt-4" />
             </li>
           ))}
         </ul>
+        <p className="mt-4 max-w-3xl text-sm text-gris">
+          {paqueteDistinto}{" "}
+          <Link href="/precios#paquetes" className="font-semibold text-rojo underline underline-offset-4">
+            Ver qué incluye cada paquete
+          </Link>
+        </p>
         <p className="mt-5">
           <Link href="/precios#paquete-a-la-medida" className="font-semibold text-rojo underline underline-offset-4">
             Arma tu paquete a la medida

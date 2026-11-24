@@ -133,7 +133,7 @@ export function cotizarArticulo(a: ArticuloCarrito): ArticuloCotizado | null {
     if (!p) return null;
     return {
       nombre: `Paquete de ${p.piezas} gafetes prepagados`,
-      detalle: [`Una cara, PVC estándar: ${pesos(p.porPieza)} por pieza`, `Incluye ${p.envios} envíos`],
+      detalle: [`Una cara, PVC estándar: ${pesos(p.porPieza)} por pieza`, `Incluye ${p.envios} envíos`, "Sin gafete digital"],
       piezas: p.piezas,
       envios: p.envios,
       subtotal: precioPaquete(p),

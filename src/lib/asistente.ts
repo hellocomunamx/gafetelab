@@ -5,7 +5,7 @@
  * precio o una pregunta frecuente, el asistente lo sabe sin tocar este archivo.
  */
 import { llmsFullTxt } from "./llms";
-import { envio, notaIva, paqueteVigenciaMeses, pesos } from "./precios";
+import { envio, notaIva, paqueteDistinto, paqueteNoIncluye, paqueteSaldoIguales, paqueteVigenciaMeses, pesos } from "./precios";
 import { asistente } from "./asistente-publico";
 import { legal, site, urlAbsoluta } from "./site";
 
@@ -23,7 +23,7 @@ Fuente: ${urlAbsoluta("/terminos")} (versión ${legal.terminosVersion}). Aviso d
 - Envío: a todo México, ${pesos(envio.tarifa)} ${notaIva}; gratis en pedidos desde ${pesos(envio.gratisDesde)} antes de IVA. Los gafetes digitales no llevan envío. Si un paquete regresa por domicilio equivocado o porque nadie lo recibió, el nuevo envío lo paga el cliente. Si llega dañado o no llega, lo reponemos o devolvemos el dinero.
 - Cancelaciones y cambios: sin costo mientras el pedido no haya entrado a producción; si ya se pagó, devolvemos el importe completo por el mismo medio. Una vez en producción ya no se puede cancelar ni devolver (son piezas personalizadas con el diseño y los datos de la empresa), salvo defecto o error nuestro.
 - Devoluciones por defecto: si un gafete llega con defecto de impresión o de material, o no corresponde a lo aprobado, se reporta dentro de los ${legal.plazoDefectosDias} días naturales siguientes a la entrega, con una foto de la pieza. Lo reponemos sin costo, con envío incluido; si no se puede reponer, devolvemos lo pagado por esa pieza. No cubre desgaste por uso, maltrato ni errores en los datos o archivos del cliente. Nada de esto limita los derechos de la Ley Federal de Protección al Consumidor.
-- Paquetes prepagados: se compran en línea desde el carrito (de lista o a la medida); son gafetes por adelantado (no saldo en pesos), con envíos incluidos, que quedan a favor y se usan primero en los siguientes pedidos. Vigencia de ${paqueteVigenciaMeses} meses; lo que no se use en ese plazo se pierde. No son reembolsables y sí se pueden transferir a otra empresa.
+- Paquetes prepagados: se compran en línea desde el carrito (de lista o a la medida); son gafetes por adelantado (no saldo en pesos), con envíos incluidos, que quedan a favor y se usan primero en los siguientes pedidos. Los de lista son de PVC estándar impresos a una cara y no incluyen ${paqueteNoIncluye}. ${paqueteSaldoIguales} ${paqueteDistinto} Vigencia de ${paqueteVigenciaMeses} meses; lo que no se use en ese plazo se pierde. No son reembolsables y sí se pueden transferir a otra empresa.
 - Plataforma: sin costo, sin mensualidad ni cobro por usuario. Las funciones marcadas "Muy pronto" o "Próximamente" todavía no están disponibles.
 - Código QR: al escanearlo se ve la información que la empresa decidió mostrar y si el gafete está vigente. La empresa mantiene al día altas, bajas y desactivaciones.
 - Datos del personal: la empresa es responsable de los datos y fotos que sube y de contar con el consentimiento de su personal; ${site.nombre} los usa solo para producir, entregar y administrar los gafetes.

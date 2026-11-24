@@ -7,6 +7,8 @@ import {
   type Cotizacion,
   envio,
   nombreModalidad,
+  paqueteDistinto,
+  paqueteNoIncluye,
   paqueteVigenciaMeses,
   pesos,
   tasaIva,
@@ -83,6 +85,8 @@ export function condiciones(d: DatosCotizacion): string[] {
       `Paquete prepagado: pagas hoy los ${c.paquete.piezas} gafetes y los pides cuando quieras, en uno o varios pedidos, durante ${paqueteVigenciaMeses} meses. Incluye ${c.paquete.envios} envíos a todo México.`,
     );
     lista.push(`Cada pedido se entrega en ${entregaTexto} a partir de que apruebas la vista previa de tus gafetes.`);
+    lista.push(`Gafetes de PVC estándar impresos a una cara. No incluye ${paqueteNoIncluye}.`);
+    lista.push(paqueteDistinto);
     lista.push("Los paquetes no son reembolsables y se pueden transferir a la cuenta de otra empresa.");
   } else if (c.llevaEnvio) {
     lista.push(

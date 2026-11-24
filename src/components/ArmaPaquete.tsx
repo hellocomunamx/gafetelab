@@ -8,6 +8,7 @@ import {
   cotizarPaquete,
   paqueteMaximoRenglones,
   paqueteMinimoPiezas,
+  paqueteSaldoIguales,
   paqueteVigenciaMeses,
   pesos,
 } from "@/lib/precios";
@@ -166,8 +167,9 @@ export function ArmaPaquete({ enCotizador = false }: { enCotizador?: boolean } =
               <p className="text-sm text-rojo-oscuro">Una compra lleva hasta {carritoMaximoPiezas.toLocaleString("es-MX")} gafetes.</p>
             ) : null}
             <p className="mt-3 text-xs text-gris">
-              Los usas cuando quieras durante {paqueteVigenciaMeses} meses. No es reembolsable y sí se puede
-              transferir a otra empresa.
+              Los usas cuando quieras durante {paqueteVigenciaMeses} meses. {paqueteSaldoIguales} No incluye
+              gafete digital ni cordones: eso se cobra aparte, a precio normal. No es reembolsable y sí se
+              puede transferir a otra empresa.
             </p>
           </>
         )}

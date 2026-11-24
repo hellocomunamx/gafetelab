@@ -413,7 +413,9 @@ export function NuevoPedido({
               .filter(Boolean)
               .join(", ")
               .replace(/, ([^,]*)$/, " y $1")}{" "}
-            prepagados. Se usan primero.
+            prepagados. Se usan primero. Los impresos solo cubren gafetes iguales a los que compraste
+            (mismas caras y mismo material); lo distinto, como frente y vuelta, otro material o cordón,
+            se cobra aparte, a precio normal.
           </p>
         ) : null}
         {piezas ? (

@@ -4,7 +4,7 @@
  * Todos los importes están en pesos mexicanos y ANTES de IVA.
  */
 
-import { type Material, type MaterialId, materialPara } from "./materiales";
+import { type Material, type MaterialId, materialBase, materialPara } from "./materiales";
 
 /** Precio por pieza del gafete impreso a una cara en PVC estándar, según la cantidad. */
 export type Tramo = { desde: number; hasta: number | null; precio: number };
@@ -83,6 +83,32 @@ export const paquetes: Paquete[] = [
 ];
 
 export const paqueteVigenciaMeses = 12;
+
+/**
+ * Qué incluye un paquete de lista y qué no. Lo leen todas las vistas donde
+ * aparecen los paquetes, los términos, Gafi y llms.txt: cambiarlo aquí lo
+ * cambia en todos lados.
+ */
+export const paqueteIncluye = [
+  "Gafetes impresos en PVC estándar de 0.76 mm, el grosor de una tarjeta bancaria.",
+  "Impresión a una sola cara.",
+  "Los envíos que marca cada paquete, a cualquier parte de México: uno por pedido.",
+  `${paqueteVigenciaMeses} meses para usarlos, a partir de la compra.`,
+];
+
+/** Para usarse después de «No incluye». */
+export const paqueteNoIncluye = "gafete digital, frente y vuelta, PVC compuesto o adhesivo, cordones ni portagafetes";
+
+/** La regla para todo lo que no sea igual a lo que se compró en el paquete. */
+export const paqueteDistinto =
+  "Si necesitas algo distinto (frente y vuelta, PVC compuesto o adhesivo, gafete digital, cordón u otro accesorio), eso no se toma del paquete: se cobra aparte, a precio normal.";
+
+/** Cómo se usa lo prepagado: aplica a paquetes de lista y a la medida. */
+export const paqueteSaldoIguales =
+  "Cada gafete prepagado cubre solo un gafete igual al que compraste: mismas caras y mismo material.";
+
+/** Lo que pasa al terminarse los envíos incluidos. */
+export const paqueteEnviosExtra = `Cuando se terminan los envíos del paquete, cada pedido paga su envío como cualquier otro: ${"$"}${envio.tarifa} ${notaIva}, o gratis desde ${"$"}${envio.gratisDesde.toLocaleString("es-MX")}.`;
 
 /** A centavos: los paquetes tienen precio por pieza con decimales. */
 const centavos = (n: number) => Math.round(n * 100) / 100;
@@ -196,17 +222,14 @@ export function cotizar(cantidad: number, opciones: Opciones = {}): Cotizacion {
   const paquete = modalidad === "impreso" ? paquetePara(opciones.paquete) : null;
   const piezas = paquete ? paquete.piezas : normalizarCantidad(cantidad);
   const impreso = modalidad !== "digital";
-  const dosCaras = impreso && Boolean(opciones.dosCaras);
-  const material = impreso ? materialPara(opciones.material) : null;
+  // Los paquetes de lista son siempre de PVC estándar a una cara.
+  const dosCaras = impreso && !paquete && Boolean(opciones.dosCaras);
+  const material = impreso ? (paquete ? materialBase : materialPara(opciones.material)) : null;
   const tramo = tramoPara(piezas);
 
   const conceptos: Cotizacion["conceptos"] = [];
   if (paquete) {
-    conceptos.push({ nombre: `Paquete prepagado de ${paquete.piezas} gafetes, una cara`, porPieza: paquete.porPieza });
-    if (material && material.extra > 0) {
-      conceptos.push({ nombre: `Material: ${material.nombre}`, porPieza: material.extra });
-    }
-    if (dosCaras) conceptos.push({ nombre: "Impresión por frente y vuelta", porPieza: extraDosCaras(piezas) });
+    conceptos.push({ nombre: `Paquete prepagado de ${paquete.piezas} gafetes, PVC estándar a una cara`, porPieza: paquete.porPieza });
   } else if (impreso) {
     conceptos.push({ nombre: "Gafete impreso en PVC, una cara", porPieza: tramo.precio });
     if (material && material.extra > 0) {

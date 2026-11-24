@@ -20,6 +20,7 @@ import {
 import { entregaTexto } from "@/lib/site";
 import { ArmaPaquete } from "./ArmaPaquete";
 import { BotonAgregar } from "./carrito/BotonAgregar";
+import { IncluyePaquete } from "./IncluyePaquete";
 import { MuestraMaterial } from "./MuestraMaterial";
 import { VistaGafete } from "./VistaGafete";
 
@@ -200,8 +201,8 @@ export function Cotizador() {
           </div>
           <p className="mt-2 text-sm text-gris">
             {c.paquete
-              ? `Pagas hoy los ${c.paquete.piezas} gafetes y los pides cuando quieras, en uno o varios pedidos, con ${c.paquete.envios} envíos incluidos. El precio por pieza no cambia aunque pidas de uno en uno.`
-              : "Arma tu paquete con varios tipos de gafete: cada uno con su cantidad, su impresión y su material."}
+              ? `Pagas hoy los ${c.paquete.piezas} gafetes y los pides cuando quieras, en uno o varios pedidos, con ${c.paquete.envios} envíos incluidos. El precio por pieza no cambia aunque pidas de uno en uno. Los paquetes de lista son de PVC estándar a una cara; para frente y vuelta u otro material, arma uno a la medida.`
+              : "Arma tu paquete con varios tipos de gafete: cada uno con su cantidad, su impresión y su material. Cada gafete prepagado cubre solo un gafete igual al que elegiste."}
           </p>
         </fieldset>
       ) : null}
@@ -257,7 +258,9 @@ export function Cotizador() {
         </>
         ) : null}
 
-        {c.llevaEnvio ? (
+        {c.paquete ? <IncluyePaquete compacto /> : null}
+
+        {c.llevaEnvio && !c.paquete ? (
           <fieldset className="min-w-0">
             <legend className="font-semibold">{paso()}. Impresión</legend>
             <div className="mt-3 grid max-w-md grid-cols-2 gap-2">
@@ -283,7 +286,7 @@ export function Cotizador() {
           </fieldset>
         ) : null}
 
-        {c.llevaEnvio ? (
+        {c.llevaEnvio && !c.paquete ? (
           <fieldset className="min-w-0">
             <legend className="font-semibold">{paso()}. Material</legend>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -434,9 +437,7 @@ export function Cotizador() {
               articulo={
                 !c.paquete
                   ? { tipo: "gafetes", piezas: c.piezas, modalidad: c.modalidad, dosCaras: c.dosCaras, material }
-                  : !c.dosCaras && material === "estandar"
-                    ? { tipo: "paquete", piezas: c.paquete.piezas }
-                    : { tipo: "medida", renglones: [{ piezas: c.paquete.piezas, dosCaras: c.dosCaras, material }] }
+                  : { tipo: "paquete", piezas: c.paquete.piezas }
               }
             />
           )}
