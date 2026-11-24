@@ -200,6 +200,12 @@ export default async function Pedido({
           </div>
         ) : null}
 
+        {(estado === "pagado" || estado === "en_produccion") && !prepago && !soloDigital ? (
+          <p className="mt-3 text-sm">
+            En cuanto salga, te mandamos por correo la paquetería y el número de guía con la liga para rastrearlo.
+          </p>
+        ) : null}
+
         {estado === "enviado" || estado === "entregado" ? (
           <p className="mt-3 text-sm">
             {pedido.paqueteria || pedido.guia ? (
