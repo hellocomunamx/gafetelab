@@ -6,9 +6,10 @@ import { cancelarCambioFoto, solicitarCambioFoto } from "@/app/mi-gafete/cambio-
 import { claseBoton, claseBotonSecundario } from "@/components/cuenta/clases";
 import type { CambioFotoPersona } from "@/lib/cuenta/cambio-foto";
 import type { Resultado } from "@/lib/cuenta/tipos";
-import { prepararFoto } from "@/lib/cuenta/imagen";
+import type { Encuadre } from "@/lib/cuenta/imagen";
 import { pesos, REQUISITOS } from "@/lib/cuenta/reposicion";
 import { site } from "@/lib/site";
+import { AjustarFoto } from "./AjustarFoto";
 
 /* eslint-disable @next/next/no-img-element -- vistas previas locales o ligas temporales de almacenamiento privado */
 
@@ -82,25 +83,39 @@ export function CambiarFotoDigital({
   const [acepto, setAcepto] = useState(false);
   const [error, setError] = useState("");
   const [ocupado, setOcupado] = useState(false);
+  /** La imagen elegida con su encuadre, para volver a acomodarla. */
+  const [original, setOriginal] = useState<{ fuente: Blob; encuadre?: Encuadre; espejo: boolean }>();
+  const [ajustando, setAjustando] = useState(false);
   const { solicitud, conImpreso, reposicion } = cambio;
 
   useEffect(() => () => {
     if (vista) URL.revokeObjectURL(vista);
   }, [vista]);
 
-  async function elegir(evento: ChangeEvent<HTMLInputElement>) {
+  function elegir(evento: ChangeEvent<HTMLInputElement>) {
     const archivo = evento.target.files?.[0];
     evento.target.value = "";
     if (!archivo) return;
     setError("");
-    try {
-      const lista = await prepararFoto(archivo);
-      setFoto(lista);
-      setVista(URL.createObjectURL(lista));
-    } catch {
-      setError("No pudimos leer esa imagen. Usa una foto JPG o PNG.");
-    }
+    setOriginal({ fuente: archivo, espejo: false });
+    setAjustando(true);
   }
+
+  const editor =
+    ajustando && original ? (
+      <AjustarFoto
+        fuente={original.fuente}
+        inicial={original.encuadre}
+        espejoInicial={original.espejo}
+        alCancelar={() => setAjustando(false)}
+        alListo={({ foto: lista, encuadre, espejo }) => {
+          setAjustando(false);
+          setOriginal({ fuente: original.fuente, encuadre, espejo });
+          setFoto(lista);
+          setVista(URL.createObjectURL(lista));
+        }}
+      />
+    ) : null;
 
   async function enviar() {
     if (!foto) return setError("Elige tu foto nueva.");
@@ -116,6 +131,7 @@ export function CambiarFotoDigital({
     if (resultado.error) return setError(resultado.error);
     setFoto(undefined);
     setVista(undefined);
+    setOriginal(undefined);
     setAcepto(false);
     router.refresh();
   }
@@ -163,6 +179,15 @@ export function CambiarFotoDigital({
           </button>
           {boton("Elegir otra", true)}
         </div>
+        <button
+          type="button"
+          onClick={() => setAjustando(true)}
+          disabled={ocupado || !original}
+          className="mt-3 text-sm font-semibold underline underline-offset-4"
+        >
+          Acomodar o voltear la foto
+        </button>
+        {editor}
       </section>
     );
   }
@@ -221,6 +246,7 @@ export function CambiarFotoDigital({
           <div className="mt-4">{boton(solicitud?.estado === "rechazada" ? "Probar con otra foto" : "Cambiar mi foto")}</div>
         </>
       )}
+      {editor}
     </section>
   );
 }

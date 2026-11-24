@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { type ChangeEvent, useState } from "react";
 import { asignarFotos } from "@/app/cuenta/acciones";
-import { prepararFoto, rutaFoto } from "@/lib/cuenta/imagen";
+import { AjustarFoto } from "@/components/AjustarFoto";
+import { rutaFoto } from "@/lib/cuenta/imagen";
 import { crearClienteNavegador } from "@/lib/supabase/client";
 
 /** Foto de una persona: la muestra y permite subir o cambiarla. */
@@ -22,15 +23,20 @@ export function FotoEmpleado({
   const router = useRouter();
   const [subiendo, setSubiendo] = useState(false);
   const [error, setError] = useState("");
+  /** Imagen elegida, abierta en el editor de encuadre antes de subirla. */
+  const [elegida, setElegida] = useState<File>();
 
-  async function cargar(evento: ChangeEvent<HTMLInputElement>) {
+  function elegir(evento: ChangeEvent<HTMLInputElement>) {
     const archivo = evento.target.files?.[0];
     evento.target.value = "";
-    if (!archivo) return;
     setError("");
+    if (archivo) setElegida(archivo);
+  }
+
+  async function cargar(foto: Blob) {
+    setElegida(undefined);
     setSubiendo(true);
     try {
-      const foto = await prepararFoto(archivo);
       const ruta = rutaFoto(empresaId, empleadoId);
       const { error: falla } = await crearClienteNavegador()
         .storage.from("fotos")
@@ -58,12 +64,15 @@ export function FotoEmpleado({
       )}
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
         <label className="inline-flex cursor-pointer items-center rounded-full border border-tinta px-4 py-1.5 font-semibold hover:bg-papel">
-          <input type="file" accept="image/jpeg,image/png,image/webp" onChange={cargar} disabled={subiendo} className="sr-only" />
+          <input type="file" accept="image/jpeg,image/png,image/webp" onChange={elegir} disabled={subiendo} className="sr-only" />
           {subiendo ? "Subiendo…" : url ? "Cambiar foto" : "Subir foto"}
         </label>
         {children}
       </div>
       {error ? <p role="alert" className="mt-2 text-sm font-medium text-rojo-oscuro">{error}</p> : null}
+      {elegida ? (
+        <AjustarFoto fuente={elegida} alCancelar={() => setElegida(undefined)} alListo={({ foto }) => void cargar(foto)} />
+      ) : null}
     </div>
   );
 }
