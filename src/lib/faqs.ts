@@ -51,7 +51,7 @@ export const faqsGenerales: Faq[] = [
   {
     pregunta: "¿Qué pasa cuando alguien escanea el código QR de un gafete?",
     respuesta:
-      "Tú lo decides en tu plataforma, en «Qué muestra tu QR». Por omisión abre una página de verificación que dice si el gafete está vigente o expirado, con los datos que elijas mostrar: nombre, puesto, número de empleado, departamento, fotografía y el nombre de tu empresa. Si das de baja a la persona, su página deja de mostrar sus datos. También puedes hacer que el código lleve a una liga tuya o que contenga solo un dato, como el número de empleado. Va incluido en todos los gafetes, impresos y digitales, sin costo extra.",
+      "Se abre una página de verificación que dice al momento si el gafete está vigente, expirado (si le pusiste fecha de vigencia), no válido o aún no activo, con la fecha y hora de la consulta. Tú eliges en tu plataforma, en «Qué muestra tu QR», qué datos aparecen: nombre, puesto, número de empleado, departamento, fotografía o el nombre de tu empresa. Si desactivas el gafete o das de baja a la persona, deja de aparecer como vigente en ese instante y su página ya no muestra sus datos. Si lo prefieres, el código puede llevar a una liga tuya o contener solo un dato, como el número de empleado. Va incluido en todos los gafetes, impresos y digitales, sin costo extra.",
   },
   {
     pregunta: "¿Hay pedido mínimo?",
@@ -104,6 +104,11 @@ export const faqsGenerales: Faq[] = [
     pregunta: "¿Puedo pedir gafetes si no tengo RFC?",
     respuesta:
       "Sí. Muchos negocios trabajan sin RFC y también son bienvenidos. Verificas tu negocio con tu INE y una prueba de que el negocio es tuyo: la liga a su Facebook, Instagram o Google Maps, o una foto del local, la fachada, el menú o el uniforme donde se vea el mismo nombre que llevarán los gafetes. Lo revisamos a mano, normalmente en menos de un día hábil. Eso sí, sin RFC no podemos emitir una factura a tu nombre.",
+  },
+  {
+    pregunta: `¿Qué verifican en ${site.nombre}?`,
+    respuesta:
+      "Todo lo que hace que un gafete sea confiable, sin costo extra. Tu empresa, una sola vez antes del primer pedido, con tu constancia fiscal, tu INE y una prueba de tu negocio, o un correo de tu empresa. Tu primer pedido, que revisamos a mano antes de producirlo. Cada foto e identificación que se sube, con una revisión automática. Cada gafete, con su código QR: quien lo escanea ve si está vigente. Cada entrada al portal «Mi gafete», con un código al correo o con número de empleado y NIP. Y tu cuenta y tu pago, con verificación contra robots, límite de intentos y la verificación de tu banco (3D Secure).",
   },
   {
     pregunta: "¿Qué puedo hacer en mi cuenta?",
@@ -174,7 +179,7 @@ export const faqsGenerales: Faq[] = [
   },
   {
     pregunta: "¿Dan factura?",
-    respuesta: `Sí. Al hacer tu pedido capturas tus datos fiscales y recibes tu factura (CFDI) por correo. El RFC y la razón social de la factura son los de la ${constancia.nombre} de tu empresa, la misma que aparece en los gafetes. Puedes pedirla al hacer tu pedido o después, ${site.plazoFactura}. Solo te pedimos darles una última revisada a tus datos fiscales antes de confirmar: una vez emitida, la factura ya no se puede cambiar, y queremos que te llegue bien a la primera.`,
+    respuesta: `Sí. Al hacer tu pedido capturas tus datos fiscales y recibes tu factura (CFDI) por correo. La factura va a nombre de la misma empresa que aparece en los gafetes; si la verificaste con tu ${constancia.nombre}, tus datos fiscales ya salen de ahí. Puedes pedirla al hacer tu pedido o después, ${site.plazoFactura}. Solo te pedimos darles una última revisada a tus datos fiscales antes de confirmar: una vez emitida, la factura ya no se puede cambiar, y queremos que te llegue bien a la primera.`,
   },
   {
     pregunta: "¿Cuál es su política de devoluciones?",
@@ -196,7 +201,7 @@ export const faqsGenerales: Faq[] = [
   {
     pregunta: "¿Cómo protegen mi cuenta y la de mi equipo?",
     respuesta:
-      "Con varias capas. Verificamos cada empresa a mano antes de su primer pedido, limitamos los intentos para entrar, usamos una verificación contra robots en los formularios y revisamos de forma automática cada foto e identificación que se sube. En el portal «Mi gafete», el NIP no puede ser fácil de adivinar y se bloquea tras varios intentos fallidos, y las invitaciones a tu plataforma vencen a las 24 horas.",
+      "Con varias capas. Verificamos cada empresa a mano y revisamos su primer pedido antes de producirlo. Limitamos los intentos para entrar, usamos una verificación contra robots en los formularios y revisamos de forma automática cada foto e identificación que se sube. En el portal «Mi gafete», el NIP no puede ser fácil de adivinar y se bloquea tras varios intentos fallidos, y las invitaciones a tu plataforma vencen a las 24 horas. El pago se hace en la página segura de Stripe, con la verificación de tu banco (3D Secure).",
   },
   {
     pregunta: "¿Qué pasa con los datos y las fotos de mis empleados?",

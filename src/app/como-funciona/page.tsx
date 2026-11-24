@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Etiqueta } from "@/components/Etiqueta";
-import { MuyPronto } from "@/components/Funciones";
+import { MuyPronto, Palomita } from "@/components/Funciones";
 import { JsonLd } from "@/components/JsonLd";
 import { Cierre, Portada, Seccion } from "@/components/ui";
 import { formasDeEmpezar, pasos } from "@/lib/pasos";
-import { accionesPlataforma, ajustesPlataforma, formasDeCargar } from "@/lib/plataforma";
+import { accionesPlataforma, ajustesPlataforma, formasDeCargar, verificaciones } from "@/lib/plataforma";
 import { comoHacerlo, migas } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
 import { entregaTexto, site, verificacion } from "@/lib/site";
@@ -15,7 +15,7 @@ const rutaMigas = [{ nombre: "Cómo funciona", ruta }];
 export const metadata = metadatos({
   titulo: "Cómo pedir gafetes y credenciales para tu equipo, paso a paso",
   descripcion:
-    "Así se piden gafetes y credenciales para empleados en LaGafetería: eliges plantilla o subes tu diseño, marcas los campos variables, subes a tu equipo con Excel, uno por uno o con las fotos de todos juntas, revisas cada gafete y pagas con el envío a la vista.",
+    "Así se piden gafetes y credenciales para empleados en LaGafetería: eliges plantilla o subes tu diseño, marcas los campos variables, subes a tu equipo con Excel, uno por uno o con las fotos de todos juntas, revisas cada gafete y pagas con el envío a la vista. Verificamos tu empresa una sola vez y cada gafete se comprueba con su código QR.",
   ruta,
 });
 
@@ -33,8 +33,9 @@ export default function ComoFunciona() {
       <Portada migas={rutaMigas} titulo="¿Cómo se piden gafetes y credenciales en LaGafetería?">
         <p>
           En cinco pasos y todo en línea: eliges cómo empezar, marcas lo que cambia en cada gafete,
-          subes a tu equipo, revisas la vista previa de cada uno y pagas. Tu pedido llega en{" "}
-          {entregaTexto}.
+          subes a tu equipo, revisas la vista previa de cada uno y pagas. Tus gafetes impresos
+          llegan en {entregaTexto}. Solo antes de tu primer pedido verificamos tu empresa, una
+          sola vez.
         </p>
       </Portada>
 
@@ -50,8 +51,10 @@ export default function ComoFunciona() {
             ))}
           </ul>
           <p>
-            En las tres aceptas una carta de responsabilidad, se hace una sola vez y la revisamos a mano. No
-            hacemos gafetes ni credenciales de una empresa distinta a la que hace el pedido.
+            En las tres aceptas una carta de responsabilidad y la revisamos a mano, normalmente en
+            menos de un día hábil. Se hace una sola vez: al aprobarse, tu plataforma muestra la
+            insignia «Empresa verificada» y ya puedes pedir. No hacemos gafetes ni credenciales de
+            una empresa distinta a la que hace el pedido.
           </p>
         </div>
       </Seccion>
@@ -78,14 +81,43 @@ export default function ComoFunciona() {
         </ol>
       </Seccion>
 
-      <Seccion id="cargar" titulo="¿Cómo subo a mi equipo?" fondo>
+      <Seccion id="verificaciones" titulo="¿Qué verificamos, de principio a fin?" fondo>
+        <p className="-mt-2 mb-6 max-w-2xl text-lg text-gris">
+          Un gafete abre puertas, así que lo cuidamos de principio a fin: quién lo pide, qué se
+          imprime, quién entra a la plataforma y si sigue vigente cuando alguien lo escanea. Todo
+          viene incluido, sin costo extra.
+        </p>
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {verificaciones.map((v) => (
+            <li key={v.titulo} className="flex gap-2.5 rounded-tarjeta bg-white p-5">
+              <Palomita className="mt-0.5 text-[#0a7d4f]" />
+              <div>
+                <h3 className="font-semibold">{v.titulo}</h3>
+                <p className="mt-1 text-sm text-gris">{v.texto}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-6 max-w-3xl text-gris">
+          ¿Cómo se ve la verificación de un gafete? Al escanear su código QR se abre una página con
+          un sello grande (vigente, expirado, no válido o aún no activo), los datos que tú decidas
+          mostrar y la fecha y hora de la consulta. Funciona igual en el gafete impreso y en el
+          digital. Si prefieres, tu código QR puede llevar a una liga tuya o contener solo un dato,
+          como el número de empleado.{" "}
+          <Link href="/preguntas-frecuentes" className="font-semibold text-rojo underline underline-offset-4">
+            Ver más preguntas
+          </Link>
+        </p>
+      </Seccion>
+
+      <Seccion id="cargar" titulo="¿Cómo subo a mi equipo?">
         <p className="-mt-2 mb-6 max-w-2xl text-lg text-gris">
           No todo es Excel. En el paso 3 usas la forma que te acomode, o varias: lo que subes por
           un lado se junta con lo que ya tenías.
         </p>
         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {formasDeCargar.map((f) => (
-            <li key={f.titulo} className="rounded-tarjeta bg-white p-5">
+            <li key={f.titulo} className="rounded-tarjeta border border-linea p-5">
               <h3 className="text-lg font-bold">{f.titulo}</h3>
               {f.pronto ? (
                 <p className="mt-1">
@@ -98,14 +130,14 @@ export default function ComoFunciona() {
         </ul>
       </Seccion>
 
-      <Seccion titulo="¿Con qué puedo empezar mi gafete?">
+      <Seccion titulo="¿Con qué puedo empezar mi gafete?" fondo>
         <p className="-mt-2 mb-6 max-w-2xl text-lg text-gris">
           Con lo que tengas. Hay tres formas de empezar y las tres terminan igual: un diseño con
           campos que se llenan solos para cada persona.
         </p>
         <ul className="grid gap-5 md:grid-cols-3">
           {formasDeEmpezar.map((f) => (
-            <li key={f.titulo} className="rounded-tarjeta border border-linea p-6">
+            <li key={f.titulo} className="rounded-tarjeta bg-white p-6">
               <h3 className="text-xl font-bold">{f.titulo}</h3>
               <p className="mt-2 text-gris">{f.texto}</p>
             </li>
@@ -113,7 +145,7 @@ export default function ComoFunciona() {
         </ul>
       </Seccion>
 
-      <Seccion titulo="¿Qué es un campo variable?" fondo>
+      <Seccion titulo="¿Qué es un campo variable?">
         <div className="grid items-center gap-10 lg:grid-cols-[1.4fr_1fr]">
           <div>
             <p className="max-w-2xl text-lg text-gris">
@@ -136,7 +168,7 @@ export default function ComoFunciona() {
         </div>
       </Seccion>
 
-      <Seccion titulo="¿Qué puedo hacer después, en mi cuenta?">
+      <Seccion titulo="¿Qué puedo hacer después, en mi cuenta?" fondo>
         <p className="-mt-2 mb-8 max-w-2xl text-lg text-gris">
           Una vez creada tu cuenta tienes acceso a tu plataforma de {site.nombre}. Ahí queda tu
           equipo guardado y administras sus gafetes sin volver a empezar, sin costo extra.{" "}
@@ -144,9 +176,9 @@ export default function ComoFunciona() {
             Ver todo lo que incluye la plataforma
           </Link>
         </p>
-        <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {accionesPlataforma.map((a) => (
-            <div key={a.titulo} className="rounded-tarjeta bg-papel p-5">
+            <div key={a.titulo} className="rounded-tarjeta bg-white p-5">
               <dt className="text-lg font-bold">{a.titulo}</dt>
               <dd className="mt-1 text-sm text-gris">{a.texto}</dd>
             </div>
@@ -154,13 +186,13 @@ export default function ComoFunciona() {
         </dl>
       </Seccion>
 
-      <Seccion titulo="¿Cómo dejo configurados los gafetes de mi empresa?" fondo>
+      <Seccion titulo="¿Cómo dejo configurados los gafetes de mi empresa?">
         <p className="-mt-2 mb-8 max-w-2xl text-lg text-gris">
           Lo configuras una vez y cada pedido siguiente sale casi solo:
         </p>
         <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {ajustesPlataforma.map((a) => (
-            <div key={a.titulo} className="rounded-tarjeta bg-white p-5">
+            <div key={a.titulo} className="rounded-tarjeta border border-linea p-5">
               <dt className="text-lg font-bold">{a.titulo}</dt>
               <dd className="mt-1 text-sm text-gris">{a.texto}</dd>
             </div>

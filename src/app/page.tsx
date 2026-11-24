@@ -12,11 +12,11 @@ import { Boton, Cierre, Contenedor, CTA_TEXTO, Seccion } from "@/components/ui";
 import { faqsGenerales } from "@/lib/faqs";
 import { giros } from "@/lib/giros";
 import { formasDeEmpezar, pasos } from "@/lib/pasos";
-import { confianzaPlataforma, funcionesPlataforma, modalidadesDetalle, portalEmpleados } from "@/lib/plataforma";
+import { funcionesPlataforma, modalidadesDetalle, portalEmpleados, verificaciones } from "@/lib/plataforma";
 import { envio, notaIva, paqueteVigenciaMeses, paquetes, pesos, precioMinimo, precioPaquete } from "@/lib/precios";
 import { paginaFaq, producto, video, videoPitch } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
-import { entregaTexto, site, verificacion } from "@/lib/site";
+import { entregaTexto, site } from "@/lib/site";
 
 export const metadata = metadatos({
   titulo: `${site.titulo} | ${site.nombre}`,
@@ -216,15 +216,17 @@ export default function Inicio() {
             </li>
           ))}
         </ol>
-        <p className="mt-6 max-w-3xl text-sm text-gris">
-          <strong className="text-tinta">Antes de empezar:</strong> {verificacion.corto}{" "}
+        <h3 className="mt-12 text-2xl font-extrabold">Verificado de principio a fin</h3>
+        <p className="mt-2 max-w-2xl text-gris">
+          Un gafete abre puertas. Por eso, antes de tu primer pedido verificamos que los gafetes
+          sean de tu propia empresa, y cualquiera puede comprobar con el código QR si uno sigue
+          vigente.{" "}
           <Link href="/como-funciona#verificacion" className="underline underline-offset-4">
-            Por qué lo pedimos
+            Cómo verificar tu empresa
           </Link>
         </p>
-        <h3 className="mt-12 text-2xl font-extrabold">Nadie hace gafetes a nombre de tu empresa</h3>
-        <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {confianzaPlataforma.map((c) => (
+        <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {verificaciones.map((c) => (
             <li key={c.titulo} className="flex gap-2.5 rounded-tarjeta bg-papel p-5">
               <Palomita className="mt-0.5 text-[#0a7d4f]" />
               <div>

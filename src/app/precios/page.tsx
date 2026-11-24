@@ -57,7 +57,7 @@ const faqsPrecios: FaqItem[] = [
   {
     pregunta: "¿Hay suscripción, mensualidad o costo por usar la plataforma?",
     respuesta:
-      "No. Pagas una sola vez por cada gafete. Diseñar, usar plantillas, cargar tu Excel, mandar ligas para que cada quien suba su foto, revisar la vista previa, administrar altas, bajas, reposiciones, desactivaciones y reactivaciones, invitar a otros usuarios y darle a tu equipo su portal «Mi gafete» no tiene costo.",
+      "No. Pagas una sola vez por cada gafete. Diseñar, usar plantillas, cargar tu Excel, mandar ligas para que cada quien suba su foto, revisar la vista previa, administrar altas, bajas, reposiciones, desactivaciones y reactivaciones, invitar a otros usuarios, darle a tu equipo su portal «Mi gafete» y verificar tu empresa no tiene costo.",
   },
   {
     pregunta: "¿Cuánto cuesta el envío?",
@@ -80,7 +80,7 @@ const faqsPrecios: FaqItem[] = [
   },
   {
     pregunta: "¿Qué incluye el precio por pieza?",
-    respuesta: `En el impreso, la tarjeta de PVC tamaño CR80 a color, personalizada con los datos de cada empleado y entregada en ${entregaTexto}. En el digital, el gafete en el celular. En ambos casos, el código QR con su página de verificación y el acceso a tu plataforma.`,
+    respuesta: `En el impreso, la tarjeta de PVC tamaño CR80 a color, personalizada con los datos de cada empleado y entregada en ${entregaTexto}. En el digital, el gafete en el celular. En ambos casos, el código QR con su página de verificación, la verificación de tu empresa y el acceso a tu plataforma.`,
   },
 ];
 
