@@ -11,6 +11,8 @@ import { ligasDeFotos } from "@/lib/cuenta/fotos";
 import {
   CORREOS_POR_ENVIO,
   type EstadoLiga,
+  fraseCorreccion,
+  QUE_CORREGIR,
   camposPedibles,
   datosPropuestos,
   esEstadoLiga,
@@ -21,7 +23,7 @@ import {
 } from "@/lib/cuenta/ligas";
 import { faltanPorCorreo, personasConLiga } from "@/lib/cuenta/ligas-equipo";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
-import { normalizar } from "@/lib/cuenta/texto";
+import { normalizar, quien } from "@/lib/cuenta/texto";
 import { aprobarPropuesta, aprobarTodas, enviarLigasPorCorreo, guardarAjusteLiga, rechazarPropuesta } from "./acciones";
 
 export const metadata: Metadata = { title: "Liga por persona" };
@@ -49,7 +51,38 @@ const FILTROS: { id: EstadoLiga | "sin_correo"; nombre: string }[] = [
   { id: "sin_correo", nombre: "Sin correo" },
 ];
 
-export default async function Ligas({ searchParams }: { searchParams: Promise<{ estado?: string; q?: string }> }) {
+/** Pedir una corrección: qué (foto, datos o ambos) y por qué. Reabre su liga. */
+function PedirCorreccion({ id }: { id: string }) {
+  return (
+    <Formulario accion={rechazarPropuesta} boton="Pedir corrección" className="rounded-tarjeta-chica bg-papel p-3">
+      <input type="hidden" name="id" value={id} />
+      <fieldset>
+        <legend className="text-sm font-semibold">¿Qué tiene que corregir?</legend>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {QUE_CORREGIR.map((q, i) => (
+            <label key={q} className={claseCasilla}>
+              <input type="radio" name="que" value={q} defaultChecked={i === 0} className="sr-only" />
+              {q}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      <div className="mt-3">
+        <Entrada
+          etiqueta="¿Por qué?"
+          name="motivo"
+          required
+          maxLength={280}
+          autoComplete="off"
+          placeholder="Por ejemplo: salió oscura y no se ve tu cara."
+          ayuda="Se lo mandamos tal cual: «Tu empresa te solicita una corrección de tu foto debido a: …». Después eliges cómo avisarle."
+        />
+      </div>
+    </Formulario>
+  );
+}
+
+export default async function Ligas({ searchParams }: { searchParams: Promise<{ estado?: string; q?: string; corregir?: string }> }) {
   const { supabase, empresa, administra } = await requerirEmpresa();
   const filtros = await searchParams;
 
@@ -97,6 +130,8 @@ export default async function Ligas({ searchParams }: { searchParams: Promise<{ 
       (!estado || (estado === "sin_correo" ? !p.correo : p.estado === estado)) &&
       (!q || normalizar(`${p.nombre} ${p.numero_empleado ?? ""} ${p.correo ?? ""}`).includes(q)),
   );
+  // Recién se pidió una corrección: se ofrece avisarle por correo o WhatsApp.
+  const corregida = personas.find((p) => p.id === filtros.corregir && p.estado === "rechazada");
   const liga = (cambios: { estado?: string }) => {
     const parametros = new URLSearchParams();
     if (cambios.estado) parametros.set("estado", cambios.estado);
@@ -111,10 +146,38 @@ export default async function Ligas({ searchParams }: { searchParams: Promise<{ 
       <div>
         <h1 className="text-3xl font-extrabold">Liga por persona</h1>
         <p className="mt-2 max-w-3xl text-gris">
-          Cada persona de tu equipo tiene su propia liga para revisar sus datos y subir su foto desde el celular, sin
-          crear cuenta. Nada cambia en su gafete hasta que tú lo apruebas.
+          Cada persona de tu equipo tiene su propia liga para subir su foto y revisar o completar sus datos desde el
+          celular, sin crear cuenta. Tú eliges qué se pide; todos reciben las mismas preguntas, cada quien con sus
+          propios datos ya llenos. Nada cambia en su gafete hasta que tú lo apruebas.
         </p>
       </div>
+
+      {corregida ? (
+        <section id="aviso" role="status" className="scroll-mt-4 rounded-tarjeta border-2 border-tinta bg-white p-5">
+          <h2 className="text-lg font-extrabold">Listo. Ahora avísale a {quien(corregida)}</h2>
+          <p className="mt-1 text-sm text-gris">
+            Le diremos: «{fraseCorreccion(empresa.nombre, corregida.motivo ?? "")}» Lo verá al abrir su liga, pero no le
+            llega ningún aviso solo. Mándale el mensaje con su liga:
+          </p>
+          <div className="mt-3">
+            <AccionesLiga
+              id={corregida.id}
+              url={urlDeLiga(corregida.liga)}
+              mensaje={mensajeDeLiga({ nombre: corregida.nombre, empresa: empresa.nombre, url: urlDeLiga(corregida.liga), conDatos, conFoto, correccion: corregida.motivo })}
+              correo={puedeCorreo ? corregida.correo : null}
+              correccion
+            />
+          </div>
+          {!corregida.correo ? (
+            <p className="mt-2 text-xs text-gris">No tiene correo guardado; por eso solo aparece WhatsApp.</p>
+          ) : !puedeCorreo ? (
+            <p className="mt-2 text-xs text-gris">
+              «Enviar por correo» aparece cuando tu empresa está verificada.{" "}
+              <Link href="/cuenta/verificacion" className="underline">Verificar mi empresa</Link>
+            </p>
+          ) : null}
+        </section>
+      ) : null}
 
       {personas.length === 0 ? (
         <div className="rounded-tarjeta border border-dashed border-linea bg-white p-8 text-center">
@@ -160,11 +223,11 @@ export default async function Ligas({ searchParams }: { searchParams: Promise<{ 
                   <div className="flex items-start gap-4">
                     {fotoNueva ? (
                       // eslint-disable-next-line @next/next/no-img-element -- liga temporal de almacenamiento privado
-                      <img src={fotoNueva} alt={`Foto que mandó ${ficha.nombre}`} width={96} height={128} className="aspect-[3/4] w-24 shrink-0 rounded-tarjeta-chica object-cover" />
+                      <img src={fotoNueva} alt={`Foto que mandó ${quien(ficha)}`} width={96} height={128} className="aspect-[3/4] w-24 shrink-0 rounded-tarjeta-chica object-cover" />
                     ) : null}
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold">
-                        <Link href={`/cuenta/equipo/${ficha.id}`} className="hover:underline">{ficha.nombre}</Link>
+                        <Link href={`/cuenta/equipo/${ficha.id}`} className="hover:underline">{quien(ficha)}</Link>
                       </p>
                       <p className="text-xs text-gris">Lo mandó el {fechaHora(p.enviado_en)}</p>
                       {cambios.length ? (
@@ -195,17 +258,7 @@ export default async function Ligas({ searchParams }: { searchParams: Promise<{ 
                       <summary className="cursor-pointer list-none py-2.5 font-semibold text-rojo-oscuro underline underline-offset-4 [&::-webkit-details-marker]:hidden">
                         Pedir una corrección
                       </summary>
-                      <Formulario accion={rechazarPropuesta} boton="Pedir corrección" className="rounded-tarjeta-chica bg-papel p-3">
-                        <input type="hidden" name="id" value={ficha.id} />
-                        <Entrada
-                          etiqueta="¿Qué tiene que corregir?"
-                          name="motivo"
-                          required
-                          maxLength={300}
-                          placeholder="Por ejemplo: la foto salió oscura."
-                          ayuda="Lo va a ver al abrir su liga. Avísale por correo o WhatsApp desde la lista de abajo."
-                        />
-                      </Formulario>
+                      <PedirCorreccion id={ficha.id} />
                     </details>
                   </div>
                 </li>
@@ -219,7 +272,8 @@ export default async function Ligas({ searchParams }: { searchParams: Promise<{ 
         <Formulario accion={guardarAjusteLiga} boton="Guardar">
           <fieldset disabled={!administra}>
             <legend className="text-sm text-gris">
-              Toca lo que quieres que cada quien revise o llene. Lo que no elijas no lo ven ni lo pueden cambiar.
+              Toca lo que quieres que cada quien revise o llene; aplica a todas las ligas. Lo que no elijas no lo ven ni lo
+              pueden cambiar. Si solo necesitas fotos, deja marcada nada más la fotografía.
             </legend>
             <div className="mt-3 flex flex-wrap gap-2">
               {pedibles.map((c) => (
@@ -236,7 +290,7 @@ export default async function Ligas({ searchParams }: { searchParams: Promise<{ 
           </fieldset>
           <p className="mt-3 text-sm text-gris">
             ¿Te falta un dato, como tipo de sangre o contacto de emergencia?{" "}
-            <Link href="/cuenta/campos" className="underline">Agrégalo en Campos</Link> y aparece aquí.
+            <Link href="/cuenta/campos" className="underline">Agrégalo en Datos del equipo</Link> y aparece aquí.
             {administra ? "" : " Solo quien administra la empresa puede cambiar esta lista."}
           </p>
         </Formulario>
@@ -339,7 +393,7 @@ export default async function Ligas({ searchParams }: { searchParams: Promise<{ 
                       return (
                         <tr key={p.id} className="align-top">
                           <th scope="row" className="px-4 py-3 font-medium">
-                            <Link href={`/cuenta/equipo/${p.id}`} className="hover:underline">{p.nombre}</Link>
+                            <Link href={`/cuenta/equipo/${p.id}`} className="hover:underline">{quien(p)}</Link>
                             <span className="block text-xs font-normal break-all text-gris">
                               {p.correo ?? "Sin correo"}
                             </span>
@@ -348,6 +402,14 @@ export default async function Ligas({ searchParams }: { searchParams: Promise<{ 
                             <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${estadosLiga[p.estado].clase}`}>
                               {estadosLiga[p.estado].nombre}
                             </span>
+                            {p.estado === "aprobada" ? (
+                              <details className="mt-1 text-xs">
+                                <summary className="cursor-pointer font-semibold underline underline-offset-4">Reabrir con una corrección</summary>
+                                <div className="mt-2 w-72 text-sm">
+                                  <PedirCorreccion id={p.id} />
+                                </div>
+                              </details>
+                            ) : null}
                             <span className="mt-1 block text-xs text-gris">
                               {p.estado === "rechazada" && p.motivo
                                 ? `Le pediste: ${p.motivo}`
@@ -362,7 +424,7 @@ export default async function Ligas({ searchParams }: { searchParams: Promise<{ 
                             <AccionesLiga
                               id={p.id}
                               url={url}
-                              mensaje={mensajeDeLiga({ nombre: p.nombre, empresa: empresa.nombre, url, conDatos, conFoto })}
+                              mensaje={mensajeDeLiga({ nombre: p.nombre, empresa: empresa.nombre, url, conDatos, conFoto, correccion: p.motivo })}
                               correo={puedeCorreo ? p.correo : null}
                               yaEnviada={p.estado !== "sin_enviar"}
                             />

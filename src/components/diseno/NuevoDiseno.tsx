@@ -3,7 +3,16 @@
 import { useMemo, useState } from "react";
 import { crearDiseno } from "@/app/cuenta/disenos/acciones";
 import { claseEntrada, Formulario } from "@/components/cuenta/Formulario";
-import { type CampoPlantilla, crearDesdePlantilla, type PlantillaId, plantillas } from "@/lib/diseno/plantillas";
+import Link from "next/link";
+import {
+  type CampoPlantilla,
+  conImpresos,
+  crearDesdePlantilla,
+  type Impreso,
+  impresoDe,
+  type PlantillaId,
+  plantillas,
+} from "@/lib/diseno/plantillas";
 import type { Cara, Orientacion } from "@/lib/diseno/tipos";
 import { CODIGO_MUESTRA, ligaVerificacion } from "@/lib/cuenta/qr";
 import { GafeteSvg } from "./GafeteSvg";
@@ -34,14 +43,18 @@ export function NuevoDiseno({
   const [plantilla, setPlantilla] = useState<PlantillaId>("clasica");
   const [orientacion, setOrientacion] = useState<Orientacion>("horizontal");
   const [color, setColor] = useState(COLORES[0].valor);
+  const [impresos, setImpresos] = useState<Record<string, Impreso>>(() =>
+    Object.fromEntries(campos.map((c) => [c.clave, impresoDe(c)])),
+  );
+  const elegidos = useMemo(() => conImpresos(campos, impresos), [campos, impresos]);
   const etiquetas = useMemo(() => Object.fromEntries(campos.map((c) => [c.clave, c.etiqueta])), [campos]);
   const muestras = useMemo(
     () =>
       plantillas.map((p) => ({
         ...p,
-        frente: estable(crearDesdePlantilla(p.id, orientacion, campos, color, empresa).frente),
+        frente: estable(crearDesdePlantilla(p.id, orientacion, elegidos, color, empresa).frente),
       })),
-    [orientacion, campos, color, empresa],
+    [orientacion, elegidos, color, empresa],
   );
 
   return (
@@ -62,7 +75,53 @@ export function NuevoDiseno({
       </fieldset>
 
       <fieldset>
-        <legend className="text-lg font-extrabold">2. Elige con qué empezar</legend>
+        <legend className="text-lg font-extrabold">2. ¿Qué datos van impresos?</legend>
+        <p className="max-w-2xl text-sm text-gris">
+          Tu Excel guarda todos los datos de tu equipo; aquí eliges cuáles se imprimen en <strong>este</strong> diseño y
+          en qué cara. Otro diseño puede llevar otros. Lo que no imprimas se queda guardado igual.
+        </p>
+        <ul className="mt-3 divide-y divide-linea rounded-tarjeta border border-linea bg-white">
+          {campos.map((c) => (
+            <li key={c.clave} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2.5">
+              <span className="min-w-0 text-sm">
+                <span className="font-semibold">{c.etiqueta}</span>
+                {c.tipo === "qr" ? (
+                  <span className="block text-xs text-gris">
+                    Qué se ve al escanearlo lo eliges una vez para toda tu empresa en{" "}
+                    <Link href="/cuenta/campos#qr" className="underline">Qué muestra tu QR</Link>.
+                  </span>
+                ) : c.clave === "nombre" ? (
+                  <span className="block text-xs text-gris">Quítalo para un gafete genérico, como «Visitante».</span>
+                ) : null}
+              </span>
+              <span role="radiogroup" aria-label={`Dónde va ${c.etiqueta}`} className="flex shrink-0 overflow-hidden rounded-full border border-linea text-xs font-semibold">
+                {(["frente", "vuelta", "no"] as const).map((v) => (
+                  <label
+                    key={v}
+                    className="cursor-pointer px-3 py-1.5 has-[:checked]:bg-tinta has-[:checked]:text-white has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-tinta"
+                  >
+                    <input
+                      type="radio"
+                      name={`imp_${c.clave}`}
+                      value={v}
+                      checked={impresos[c.clave] === v}
+                      onChange={() => setImpresos((a) => ({ ...a, [c.clave]: v }))}
+                      className="sr-only"
+                    />
+                    {v === "frente" ? "Frente" : v === "vuelta" ? "Vuelta" : "No va"}
+                  </label>
+                ))}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-2 text-xs text-gris">
+          ¿Falta un dato, como tipo de sangre? <Link href="/cuenta/campos" className="underline">Agrégalo a tu equipo</Link>.
+        </p>
+      </fieldset>
+
+      <fieldset>
+        <legend className="text-lg font-extrabold">3. Elige con qué empezar</legend>
         <p className="text-sm text-gris">Después puedes mover, quitar y agregar lo que quieras.</p>
         <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {muestras.map((p) => (
@@ -91,7 +150,7 @@ export function NuevoDiseno({
       </fieldset>
 
       <fieldset>
-        <legend className="text-lg font-extrabold">3. Tu color</legend>
+        <legend className="text-lg font-extrabold">4. Tu color</legend>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           {COLORES.map((c) => (
             <button
@@ -112,7 +171,7 @@ export function NuevoDiseno({
       </fieldset>
 
       <label className="block max-w-md">
-        <span className="text-lg font-extrabold">4. Ponle nombre</span>
+        <span className="text-lg font-extrabold">5. Ponle nombre</span>
         <input name="nombre" maxLength={80} placeholder="Por ejemplo: Gafete de planta" className={claseEntrada} />
         <span className="mt-1 block text-sm text-gris">Opcional. Sirve para distinguirlo si haces varios.</span>
       </label>

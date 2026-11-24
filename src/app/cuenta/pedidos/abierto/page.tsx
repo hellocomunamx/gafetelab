@@ -88,7 +88,7 @@ export default async function Abierto() {
                     <li key={r.empleado_id} className="flex flex-wrap items-center justify-between gap-3 py-2.5 text-sm">
                       <span className="min-w-0">
                         <Link href={`/cuenta/equipo/${p.id}`} className="font-semibold underline-offset-4 hover:underline">
-                          {p.nombre}
+                          {p.nombre || "Sin nombre"}
                         </Link>
                         <span className="block text-gris">
                           {[p.numero_empleado, p.puesto, razones[r.razon].frase].filter(Boolean).join(" · ")}

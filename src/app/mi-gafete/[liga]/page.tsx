@@ -8,7 +8,7 @@ import { Contenedor } from "@/components/ui";
 import { cambioFotoDe } from "@/lib/cuenta/cambio-foto";
 import { gafeteDigitalDe } from "@/lib/cuenta/gafete-digital";
 import { personaDeLiga } from "@/lib/cuenta/liga-publica";
-import { datosPropuestos, FORMATO_LIGA, RUTA_LIGA, valorDe } from "@/lib/cuenta/ligas";
+import { datosPropuestos, FORMATO_LIGA, fraseCorreccion, RUTA_LIGA, valorDe } from "@/lib/cuenta/ligas";
 import { site } from "@/lib/site";
 import { verificarGafete } from "@/lib/verificacion";
 
@@ -67,24 +67,31 @@ export default async function MiGafete({ params }: { params: Promise<{ liga: str
         : ((await servicio.storage.from("fotos").createSignedUrl(persona.foto_path, 3600)).data?.signedUrl ?? null)
       : null;
 
+  // Ya mandó su información: la liga queda cerrada hasta que la empresa pida una corrección.
+  const cerrada = Boolean(propuesta && propuesta.estado !== "rechazada");
+  const loEnviado = empresa.liga_foto ? "Tu fotografía ya fue enviada" : "Tu información ya fue enviada";
+  // Con gafete digital, la foto se cambia desde «Cambiar mi foto»; lo demás, con su empresa.
+  const paraCambiar = digital
+    ? `Si necesitas cambiar tu foto, hazlo desde «Cambiar mi foto». Para cualquier otro dato, solicítalo al departamento correspondiente de ${empresa.nombre}.`
+    : `Si necesitas cambiar${empresa.liga_foto ? "la" : " algo"}, solicítalo al departamento correspondiente de ${empresa.nombre}.`;
   const aviso =
     propuesta?.estado === "pendiente"
       ? {
           clase: "border-[#0a7d4f] bg-[#dff3ea]",
-          titulo: "Listo, ya lo recibimos.",
-          texto: `${empresa.nombre} va a revisar lo que mandaste. Si te equivocaste en algo, corrígelo aquí mismo y vuelve a enviarlo.`,
+          titulo: `Listo. ${loEnviado}.`,
+          texto: `${empresa.nombre} la va a revisar. ${paraCambiar}`,
         }
       : propuesta?.estado === "rechazada"
         ? {
             clase: "border-rojo bg-rojo/10",
             titulo: `${empresa.nombre} te pide una corrección.`,
-            texto: propuesta.motivo || "Revisa tus datos y tu foto, y vuelve a enviarlos.",
+            texto: propuesta.motivo ? fraseCorreccion(empresa.nombre, propuesta.motivo) : "Revisa tus datos y tu foto, y vuelve a enviarlos.",
           }
         : propuesta?.estado === "aprobada"
           ? {
               clase: "border-[#0a7d4f] bg-[#dff3ea]",
-              titulo: "Tus datos ya están aprobados.",
-              texto: `No tienes que hacer nada más. Si algo cambió, puedes mandarle una corrección a ${empresa.nombre}.`,
+              titulo: `${loEnviado} y ya está aprobada.`,
+              texto: `No tienes que hacer nada más. ${paraCambiar}`,
             }
           : null;
 
@@ -120,7 +127,9 @@ export default async function MiGafete({ params }: { params: Promise<{ liga: str
         ) : (
           <p className="mt-2 text-gris">
             {empresa.nombre} está preparando tu gafete.{" "}
-            {nadaQuePedir
+            {cerrada
+              ? ""
+              : nadaQuePedir
               ? "Por ahora no necesita nada de ti."
               : `${lista.length ? "Revisa que tus datos estén bien escritos" : "Sube tu foto"}${lista.length && empresa.liga_foto ? " y sube tu foto" : ""}. Toma un minuto.`}
           </p>
@@ -133,7 +142,7 @@ export default async function MiGafete({ params }: { params: Promise<{ liga: str
           </div>
         ) : null}
 
-        {nadaQuePedir ? null : digital ? (
+        {nadaQuePedir || cerrada ? null : digital ? (
           // Con gafete digital, la foto se cambia arriba («Cambiar mi foto»); aquí solo los datos.
           lista.length ? (
           <details className="mt-5 rounded-tarjeta border border-linea bg-white p-5 sm:p-6" open={propuesta?.estado === "rechazada"}>
@@ -150,7 +159,7 @@ export default async function MiGafete({ params }: { params: Promise<{ liga: str
               campos={lista}
               conFoto={empresa.liga_foto}
               fotoActual={fotoActual}
-              boton={propuesta ? "Enviar de nuevo" : `Enviar a ${empresa.nombre}`}
+              boton={propuesta ? "Enviar mi corrección" : `Enviar a ${empresa.nombre}`}
             />
           </div>
         )}

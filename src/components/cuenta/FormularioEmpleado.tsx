@@ -25,11 +25,18 @@ export function FormularioEmpleado({
     <Formulario accion={guardarEmpleado} boton={empleado ? "Guardar cambios" : "Agregar persona"}>
       {empleado ? <input type="hidden" name="id" value={empleado.id} /> : null}
       <div className="grid gap-4 sm:grid-cols-2">
-        <Entrada etiqueta={etiqueta("nombre", "Nombre")} name="nombre" required maxLength={160} defaultValue={empleado?.nombre} className="sm:col-span-2" />
+        <Entrada
+          etiqueta={etiqueta("nombre", "Nombre")}
+          name="nombre"
+          maxLength={160}
+          defaultValue={empleado?.nombre}
+          className="sm:col-span-2"
+          ayuda="Déjalo vacío si es un gafete genérico, como «Visitante» o «Proveedor»."
+        />
         <Entrada etiqueta={etiqueta("numero_empleado", "Número de empleado")} name="numero_empleado" maxLength={40} defaultValue={empleado?.numero_empleado ?? ""} />
         <Entrada etiqueta={etiqueta("puesto", "Puesto")} name="puesto" maxLength={120} defaultValue={empleado?.puesto ?? ""} />
-        <Entrada etiqueta={etiqueta("departamento", "Departamento")} name="departamento" maxLength={120} list="departamentos" defaultValue={empleado?.departamento ?? ""} />
-        <Entrada etiqueta={etiqueta("tipo_contrato", "Tipo de contrato")} name="tipo_contrato" maxLength={60} list="contratos" defaultValue={empleado?.tipo_contrato ?? ""} ayuda="Por ejemplo: Planta, Temporal o Visitante." />
+        <Entrada etiqueta={etiqueta("departamento", "Departamento")} name="departamento" maxLength={120} list="departamentos" autoComplete="off" defaultValue={empleado?.departamento ?? ""} />
+        <Entrada etiqueta={etiqueta("tipo_contrato", "Tipo de contrato")} name="tipo_contrato" maxLength={60} list="contratos" autoComplete="off" defaultValue={empleado?.tipo_contrato ?? ""} ayuda="Por ejemplo: Planta, Temporal o Visitante." />
         <Entrada etiqueta="Correo" name="correo" type="email" maxLength={200} defaultValue={empleado?.correo ?? ""} ayuda="Para mandarle su liga. No se imprime en el gafete." />
         {propios.map((c) => (
           <Entrada

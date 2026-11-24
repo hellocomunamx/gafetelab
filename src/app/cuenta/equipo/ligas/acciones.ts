@@ -1,10 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { type Correo, correoActivo, enviarCorreos } from "@/lib/correo";
 import { constanciaDe, puedePedir } from "@/lib/cuenta/constancia";
 import { correoLiga } from "@/lib/cuenta/correo-liga";
-import { CORREOS_POR_ENVIO, camposPedibles, datosPropuestos, urlDeLiga } from "@/lib/cuenta/ligas";
+import { CORREOS_POR_ENVIO, QUE_CORREGIR, camposPedibles, datosPropuestos, urlDeLiga } from "@/lib/cuenta/ligas";
 import { faltanPorCorreo, personasConLiga } from "@/lib/cuenta/ligas-equipo";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
 import { esColumnaSistema, type Resultado } from "@/lib/cuenta/tipos";
@@ -203,23 +204,27 @@ export async function aprobarTodas(): Promise<Resultado> {
 export async function rechazarPropuesta(_: Resultado, d: FormData): Promise<Resultado> {
   const id = String(d.get("id") ?? "");
   if (!UUID.test(id)) return { error: ERROR_GENERAL };
-  const motivo = String(d.get("motivo") ?? "").trim().slice(0, 300);
-  if (!motivo) return { error: "Escribe qué tiene que corregir." };
+  const porque = String(d.get("motivo") ?? "").trim().slice(0, 280);
+  if (!porque) return { error: "Escribe por qué lo tiene que corregir." };
+  const que = QUE_CORREGIR.find((q) => q === d.get("que"));
+  const motivo = que ? `${que}: ${porque}` : porque;
   const { supabase, empresa } = await requerirEmpresa();
   const { data: propuesta } = await supabase
     .from("propuestas")
-    .select("foto_path")
+    .select("foto_path, estado")
     .eq("empleado_id", id)
     .eq("empresa_id", empresa.id)
-    .eq("estado", "pendiente")
+    .in("estado", ["pendiente", "aprobada"])
     .maybeSingle();
+  // Una liga ya aprobada también se puede reabrir con una corrección (la persona no puede cambiar nada sola).
   if (!propuesta) return { error: "Esa propuesta ya se resolvió." };
-  if (propuesta.foto_path) await supabase.storage.from("fotos").remove([propuesta.foto_path]);
+  if (propuesta.estado === "pendiente" && propuesta.foto_path) await supabase.storage.from("fotos").remove([propuesta.foto_path]);
   const { error } = await supabase
     .from("propuestas")
     .update({ estado: "rechazada", motivo, foto_path: null, resuelto_en: new Date().toISOString() })
     .eq("empleado_id", id);
   if (error) return { error: ERROR_GENERAL };
   refrescar();
-  return { ok: "Le pediste una corrección." };
+  // Arriba de la página aparecen los botones para avisarle por correo o WhatsApp.
+  redirect(`/cuenta/equipo/ligas?corregir=${id}#aviso`);
 }

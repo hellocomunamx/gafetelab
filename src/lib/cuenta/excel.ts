@@ -67,7 +67,7 @@ export type Lectura = {
   filas: FilaImportada[];
   /** Encabezados que no corresponden a ningún campo. */
   ignoradas: string[];
-  /** Renglones (número en Excel) que se saltan por no traer nombre. */
+  /** Renglones (número en Excel) sin nombre: se importan como gafetes genéricos. */
   sinNombre: number[];
   /** Números de empleado repetidos dentro del archivo. */
   repetidos: string[];
@@ -84,7 +84,8 @@ export function leerFilas(hoja: unknown[][], campos: CampoExcel[]): Lectura {
     ignoradas: encabezados.filter((e, i) => e && !mapa[i]),
     sinNombre: [],
     repetidos: [],
-    faltaNombre: !mapa.includes("nombre"),
+    // El nombre es opcional; basta con que el archivo traiga alguna columna conocida.
+    faltaNombre: !mapa.some(Boolean),
   };
   if (lectura.faltaNombre) return lectura;
 
@@ -102,10 +103,7 @@ export function leerFilas(hoja: unknown[][], campos: CampoExcel[]): Lectura {
       else fila.datos![clave] = valor;
     });
     if (!conAlgo) return;
-    if (!fila.nombre) {
-      lectura.sinNombre.push(i + 2);
-      return;
-    }
+    if (!fila.nombre) lectura.sinNombre.push(i + 2);
     if (fila.numero_empleado) {
       if (vistos.has(fila.numero_empleado)) lectura.repetidos.push(fila.numero_empleado);
       vistos.add(fila.numero_empleado);

@@ -17,6 +17,7 @@ import { datosDePersona, disenoDeFila, faltantes } from "@/lib/diseno/datos";
 import { rutasDe } from "@/lib/diseno/limpiar";
 import type { GafeteCopiado } from "@/lib/pedidos/reglas";
 import type { Servicio } from "@/lib/pedidos/servidor";
+import { quien } from "@/lib/cuenta/texto";
 
 export const metadata: Metadata = { title: "PDF de impresión" };
 
@@ -100,7 +101,7 @@ export default async function Imprimir({
       const foto = (p.foto_path && fotos.get(p.foto_path)) || undefined;
       return {
         id: p.id,
-        nombre: p.nombre,
+        nombre: quien(p),
         numero: p.numero_empleado,
         datos,
         qr,
@@ -126,7 +127,7 @@ export default async function Imprimir({
       if (!g) return [];
       const frente = cara(g.frente_path, g.frente_ancho, g.frente_alto);
       const vuelta = cara(g.vuelta_path, g.vuelta_ancho, g.vuelta_alto);
-      return [{ id: p.id, nombre: p.nombre, numero: p.numero_empleado, frente, vuelta, faltan: frente ? [] : ["El frente"] }];
+      return [{ id: p.id, nombre: quien(p), numero: p.numero_empleado, frente, vuelta, faltan: frente ? [] : ["El frente"] }];
     });
     alertas = palabrasSensibles([empresa.nombre]);
   }

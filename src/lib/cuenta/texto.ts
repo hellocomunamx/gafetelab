@@ -13,3 +13,15 @@ export function claveDe(etiqueta: string): string {
   const base = normalizar(etiqueta).replace(/ /g, "_").replace(/^[^a-z]+/, "");
   return base.slice(0, 40) || "campo";
 }
+
+/**
+ * Cómo se llama a una persona en las listas. El nombre es opcional (hay
+ * gafetes genéricos, como «Visitante»): sin nombre se usa su puesto o número.
+ */
+export function quien(p: { nombre: string | null; puesto?: string | null; numero_empleado?: string | null; numero?: string | null }): string {
+  const nombre = p.nombre?.trim();
+  if (nombre) return nombre;
+  const numero = p.numero_empleado ?? p.numero;
+  if (p.puesto) return `Sin nombre · ${p.puesto}${numero ? ` · No. ${numero}` : ""}`;
+  return numero ? `Sin nombre · No. ${numero}` : "Sin nombre";
+}

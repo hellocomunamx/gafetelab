@@ -5,6 +5,7 @@ import { claseBoton, claseBotonSecundario, claseEntrada } from "@/components/cue
 import { estatusEmpleado } from "@/lib/cuenta/catalogos";
 import { ligasDeFotos } from "@/lib/cuenta/fotos";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
+import { quien } from "@/lib/cuenta/texto";
 
 export const metadata: Metadata = { title: "Equipo" };
 
@@ -35,7 +36,7 @@ export default async function Equipo({
 
   const [{ data: personas, count }, { data: todas }, { count: porAprobar }] = await Promise.all([
     consulta,
-    supabase.from("empleados").select("departamento, tipo_contrato").eq("empresa_id", empresa.id),
+    supabase.from("empleados").select("departamento, tipo_contrato, estatus, foto_path").eq("empresa_id", empresa.id),
     supabase.from("propuestas").select("empleado_id", { count: "exact", head: true }).eq("empresa_id", empresa.id).eq("estado", "pendiente"),
   ]);
   const unicos = (valores: (string | null)[]) =>
@@ -49,18 +50,69 @@ export default async function Equipo({
     .eq("empresa_id", empresa.id)
     .eq("estado", "pendiente");
   const hayFiltros = Boolean(f.estatus || f.departamento || f.contrato || f.foto || q);
+  const activas = (todas ?? []).filter((t) => t.estatus !== "baja");
+  const sinFoto = activas.filter((t) => !t.foto_path).length;
+  const pasos = [
+    {
+      titulo: "Agrega a tu equipo",
+      estado: activas.length ? `${activas.length.toLocaleString("es-MX")} ${activas.length === 1 ? "persona" : "personas"}` : "Aún nadie",
+      listo: activas.length > 0,
+      texto: "Todos de una vez con tu plantilla de Excel, o una por una.",
+      ligas: [
+        { href: "/cuenta/equipo/importar", texto: "Importar Excel" },
+        { href: "/cuenta/equipo/nuevo", texto: "Agregar persona" },
+      ],
+    },
+    {
+      titulo: "Junta las fotos",
+      estado: activas.length ? (sinFoto ? `Faltan ${sinFoto.toLocaleString("es-MX")}` : "Completas") : "",
+      listo: activas.length > 0 && sinFoto === 0,
+      texto: "Súbelas tú si ya las tienes, o pide a cada persona la suya con su liga.",
+      ligas: [
+        { href: "/cuenta/equipo/fotos?forma=yo#paso", texto: "Yo las subo" },
+        { href: "/cuenta/equipo/fotos?forma=liga#paso", texto: "Pedirlas a cada quien" },
+      ],
+    },
+    {
+      titulo: "Revisa lo que manden",
+      estado: porAprobar ? `${porAprobar.toLocaleString("es-MX")} por aprobar` : "",
+      listo: false,
+      texto: "Si usas la liga, aquí apruebas fotos y datos antes de que pasen al gafete.",
+      ligas: [{ href: "/cuenta/equipo/ligas", texto: "Ligas y aprobaciones" }],
+    },
+  ];
 
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-extrabold">Equipo</h1>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/cuenta/equipo/importar" className={claseBotonSecundario}>Importar Excel</Link>
-          <Link href="/cuenta/equipo/fotos" className={claseBotonSecundario}>Subir fotos</Link>
-          <Link href="/cuenta/equipo/ligas" className={claseBotonSecundario}>Liga por persona</Link>
-          <Link href="/cuenta/equipo/nuevo" className={claseBoton}>Agregar persona</Link>
-        </div>
+        <Link href="/cuenta/equipo/nuevo" className={claseBoton}>Agregar persona</Link>
       </div>
+
+      <ol className="grid gap-3 lg:grid-cols-3">
+        {pasos.map((p, i) => (
+          <li key={p.titulo} className="flex flex-col rounded-tarjeta border border-linea bg-white p-4">
+            <div className="flex items-center gap-2.5">
+              <span
+                aria-hidden
+                className={`flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-extrabold ${p.listo ? "bg-[#0a7d4f] text-white" : "bg-tinta text-white"}`}
+              >
+                {p.listo ? "✓" : i + 1}
+              </span>
+              <h2 className="font-titulos text-lg font-extrabold">{p.titulo}</h2>
+              {p.estado ? <span className="ml-auto shrink-0 rounded-full bg-papel px-2.5 py-0.5 text-xs font-semibold">{p.estado}</span> : null}
+            </div>
+            <p className="mt-1.5 flex-1 text-sm text-gris">{p.texto}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {p.ligas.map((l) => (
+                <Link key={l.href} href={l.href} className="rounded-full border border-tinta px-3.5 py-1.5 text-sm font-semibold hover:bg-tinta hover:text-white">
+                  {l.texto}
+                </Link>
+              ))}
+            </div>
+          </li>
+        ))}
+      </ol>
 
       {porAprobar ? (
         <p className="rounded-tarjeta border border-linea bg-resaltador/30 px-4 py-3 text-sm">
@@ -148,7 +200,7 @@ export default async function Equipo({
                       ) : (
                         <span aria-hidden className="flex h-12 w-9 items-center justify-center rounded bg-papel text-xs text-gris">Sin foto</span>
                       )}
-                      {p.nombre}
+                      {quien(p)}
                     </Link>
                   </th>
                   <td className="px-4 py-2.5">{p.numero_empleado}</td>

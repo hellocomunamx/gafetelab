@@ -17,6 +17,10 @@ export async function enviarMisDatos(datos: FormData): Promise<Resultado> {
   const encontrada = await personaDeLiga(liga);
   if (!encontrada) return { error: "Esta liga ya no está activa. Pide una nueva en tu empresa." };
   const { servicio, persona, empresa, campos, propuesta } = encontrada;
+  // Una vez enviado, la liga se cierra: solo la empresa la reabre pidiendo una corrección.
+  if (propuesta && propuesta.estado !== "rechazada") {
+    return { error: "Ya enviaste tu información. Si necesitas cambiar algo, solicítalo al departamento correspondiente de tu empresa." };
+  }
 
   const valores: Record<string, string> = {};
   for (const campo of campos) {
@@ -26,8 +30,7 @@ export async function enviarMisDatos(datos: FormData): Promise<Resultado> {
     valores[campo.clave] = valor;
   }
 
-  // La foto que ya había mandado y sigue sin aprobarse se conserva si no manda otra.
-  let foto = propuesta?.estado === "pendiente" ? propuesta.foto_path : null;
+  let foto: string | null = null;
   const archivo = datos.get("foto");
   if (empresa.liga_foto && archivo instanceof Blob && archivo.size > 0) {
     if (archivo.size > PESO_MAXIMO_FOTO) return { error: "La foto pesa demasiado. Elige otra." };

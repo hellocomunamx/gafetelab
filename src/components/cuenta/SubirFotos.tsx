@@ -155,8 +155,8 @@ export function SubirFotos({ empresaId, personas }: { empresaId: string; persona
       >
         <p className="font-titulos text-lg font-extrabold">Arrastra aquí tus fotos o un ZIP</p>
         <p className="mx-auto mt-1 max-w-xl text-sm text-gris">
-          Nombra cada archivo con el número de empleado (0042.jpg) o con el nombre completo
-          (Ana Martínez.jpg) y se asigna sola. JPG, PNG o WebP; hasta {MAXIMO} a la vez.
+          Si las nombraste con su número o su nombre, se asignan solas. JPG, PNG o WebP; hasta {MAXIMO} a la
+          vez.
         </p>
         <label className={`${claseBoton} mt-4 cursor-pointer`}>
           <input type="file" multiple accept="image/jpeg,image/png,image/webp,.zip,application/zip" onChange={alElegir} disabled={subiendo} className="sr-only" />
@@ -244,7 +244,7 @@ export function SubirFotos({ empresaId, personas }: { empresaId: string; persona
                         <option value="">Sin asignar</option>
                         {personas.map((p) => (
                           <option key={p.id} value={p.id}>
-                            {p.nombre}{p.numero_empleado ? ` (${p.numero_empleado})` : ""}
+                            {p.nombre || "Sin nombre"}{p.numero_empleado ? ` (${p.numero_empleado})` : ""}
                           </option>
                         ))}
                       </select>

@@ -7,7 +7,7 @@ import { type CaraLista, revisarGafete } from "@/lib/cuenta/listos";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
 import type { Resultado } from "@/lib/cuenta/tipos";
 import { limpiarCara, rutasDe } from "@/lib/diseno/limpiar";
-import { crearDesdePlantilla, esPlantilla } from "@/lib/diseno/plantillas";
+import { conImpresos, crearDesdePlantilla, esPlantilla, type Impreso } from "@/lib/diseno/plantillas";
 import type { Cara, Orientacion } from "@/lib/diseno/tipos";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -56,7 +56,19 @@ export async function crearDiseno(_: Resultado, d: FormData): Promise<Resultado>
     .eq("empresa_id", empresa.id);
   if ((count ?? 0) >= MAXIMO) return { error: `Llegaste al máximo de ${MAXIMO} diseños. Borra alguno para crear otro.` };
 
-  const campos = await camposDe(supabase, empresa.id);
+  // Lo que se eligió imprimir en este diseño; se recuerda para el siguiente.
+  const elegidos: Record<string, Impreso> = {};
+  const todos = await camposDe(supabase, empresa.id);
+  for (const c of todos) {
+    const v = d.get(`imp_${c.clave}`);
+    if (v === "frente" || v === "vuelta" || v === "no") elegidos[c.clave] = v;
+  }
+  const campos = conImpresos(todos, elegidos);
+  await Promise.all(
+    campos
+      .filter((c, i) => c.en_gafete !== todos[i].en_gafete || c.cara !== todos[i].cara)
+      .map((c) => supabase.from("campos").update({ en_gafete: c.en_gafete, cara: c.cara }).eq("id", c.id)),
+  );
   const { frente, vuelta } = crearDesdePlantilla(
     plantilla,
     orientacion,

@@ -90,9 +90,40 @@ export function loQueSePide(conDatos: boolean, conFoto: boolean): string {
   return conFoto ? "subas tu foto" : "revises tus datos";
 }
 
+/** Qué puede pedir corregir la empresa. Se guarda al inicio del motivo: «Tu foto: salió oscura». */
+export const QUE_CORREGIR = ["Tu foto", "Tus datos", "Tu foto y tus datos"] as const;
+
+/** Separa un motivo guardado en qué corregir y por qué. Los motivos viejos no traen el «qué». */
+export function partesCorreccion(motivo: string): { que: string | null; porque: string } {
+  const que = QUE_CORREGIR.find((q) => motivo.startsWith(`${q}: `));
+  return que ? { que, porque: motivo.slice(que.length + 2) } : { que: null, porque: motivo };
+}
+
+/** «Sekiur te solicita una corrección de tu foto debido a: salió oscura.» */
+export function fraseCorreccion(empresa: string, motivo: string): string {
+  const { que, porque } = partesCorreccion(motivo);
+  const final = /[.!?]$/.test(porque) ? porque : `${porque}.`;
+  return `${empresa} te solicita una corrección${que ? ` de ${que.toLowerCase()}` : ""} debido a: ${final}`;
+}
+
 /** Mensaje listo para pegar en WhatsApp o en cualquier chat. */
-export function mensajeDeLiga(opts: { nombre: string; empresa: string; url: string; conDatos: boolean; conFoto: boolean }): string {
+export function mensajeDeLiga(opts: {
+  nombre: string;
+  empresa: string;
+  url: string;
+  conDatos: boolean;
+  conFoto: boolean;
+  /** Lo que la empresa le pidió corregir, si fue el caso. */
+  correccion?: string | null;
+}): string {
   const primerNombre = opts.nombre.trim().split(/\s+/)[0] ?? "";
+  if (opts.correccion) {
+    return [
+      `Hola${primerNombre ? `, ${primerNombre}` : ""}. ${fraseCorreccion(opts.empresa, opts.correccion)}`,
+      `Corrígelo en tu liga personal y vuelve a enviarlo; toma un minuto y no necesitas crear cuenta:`,
+      opts.url,
+    ].join("\n");
+  }
   return [
     `Hola${primerNombre ? `, ${primerNombre}` : ""}. En ${opts.empresa} estamos preparando tu gafete y necesitamos que ${loQueSePide(opts.conDatos, opts.conFoto)}.`,
     `Entra a tu liga personal, toma un minuto y no necesitas crear cuenta:`,

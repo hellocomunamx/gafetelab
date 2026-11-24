@@ -11,7 +11,7 @@ import { datosVerificables, modosQr, resumenQr, rutaVerificacion } from "@/lib/c
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
 import { claveDe } from "@/lib/cuenta/texto";
 
-export const metadata: Metadata = { title: "Campos" };
+export const metadata: Metadata = { title: "Datos del equipo" };
 
 const TIPOS: Record<string, string> = { texto: "Texto", fecha: "Fecha", foto: "Fotografía", qr: "Código QR" };
 const entradaChica = "w-full rounded-tarjeta-chica border border-linea bg-white px-2.5 py-1.5";
@@ -20,81 +20,88 @@ export default async function Campos() {
   const { supabase, empresa, administra } = await requerirEmpresa();
   const [campos, { data: ejemplo }] = await Promise.all([
     camposDe(supabase, empresa.id),
-    supabase.from("empleados").select("nombre, codigo").eq("empresa_id", empresa.id).eq("estatus", "activo").order("nombre").limit(1).maybeSingle(),
+    supabase.from("empleados").select("nombre, codigo").eq("empresa_id", empresa.id).eq("estatus", "activo").neq("nombre", "").order("nombre").limit(1).maybeSingle(),
   ]);
   const opciones = (tipos: string[]) =>
     campos.filter((c) => tipos.includes(c.tipo)).map(({ clave, etiqueta }) => ({ clave, etiqueta }));
-  const enCara = (cara: string) => campos.filter((c) => c.en_gafete && c.cara === cara);
+
+  const paso = "flex flex-col rounded-tarjeta border border-linea bg-white p-5";
+  const numeroPaso = "mb-2 flex size-8 items-center justify-center rounded-full bg-tinta text-sm font-extrabold text-white";
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-extrabold">Campos de tu gafete</h1>
-      <p className="max-w-2xl text-gris">
-        Elige qué datos lleva el gafete, en qué cara y en qué orden. Con estos mismos campos se arma
-        tu plantilla de Excel.
-      </p>
+      <div>
+        <h1 className="text-3xl font-extrabold">Los datos de tu equipo</h1>
+        <p className="mt-2 max-w-2xl text-gris">
+          Aquí decides qué datos guardas de cada persona. No todos tienen que imprimirse: eso lo eliges en cada
+          diseño. Así funciona, en tres partes:
+        </p>
+      </div>
 
-      <section className="flex flex-col gap-4 rounded-tarjeta bg-tinta p-5 text-white sm:flex-row sm:items-center sm:justify-between sm:p-6">
-        <div>
-          <h2 className="text-xl font-extrabold">Personaliza tus campos y descarga tu plantilla de Excel</h2>
-          <p className="mt-1 max-w-xl text-sm text-white/75">
-            La plantilla trae una columna por cada campo guardado aquí. Llénala con tu equipo, una
-            persona por renglón, y súbela para dar de alta a todos de forma masiva.
+      <ol className="grid gap-4 lg:grid-cols-3">
+        <li className={`${paso} border-2 border-tinta`}>
+          <span aria-hidden className={numeroPaso}>1</span>
+          <h2 className="text-lg font-extrabold">Aquí: qué datos guardas</h2>
+          <p className="mt-1 flex-1 text-sm text-gris">
+            Cada dato de esta lista es una columna de tu plantilla de Excel. Es la misma para todo tu equipo, aunque
+            tengas varios diseños.
           </p>
-        </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2">
-          <BotonPlantilla
-            campos={campos.map(({ clave, etiqueta, tipo }) => ({ clave, etiqueta, tipo }))}
-            empresa={claveDe(empresa.nombre).replace(/_/g, "-")}
-            className={claseBoton}
-          >
-            Descargar mi plantilla
-          </BotonPlantilla>
-          <Link href="/cuenta/equipo/importar" className="font-semibold underline underline-offset-4">
-            Subir mi Excel lleno
+          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <BotonPlantilla
+              campos={campos.map(({ clave, etiqueta, tipo }) => ({ clave, etiqueta, tipo }))}
+              empresa={claveDe(empresa.nombre).replace(/_/g, "-")}
+              className={claseBoton}
+            >
+              Descargar mi plantilla
+            </BotonPlantilla>
+            <Link href="/cuenta/equipo/importar" className="text-sm font-semibold underline underline-offset-4">
+              Subir mi Excel lleno
+            </Link>
+          </div>
+        </li>
+        <li className={paso}>
+          <span aria-hidden className={numeroPaso}>2</span>
+          <h2 className="text-lg font-extrabold">En cada diseño: qué va impreso</h2>
+          <p className="mt-1 flex-1 text-sm text-gris">
+            Al crear un diseño eliges cuáles de estos datos se imprimen, en qué cara y cómo se acomodan. Por ejemplo,
+            el de planta con foto y puesto, y el de visitante sin nombre.
+          </p>
+          <Link href="/cuenta/disenos" className="mt-4 text-sm font-semibold underline underline-offset-4">
+            Ir a mis diseños
           </Link>
-        </div>
-      </section>
+        </li>
+        <li className={paso}>
+          <span aria-hidden className={numeroPaso}>3</span>
+          <h2 className="text-lg font-extrabold">En tu QR: qué se ve al escanearlo</h2>
+          <p className="mt-1 flex-1 text-sm text-gris">
+            Cada persona tiene un solo código QR, igual en todos tus diseños, para que siga sirviendo aunque cambies de
+            diseño o reimprimas. Por eso se elige una vez, abajo.
+          </p>
+          <a href="#qr" className="mt-4 text-sm font-semibold underline underline-offset-4">Elegir qué muestra el QR</a>
+        </li>
+      </ol>
 
       <div className="grid gap-5 lg:grid-cols-[1fr_18rem]">
-        <Bloque className="min-w-0">
-          <Formulario accion={guardarCampos} boton="Guardar campos">
+        <Bloque titulo="Tus datos" className="min-w-0">
+          <Formulario accion={guardarCampos} boton="Guardar cambios">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[34rem] text-left text-sm">
+              <table className="w-full min-w-[26rem] text-left text-sm">
                 <thead>
                   <tr className="border-b border-linea">
-                    <th scope="col" className="py-2 pr-3 font-semibold">Campo</th>
+                    <th scope="col" className="py-2 pr-3 font-semibold">Nombre del dato</th>
                     <th scope="col" className="py-2 pr-3 font-semibold">Tipo</th>
-                    <th scope="col" className="py-2 pr-3 text-center font-semibold">En el gafete</th>
-                    <th scope="col" className="py-2 pr-3 font-semibold">Cara</th>
-                    <th scope="col" className="py-2 font-semibold">Orden</th>
+                    <th scope="col" className="py-2 font-semibold">Orden en el Excel</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-linea">
                   {campos.map((c) => (
                     <tr key={c.id}>
                       <td className="py-2 pr-3">
-                        <input name={`etiqueta_${c.id}`} defaultValue={c.etiqueta} required maxLength={60} aria-label={`Nombre del campo ${c.etiqueta}`} className={entradaChica} />
+                        <input name={`etiqueta_${c.id}`} defaultValue={c.etiqueta} required maxLength={60} autoComplete="off" aria-label={`Nombre del dato ${c.etiqueta}`} className={entradaChica} />
                       </td>
                       <td className="py-2 pr-3 text-gris">{TIPOS[c.tipo] ?? c.tipo}</td>
-                      <td className="py-2 pr-3 text-center">
-                        <input
-                          type="checkbox"
-                          name={`en_${c.id}`}
-                          defaultChecked={c.en_gafete}
-                          disabled={c.clave === "nombre"}
-                          aria-label={`${c.etiqueta} va en el gafete`}
-                          className="size-4 accent-tinta"
-                        />
-                      </td>
-                      <td className="py-2 pr-3">
-                        <select name={`cara_${c.id}`} defaultValue={c.cara} aria-label={`Cara de ${c.etiqueta}`} className={entradaChica}>
-                          <option value="frente">Frente</option>
-                          <option value="vuelta">Vuelta</option>
-                        </select>
-                      </td>
                       <td className="py-2">
-                        <input type="number" name={`orden_${c.id}`} defaultValue={c.orden} min={0} max={99} aria-label={`Orden de ${c.etiqueta}`} className={`${entradaChica} w-16`} />
+                        <input type="number" name={`orden_${c.id}`} defaultValue={c.orden} min={0} max={99} aria-label={`Orden de ${c.etiqueta} en el Excel`} className={`${entradaChica} w-16`} />
                       </td>
                     </tr>
                   ))}
@@ -102,49 +109,28 @@ export default async function Campos() {
               </table>
             </div>
             <p className="mt-3 text-xs text-gris">
-              El nombre siempre va en el gafete. Los campos que no van impresos se guardan igual en tu
-              plataforma. El acomodo exacto lo ajustas en{" "}
-              <Link href="/cuenta/disenos" className="underline">tus diseños</Link>.
+              Puedes cambiar el nombre de cualquier dato, por ejemplo «Puesto» por «Área». Ninguno es obligatorio: sin
+              nombre, la persona queda como gafete genérico.
             </p>
           </Formulario>
         </Bloque>
 
         <div className="space-y-5">
-          <Bloque titulo="Así queda">
-            {(["frente", "vuelta"] as const).map((cara) => (
-              <div key={cara} className="mb-4 last:mb-0">
-                <p className="text-sm font-semibold capitalize">{cara}</p>
-                {enCara(cara).length ? (
-                  <ol className="mt-1 list-inside list-decimal text-sm text-gris">
-                    {enCara(cara).map((c) => (
-                      <li key={c.id}>{c.etiqueta}</li>
-                    ))}
-                  </ol>
-                ) : (
-                  <p className="mt-1 text-sm text-gris">Sin campos: se imprime solo tu diseño.</p>
-                )}
-              </div>
-            ))}
-          </Bloque>
-
-          <Bloque titulo="Agregar campo">
+          <Bloque titulo="Agregar un dato">
             <Formulario accion={agregarCampo} boton="Agregar" limpiarAlGuardar>
               <div className="space-y-3">
-                <Entrada etiqueta="Nombre del campo" name="etiqueta" required maxLength={60} placeholder="Tipo de sangre, NSS, Vigencia" />
+                <Entrada etiqueta="Nombre del dato" name="etiqueta" required maxLength={60} autoComplete="off" placeholder="Tipo de sangre, NSS, Vigencia" />
                 <Seleccion etiqueta="Tipo" name="tipo" defaultValue="texto">
                   <option value="texto">Texto</option>
                   <option value="fecha">Fecha</option>
                 </Seleccion>
-                <Seleccion etiqueta="Cara" name="cara" defaultValue="vuelta">
-                  <option value="frente">Frente</option>
-                  <option value="vuelta">Vuelta</option>
-                </Seleccion>
+                <p className="text-xs text-gris">Aparece como columna nueva en tu Excel. Para imprimirlo, elígelo en tu diseño.</p>
               </div>
             </Formulario>
           </Bloque>
 
           {campos.some((c) => !c.de_sistema) ? (
-            <Bloque titulo="Quitar un campo">
+            <Bloque titulo="Quitar un dato">
               <ul className="space-y-2 text-sm">
                 {campos.filter((c) => !c.de_sistema).map((c) => (
                   <li key={c.id} className="flex items-center justify-between gap-3">
@@ -156,7 +142,7 @@ export default async function Campos() {
                   </li>
                 ))}
               </ul>
-              <p className="mt-3 text-xs text-gris">Lo capturado en ese campo deja de mostrarse.</p>
+              <p className="mt-3 text-xs text-gris">Lo capturado en ese dato deja de mostrarse.</p>
             </Bloque>
           ) : null}
         </div>

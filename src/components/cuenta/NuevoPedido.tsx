@@ -276,7 +276,7 @@ export function NuevoPedido({
                     className="mt-1 size-4 accent-rojo"
                   />
                   <label htmlFor={`persona-${p.id}`} className="min-w-0 flex-1 text-sm">
-                    <span className="font-semibold">{p.nombre}</span>
+                    <span className="font-semibold">{p.nombre || "Sin nombre"}</span>
                     <span className="block text-gris">
                       {[p.numero, p.puesto, fuente.gafetes[p.id].diseno ? `Diseño: ${fuente.gafetes[p.id].diseno}` : null]
                         .filter(Boolean)
