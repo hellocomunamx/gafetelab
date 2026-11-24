@@ -70,15 +70,16 @@ export const precioMaximo = Math.max(...tramos.map((t) => t.precio));
 
 /**
  * Paquetes prepagados: se compran gafetes impresos por adelantado y se van
- * pidiendo de a poquitos. Cada paquete incluye cierto número de envíos.
+ * pidiendo de a poquitos. Cada paquete incluye cierto número de envíos y sale
+ * un poco más barato por pieza que pedir esa misma cantidad suelta.
  */
 export type Paquete = { piezas: number; porPieza: number; envios: number };
 
 export const paquetes: Paquete[] = [
-  { piezas: 10, porPieza: 79, envios: 2 },
-  { piezas: 25, porPieza: 62, envios: 3 },
-  { piezas: 50, porPieza: 52, envios: 4 },
-  { piezas: 100, porPieza: 42, envios: 6 },
+  { piezas: 10, porPieza: 55, envios: 2 },
+  { piezas: 25, porPieza: 52, envios: 3 },
+  { piezas: 50, porPieza: 36, envios: 4 },
+  { piezas: 100, porPieza: 20, envios: 6 },
 ];
 
 export const paqueteVigenciaMeses = 12;
