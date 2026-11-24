@@ -13,6 +13,10 @@ export const TIPOS_AVISO = {
     nombre: "Datos y fotos por aprobar",
     detalle: "Alguien de tu equipo mandó sus datos o su foto desde su liga.",
   },
+  solicitudes: {
+    nombre: "Solicitudes del portal",
+    detalle: "Alguien de tu equipo pide corregir sus datos o reponer su gafete desde Mi gafete.",
+  },
 } as const;
 export type TipoAviso = keyof typeof TIPOS_AVISO;
 export const esTipoAviso = (v: unknown): v is TipoAviso => typeof v === "string" && v in TIPOS_AVISO;
@@ -29,3 +33,5 @@ export const MODO_INICIAL: ModoAviso = "semanal";
 export const RUTA_AVISOS = "/cuenta/avisos";
 export const RUTA_CAMBIOS_FOTO = "/cuenta/equipo/cambios-foto";
 export const RUTA_LIGAS = "/cuenta/equipo/ligas";
+/** Bandeja única de solicitudes del portal de empleados. */
+export const RUTA_SOLICITUDES = "/cuenta/solicitudes";

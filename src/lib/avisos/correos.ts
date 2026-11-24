@@ -29,13 +29,25 @@ const pieTexto = () => `Te llega porque administras esta empresa en ${site.nombr
 
 /** Aviso al momento: una persona pidió cambiar su foto, o mandó datos desde su liga. */
 export function correoAvisoInmediato(opts: {
-  tipo: "cambio_foto" | "datos_liga";
+  tipo: "cambio_foto" | "datos_liga" | "solicitudes";
   empresa: string;
   persona: string;
   conImpreso?: boolean;
+  /** Solo en «solicitudes»: qué pide («corregir sus datos», «reponer su gafete»). */
+  que?: string;
   url: string;
 }) {
   const quien = opts.persona.trim() || "Una persona de tu equipo";
+  if (opts.tipo === "solicitudes") {
+    const titulo = `${quien} pide ${opts.que ?? "algo desde Mi gafete"}`;
+    const lineas = [`En ${opts.empresa}, ${quien} mandó una solicitud desde Mi gafete. Revísala y apruébala o dile por qué no.`];
+    const boton = { texto: "Abrir la bandeja", url: opts.url };
+    return {
+      asunto: `${titulo} · ${opts.empresa}`,
+      html: marco({ titulo, cuerpoHtml: lineas.map(parrafo).join(""), boton }),
+      texto: [titulo, "", ...lineas, "", `${boton.texto}: ${boton.url}`, "", "—", pieTexto()].join("\n"),
+    };
+  }
   const titulo =
     opts.tipo === "cambio_foto" ? `${quien} pide cambiar su foto` : `${quien} mandó sus datos para su gafete`;
   const lineas =
@@ -59,6 +71,7 @@ export type RenglonResumen = {
   empresa: string;
   cambiosFoto?: { total: number; nombres: string[]; url: string };
   datosLiga?: { total: number; nombres: string[]; url: string };
+  solicitudes?: { total: number; nombres: string[]; url: string };
 };
 
 const plural = (n: number, uno: string, varios: string) => `${n.toLocaleString("es-MX")} ${n === 1 ? uno : varios}`;
@@ -87,6 +100,13 @@ export function correoResumenSemanal(opts: { nombre: string | null; renglones: R
         texto: `${plural(r.datosLiga.total, "persona mandó", "personas mandaron")} datos o foto desde su liga${conNombres(r.datosLiga.nombres, r.datosLiga.total)}.`,
         url: r.datosLiga.url,
         boton: "Revisar y aprobar",
+      });
+    }
+    if (r.solicitudes?.total) {
+      lineas.push({
+        texto: `${plural(r.solicitudes.total, "solicitud del portal por revisar", "solicitudes del portal por revisar")}${conNombres(r.solicitudes.nombres, r.solicitudes.total)}.`,
+        url: r.solicitudes.url,
+        boton: "Abrir la bandeja",
       });
     }
     return { empresa: r.empresa, lineas };

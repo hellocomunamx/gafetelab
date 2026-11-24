@@ -3,7 +3,7 @@ import { type Correo, correoActivo, enviarCorreo, enviarCorreos } from "@/lib/co
 import { urlAbsoluta } from "@/lib/site";
 import type { Database } from "@/lib/supabase/tipos";
 import { correoAvisoInmediato, correoResumenSemanal, type RenglonResumen } from "./correos";
-import { RUTA_CAMBIOS_FOTO, RUTA_LIGAS, type TipoAviso } from "./tipos";
+import { RUTA_CAMBIOS_FOTO, RUTA_LIGAS, RUTA_SOLICITUDES, type TipoAviso } from "./tipos";
 
 type Servicio = SupabaseClient<Database>;
 
@@ -29,6 +29,26 @@ export async function avisarAlMomento(
   }
 }
 
+/** Aviso al momento de una solicitud nueva del portal de empleados. */
+export async function avisarSolicitud(servicio: Servicio, opts: { empresaId: string; persona: string; que: string }): Promise<void> {
+  if (!correoActivo()) return;
+  try {
+    const { data } = await servicio.rpc("destinatarios_aviso", { p_empresa: opts.empresaId });
+    const para = (data ?? []).filter((d) => d.tipo === "solicitudes" && d.modo === "inmediato" && d.correo);
+    if (!para.length) return;
+    const correo = correoAvisoInmediato({
+      tipo: "solicitudes",
+      empresa: para[0].empresa,
+      persona: opts.persona,
+      que: opts.que,
+      url: urlAbsoluta(RUTA_SOLICITUDES),
+    });
+    await Promise.all(para.map((d) => enviarCorreo({ para: d.correo, ...correo })));
+  } catch (falla) {
+    console.error("Aviso de solicitud:", falla);
+  }
+}
+
 /** Lunes de la semana de una fecha, en hora de Hermosillo (AAAA-MM-DD). Sirve de llave para no repetir el resumen. */
 export function semanaDe(fecha: Date): string {
   const local = new Date(fecha.getTime() - 7 * 3600_000);
@@ -41,10 +61,10 @@ type Pendientes = { total: number; nombres: string[] };
 const NOMBRES_POR_RENGLON = 5;
 
 /** Cuántos pendientes tiene cada empresa, con los primeros nombres. */
-async function pendientesPorEmpresa(servicio: Servicio, tabla: "solicitudes_foto" | "propuestas", empresas: string[]) {
+async function pendientesPorEmpresa(servicio: Servicio, tabla: "solicitudes_foto" | "propuestas" | "solicitudes_empleado", empresas: string[]) {
   const resultado = new Map<string, Pendientes>();
   if (!empresas.length) return resultado;
-  const fecha = tabla === "solicitudes_foto" ? "creado_en" : "enviado_en";
+  const fecha = tabla === "propuestas" ? "enviado_en" : "creado_en";
   const { data } = await servicio
     .from(tabla)
     .select(`empresa_id, ${fecha}, empleados(nombre)`)
@@ -73,19 +93,21 @@ export async function enviarResumenSemanal(servicio: Servicio, ahora = new Date(
   if (error) return { enviados: 0, error: error.message };
   const semanales = (filas ?? []).filter((f) => f.modo === "semanal" && f.correo);
   const empresas = [...new Set(semanales.map((f) => f.empresa_id))];
-  const [fotos, datos] = await Promise.all([
+  const [fotos, datos, solicitudes] = await Promise.all([
     pendientesPorEmpresa(servicio, "solicitudes_foto", empresas),
     pendientesPorEmpresa(servicio, "propuestas", empresas),
+    pendientesPorEmpresa(servicio, "solicitudes_empleado", empresas),
   ]);
 
   // Por persona: sus empresas y qué tipos quiere ver de cada una.
   const porUsuario = new Map<string, { correo: string; nombre: string | null; empresas: Map<string, RenglonResumen> }>();
   for (const f of semanales) {
-    const pendientes = (f.tipo === "cambio_foto" ? fotos : datos).get(f.empresa_id);
+    const pendientes = (f.tipo === "cambio_foto" ? fotos : f.tipo === "solicitudes" ? solicitudes : datos).get(f.empresa_id);
     if (!pendientes?.total) continue;
     const usuario = porUsuario.get(f.usuario_id) ?? { correo: f.correo, nombre: f.nombre, empresas: new Map() };
     const renglon = usuario.empresas.get(f.empresa_id) ?? { empresa: f.empresa };
     if (f.tipo === "cambio_foto") renglon.cambiosFoto = { ...pendientes, url: urlAbsoluta(RUTA_CAMBIOS_FOTO) };
+    else if (f.tipo === "solicitudes") renglon.solicitudes = { ...pendientes, url: urlAbsoluta(RUTA_SOLICITUDES) };
     else renglon.datosLiga = { ...pendientes, url: urlAbsoluta(RUTA_LIGAS) };
     usuario.empresas.set(f.empresa_id, renglon);
     porUsuario.set(f.usuario_id, usuario);

@@ -3,13 +3,13 @@ import Link from "next/link";
 import { Bloque, Chips } from "@/components/cuenta/Entrada";
 import { Formulario } from "@/components/cuenta/Formulario";
 import { correoActivo } from "@/lib/correo";
-import { MODO_INICIAL, MODOS_AVISO, RUTA_CAMBIOS_FOTO, RUTA_LIGAS, TIPOS_AVISO, type TipoAviso } from "@/lib/avisos/tipos";
+import { MODO_INICIAL, MODOS_AVISO, RUTA_CAMBIOS_FOTO, RUTA_LIGAS, RUTA_SOLICITUDES, TIPOS_AVISO, type TipoAviso } from "@/lib/avisos/tipos";
 import { requerirUsuario } from "@/lib/cuenta/sesion";
 import { guardarAvisos } from "./acciones";
 
 export const metadata: Metadata = { title: "Mis avisos por correo" };
 
-const DONDE: Record<TipoAviso, string> = { cambio_foto: RUTA_CAMBIOS_FOTO, datos_liga: RUTA_LIGAS };
+const DONDE: Record<TipoAviso, string> = { cambio_foto: RUTA_CAMBIOS_FOTO, datos_liga: RUTA_LIGAS, solicitudes: RUTA_SOLICITUDES };
 
 export default async function Avisos() {
   const { supabase, usuario } = await requerirUsuario();

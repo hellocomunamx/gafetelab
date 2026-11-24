@@ -7,6 +7,7 @@ import { requerirAdmin } from "@/lib/admin/sesion";
 import { ErrorEnvia, generarGuia } from "@/lib/envios/envia";
 import { armarSobres } from "@/lib/envios/sobres";
 import { type DireccionCopiada, requiereRevision } from "@/lib/pedidos/reglas";
+import { avanzarSolicitudesDelPedido } from "@/lib/portal/servidor";
 import { activarDigitales, anotar, aprobacionDe, avisarEnvio, cancelarAutorizado, cerrarCobro, liberarSaldo, type Pedido, type Servicio } from "@/lib/pedidos/servidor";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -39,6 +40,8 @@ async function mover(
   // Solo los impresos siguen a producción y envío; los digitales se activan al pagarse.
   await x.servicio.from("gafetes").update({ estado: gafetes }).eq("pedido_id", x.pedido.id).eq("tipo", "impreso").neq("estado", "cancelado");
   await anotar(x.servicio, x.pedido.id, evento, {}, x.usuario);
+  // Las solicitudes del portal de empleados que traen gafete en este pedido avanzan con él.
+  await avanzarSolicitudesDelPedido(x.servicio, x.pedido.id, gafetes);
   return movido[0];
 }
 
