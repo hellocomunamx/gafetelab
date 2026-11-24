@@ -1,4 +1,7 @@
 import type { Faq } from "./faqs";
+import { diasParaBorrarDatos } from "./eventos";
+import { categoriasEjemplo, funcionesEvento, tiposEventoPublico } from "./eventos-publico";
+import { notaIva, pesos, precioCordon } from "./precios";
 
 export type Giro = {
   slug: string;
@@ -18,6 +21,16 @@ export type Giro = {
   /** Tres funciones de la plataforma que más le sirven a este giro, contadas en su idioma. */
   plataforma: { titulo: string; texto: string }[];
   faqs: Faq[];
+  /** Para quién es el servicio en los datos estructurados; sin esto, para empleados. */
+  tipoServicio?: string;
+  /** Los eventos no tienen portal «Mi gafete»: su página no lleva esa pregunta. */
+  sinPortal?: boolean;
+  /** Sustituye el párrafo que abre «Lo que te resuelve la plataforma». */
+  introPlataforma?: string;
+  /** Sección extra: los tipos de lo que se atiende (hoy, los tipos de evento). */
+  tipos?: { titulo: string; lista: { nombre: string; texto: string }[] };
+  /** Sección extra: funciones propias de este giro (hoy, las de eventos). */
+  funciones?: { titulo: string; intro: string; lista: { titulo: string; texto: string }[] };
 };
 
 export const giros: Giro[] = [
@@ -261,30 +274,65 @@ export const giros: Giro[] = [
   {
     slug: "eventos",
     nombre: "eventos y congresos",
-    resumen: "Staff, expositores y asistentes con nombre y categoría.",
+    resumen: "Asistentes, ponentes, staff y expositores, cada categoría con su color.",
     descripcion:
-      "Gafetes para eventos, congresos, convenciones y ferias: staff, expositores y asistentes con nombre, empresa y categoría. Carga tu lista de registro con Excel y recibe en cualquier ciudad de México.",
+      "Gafetes y credenciales para congresos, convenciones, expos, conferencias y graduaciones. Categorías con color, cordón a juego, código QR de acceso y fecha límite para pedir a tiempo. Sube tu lista de registro con Excel y recibe en la sede, en todo México.",
     respuesta:
-      "El gafete de un evento debe decir quién es la persona y qué acceso tiene: nombre grande, empresa y categoría (asistente, expositor, staff o prensa), normalmente con un color por categoría.",
+      "El gafete de un evento debe decir quién es la persona y qué acceso tiene: nombre grande, empresa y categoría (asistente, ponente, expositor, staff o prensa), con un color por categoría que se distinga de lejos.",
     ejemplo: { nombre: "Pablo Ruiz", puesto: "Expositor" },
     retos: [
       "La lista de registro cierra pocos días antes del evento.",
       "Categorías con accesos distintos que deben verse de lejos.",
       "Todo tiene que llegar a la sede, no a la oficina.",
     ],
-    campos: ["Nombre", "Empresa", "Categoría", "Código QR", "Logo del evento"],
+    campos: ["Nombre", "Empresa", "Categoría", "Código QR de acceso", "Logo del evento"],
     consejo:
       "Considera el tiempo de producción y envío al cerrar tu registro, y pide algunas piezas extra con el campo de nombre en blanco para registros de última hora.",
+    tipoServicio: "Impresión de gafetes y credenciales para eventos",
+    sinPortal: true,
+    introPlataforma:
+      "Con tu cuenta tienes, sin costo extra, una plataforma para armar los gafetes de tu evento. Pides desde una pieza, así que los registros de última hora también tienen su gafete.",
     plataforma: [
+      { titulo: "Carga masiva", texto: "Sube tu lista de registro con Excel, con la categoría de cada persona, y revisa la vista previa de cada gafete antes de pagar." },
+      { titulo: "Diseño por categoría", texto: "Cada categoría recibe su versión del gafete, con su color, sin armar pedidos por separado." },
       { titulo: "Nombre opcional", texto: "El nombre es opcional, así que también haces gafetes genéricos de staff o de prensa, sin nombre." },
-      { titulo: "Diseño por categoría", texto: "Con diseños por reglas, staff, expositores y asistentes reciben su versión." },
-      { titulo: "Carga masiva", texto: "Sube tu lista de registro con Excel y revisa la vista previa de cada gafete antes de pagar." },
     ],
+    tipos: {
+      titulo: "¿Para qué eventos sirven?",
+      lista: tiposEventoPublico.map((t) => ({ nombre: t.nombre, texto: t.ayuda })),
+    },
+    funciones: {
+      titulo: "Tu evento en la plataforma",
+      intro: "Cada evento es un proyecto aparte dentro de tu organización. Esto es lo que suma a lo que ya incluye tu cuenta.",
+      lista: funcionesEvento,
+    },
     faqs: [
       {
         pregunta: "¿Pueden enviar los gafetes directo a la sede del evento?",
         respuesta:
           "Sí. El pedido se envía a la dirección que indiques, sea tu oficina, el hotel o el recinto.",
+      },
+      {
+        pregunta: "¿Puedo tener un color de gafete para cada categoría?",
+        respuesta: `Sí. Tu evento empieza con ${categoriasEjemplo}, cada una con su color, y puedes quitar, renombrar o agregar las tuyas. Cada categoría tiene su propio diseño y a cada persona le toca el de la suya.`,
+      },
+      {
+        pregunta: "¿Venden el cordón para los gafetes del evento?",
+        respuesta: `Sí. Al hacer el pedido de un evento puedes agregar un cordón con broche por cada gafete impreso, del color de la categoría de cada persona, por ${pesos(precioCordon)} por pieza, ${notaIva}.`,
+      },
+      {
+        pregunta: "¿Con cuánto tiempo debo pedir los gafetes de mi evento?",
+        respuesta:
+          "Al capturar las fechas de tu evento, la plataforma te sugiere el último día para pedir y recibir antes de que empiece, y te lo recuerda en tu resumen. Conviene cerrar tu registro antes de esa fecha y pedir algunas piezas extra para quien se registre al final.",
+      },
+      {
+        pregunta: "¿El código QR del gafete sirve para dar acceso al evento?",
+        respuesta:
+          "Sí. Al escanearlo se ve si la persona tiene acceso, su categoría y las fechas del evento. Si das de baja un gafete, deja de dar acceso, y todos los códigos dejan de valer al terminar el último día.",
+      },
+      {
+        pregunta: "¿Qué pasa con los datos de los asistentes cuando termina el evento?",
+        respuesta: `Se borran solos. ${diasParaBorrarDatos} días después del último día del evento eliminamos los nombres, las fotografías y los datos de tus asistentes. Tus pedidos y tus facturas se conservan.`,
       },
     ],
   },

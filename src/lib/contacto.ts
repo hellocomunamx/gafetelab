@@ -15,7 +15,7 @@ export const MOTIVO_IDEA: (typeof motivosContacto)[number] = "Tengo una idea";
 export const MOTIVO_PAQUETE: (typeof motivosContacto)[number] = "Paquete prepagado";
 
 /** Lo que todavía no se vende, para decirlo igual en las preguntas y en el contacto. */
-export const adicionalesPendientes = "portagafetes, cordones, yoyos ni micas";
+export const adicionalesPendientes = "portagafetes, yoyos ni micas";
 
 export type MotivoContacto = (typeof motivosContacto)[number];
 

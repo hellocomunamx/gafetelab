@@ -335,6 +335,13 @@ export default function Inicio() {
           lo recorta y lo enmica. Pon cuántos haces al mes y compara tu costo real con el nuestro.
         </p>
         <CalculadoraCasa />
+        <p className="mt-6 text-sm text-gris">
+          ¿Quieres compartirla con alguien de tu equipo? La calculadora también tiene{" "}
+          <Link href="/calculadora" className="font-semibold text-tinta underline underline-offset-4">
+            su propia página
+          </Link>
+          .
+        </p>
       </Seccion>
 
       <Seccion titulo="Gafetes y credenciales para tu giro">

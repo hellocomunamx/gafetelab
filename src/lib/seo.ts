@@ -33,7 +33,7 @@ export function metadatos({ titulo, descripcion, ruta, tituloAbsoluto, noindex }
           url: "/marca/og-image.png",
           width: 1200,
           height: 630,
-          alt: "LaGafetería: gafetes y credenciales para empleados",
+          alt: "LaGafetería: gafetes y credenciales para empleados y eventos",
         },
       ],
     },

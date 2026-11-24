@@ -2,6 +2,8 @@ import { materiales } from "./materiales";
 import { adicionalesPendientes } from "./contacto";
 import { pago } from "./pedidos/reglas";
 import { constancia, entregaTexto, legal, site } from "./site";
+import { diasParaBorrarDatos } from "./eventos";
+import { categoriasEjemplo, tiposEventoTexto } from "./eventos-publico";
 import {
   cotizar,
   envio,
@@ -12,6 +14,7 @@ import {
   paqueteVigenciaMeses,
   paquetes,
   pesos,
+  precioCordon,
   precioDigital,
   precioMaximo,
   precioMinimo,
@@ -86,7 +89,7 @@ export const faqsGenerales: Faq[] = [
   {
     pregunta: "¿Cómo sé dónde viene mi pedido?",
     respuesta:
-      "En tu plataforma ves el estado de cada pedido: pagado, en producción, enviado y entregado. Cuando sale, te mandamos un correo con la paquetería y el número de guía para que lo sigas.",
+      "En tu plataforma ves el estado de cada pedido: pagado, en producción, enviado y entregado. Además te escribimos por correo en cada paso: cuando recibimos tu pedido, cuando entra a producción, cuando sale (con la paquetería y el número de guía para que lo sigas) y cuando se entrega.",
   },
   {
     pregunta: "¿Puedo comprar en línea sin hablar con nadie?",
@@ -187,8 +190,20 @@ export const faqsGenerales: Faq[] = [
     respuesta: `Cada gafete se hace a la medida, con el diseño de tu empresa y los datos de una persona, así que no hay devoluciones por cambio de opinión ni por errores que venían en los datos que aprobaste en la vista previa. Lo que sí: puedes cancelar o corregir tu pedido sin costo mientras no haya entrado a producción, y te devolvemos tu pago completo. Y si un gafete llega con un defecto de impresión o de material, o distinto a lo que aprobaste, escríbenos dentro de los ${legal.plazoDefectosDias} días naturales siguientes a la entrega con una foto de la pieza: te lo reponemos sin costo, con envío incluido, o te devolvemos lo que pagaste por él. Los paquetes prepagados no son reembolsables, pero sí se pueden transferir a otra empresa.`,
   },
   {
+    pregunta: "¿Hacen gafetes y credenciales para eventos, congresos y expos?",
+    respuesta: `Sí. Dentro de tu cuenta creas cada evento como un proyecto aparte: ${tiposEventoTexto}; o cualquier otro con lista de personas. Defines sus categorías (de inicio, ${categoriasEjemplo}), cada una con su color y su diseño, subes tu lista de registro con Excel y revisas cada gafete antes de pagar. Al capturar las fechas te sugerimos el último día para pedir y recibir a tiempo, puedes agregar un cordón del color de cada categoría y el código QR de cada gafete funciona como acceso hasta el último día del evento. El precio por pieza es el mismo que para empresas.`,
+  },
+  {
+    pregunta: "¿Qué pasa con los datos de los asistentes cuando termina el evento?",
+    respuesta: `Se borran solos. ${diasParaBorrarDatos} días después del último día del evento eliminamos los nombres, las fotografías y los datos de tus asistentes; tus pedidos y tus facturas se conservan. Los códigos QR de acceso dejan de valer al terminar el último día del evento.`,
+  },
+  {
+    pregunta: "¿Sale más barato imprimir los gafetes yo mismo?",
+    respuesta: `Depende de cuántos hagas al mes y de lo que vale el tiempo de quien los hace. Un gafete de papel enmicado hecho en la oficina cuesta sus materiales (hoja, tinta, mica y cordón o clip), los minutos de diseñarlo, imprimirlo, recortarlo y enmicarlo, y los que se repiten por un error. En la calculadora de ${site.nombre} (${site.dominio}/calculadora) pones cuántos haces al mes y tus propios costos, y ves la comparación contra pedirlos impresos en PVC, sin dejar tus datos.`,
+  },
+  {
     pregunta: "¿Venden portagafetes, cordones o micas?",
-    respuesta: `Todavía no. Por ahora hacemos la tarjeta, impresa o digital, y aún no vendemos ${adicionalesPendientes}. Nuestros gafetes son del tamaño estándar CR80, así que caben en cualquier portagafete que ya tengas. Queremos que lo que sigue lo decidas tú: cuéntanos en el formulario de contacto qué te gustaría que existiera en ${site.nombre} o qué te haría más fácil credencializar a tu equipo.`,
+    respuesta: `Cordones sí, por ahora en los pedidos de eventos: puedes agregar un cordón con broche por cada gafete impreso, del color de la categoría de cada persona, por ${pesos(precioCordon)} por pieza, ${notaIva}. Todavía no vendemos ${adicionalesPendientes}. Nuestros gafetes son del tamaño estándar CR80, así que caben en cualquier portagafete que ya tengas. Queremos que lo que sigue lo decidas tú: cuéntanos en el formulario de contacto qué te gustaría que existiera en ${site.nombre} o qué te haría más fácil credencializar a tu equipo.`,
   },
   {
     pregunta: "¿Cuál es la diferencia entre gafete, credencial y portagafete?",
