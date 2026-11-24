@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BotonAgregar } from "@/components/carrito/BotonAgregar";
+import { CalculadoraCasa } from "@/components/CalculadoraCasa";
 import { Afiliados } from "@/components/Afiliados";
 import { Faq } from "@/components/Faq";
 import { GruposFunciones, MuyPronto, Palomita, SinCostoExtra } from "@/components/Funciones";
@@ -313,6 +314,14 @@ export default function Inicio() {
           </Link>
           <span className="text-gris">: combina cantidades, una cara o frente y vuelta, y materiales.</span>
         </p>
+      </Seccion>
+
+      <Seccion id="cuanto-te-cuesta" titulo="¿Cuánto te cuesta imprimirlo tú mismo?">
+        <p className="-mt-2 mb-6 max-w-2xl text-lg text-gris">
+          El gafete de papel enmicado parece gratis, pero alguien de tu equipo lo diseña, lo imprime,
+          lo recorta y lo enmica. Pon cuántos haces al mes y compara tu costo real con el nuestro.
+        </p>
+        <CalculadoraCasa />
       </Seccion>
 
       <Seccion titulo="Gafetes y credenciales para tu giro">
