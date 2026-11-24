@@ -26,7 +26,7 @@ import {
 import { aprobacionDe, cobrarAutorizados, articulosDe, conceptosDe } from "@/lib/pedidos/servidor";
 import { type Modalidad, nombreModalidad, pesos } from "@/lib/precios";
 import { EnvioEnvia } from "./EnvioEnvia";
-import { cancelarPedidoAdmin, entregarPedido, enviarPedido, guardarNotas, producirPedido, revisarPedido } from "../acciones";
+import { avisarListoPedido, cancelarPedidoAdmin, entregarPedido, enviarPedido, guardarNotas, producirPedido, revisarPedido } from "../acciones";
 
 export const metadata: Metadata = { title: "Pedido" };
 
@@ -47,6 +47,7 @@ const EVENTOS: Record<string, string> = {
   importe_distinto: "Stripe avisó de un pago por un importe distinto al del pedido",
   revisado: "Revisaste el pedido",
   en_produccion: "Pasó a producción",
+  listo: "Se avisó al cliente que está listo para enviarse",
   guia_generada: "Se generó la guía en Envia",
   enviado: "Se envió",
   entregado: "Se entregó",
@@ -112,6 +113,7 @@ export default async function Pedido({
   const pagado = PAGADOS.includes(pedido.estado);
   const sinCobrar = ["por_pagar", "pago_en_proceso", "autorizado"].includes(pedido.estado);
   const oculto = <input type="hidden" name="id" value={pedido.id} />;
+  const avisadoListo = (eventos ?? []).some((e) => e.tipo === "listo");
   const guiaEnvia = [...(eventos ?? [])].reverse().find((e) => e.tipo === "guia_generada")?.detalle as
     | { etiqueta?: string | null; rastreo?: string | null; costo?: number }
     | undefined;
@@ -223,9 +225,19 @@ export default async function Pedido({
         ) : null}
         {pedido.estado === "en_produccion" ? (
           <div className="space-y-4">
-            <Link href={`${RUTA_ADMIN}/imprimir/${pedido.empresa_id}?pedido=${pedido.id}`} className={claseBotonSecundario}>
-              PDF de impresión
-            </Link>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link href={`${RUTA_ADMIN}/imprimir/${pedido.empresa_id}?pedido=${pedido.id}`} className={claseBotonSecundario}>
+                PDF de impresión
+              </Link>
+              {avisadoListo ? (
+                <span className="text-sm text-gris">Ya le avisaste al cliente que está listo para enviarse.</span>
+              ) : (
+                <form action={avisarListoPedido}>
+                  {oculto}
+                  <button type="submit" className={claseBotonSecundario}>Avisar que está listo para enviarse</button>
+                </form>
+              )}
+            </div>
             <EnvioEnvia
               pedido={pedido}
               empresa={empresa?.nombre ?? null}
