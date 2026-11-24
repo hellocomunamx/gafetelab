@@ -211,17 +211,23 @@ isOneToOne: false
                   ]
                 },"empresas": {
                   Row: {
-                    "actualizado_en": string,"creado_en": string,"creado_por": string | null,"giro": string | null,"handle": string | null,"id": string,"liga_campos": (string)[],"liga_foto": boolean,"nombre": string,"portal_activo": boolean,"predeterminados": NonNullable<Json>,"qr_dato": string,"qr_liga": string | null,"qr_modo": string,"qr_mostrar": (string)[],"qr_vigencia": string | null,"reposicion": NonNullable<Json>
+                    "actualizado_en": string,"categorias": NonNullable<Json>,"creado_en": string,"creado_por": string | null,"datos_borrados_en": string | null,"evento_fin": string | null,"evento_inicio": string | null,"evento_limite": string | null,"evento_sede": string | null,"evento_tipo": string | null,"giro": string | null,"handle": string | null,"id": string,"liga_campos": (string)[],"liga_foto": boolean,"nombre": string,"padre_id": string | null,"portal_activo": boolean,"predeterminados": NonNullable<Json>,"qr_dato": string,"qr_liga": string | null,"qr_modo": string,"qr_mostrar": (string)[],"qr_vigencia": string | null,"reposicion": NonNullable<Json>,"tipo": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "actualizado_en"?: string,"creado_en"?: string,"creado_por"?: string | null,"giro"?: string | null,"handle"?: string | null,"id"?: string,"liga_campos"?: (string)[],"liga_foto"?: boolean,"nombre": string,"portal_activo"?: boolean,"predeterminados"?: NonNullable<Json>,"qr_dato"?: string,"qr_liga"?: string | null,"qr_modo"?: string,"qr_mostrar"?: (string)[],"qr_vigencia"?: string | null,"reposicion"?: NonNullable<Json>
+                    "actualizado_en"?: string,"categorias"?: NonNullable<Json>,"creado_en"?: string,"creado_por"?: string | null,"datos_borrados_en"?: string | null,"evento_fin"?: string | null,"evento_inicio"?: string | null,"evento_limite"?: string | null,"evento_sede"?: string | null,"evento_tipo"?: string | null,"giro"?: string | null,"handle"?: string | null,"id"?: string,"liga_campos"?: (string)[],"liga_foto"?: boolean,"nombre": string,"padre_id"?: string | null,"portal_activo"?: boolean,"predeterminados"?: NonNullable<Json>,"qr_dato"?: string,"qr_liga"?: string | null,"qr_modo"?: string,"qr_mostrar"?: (string)[],"qr_vigencia"?: string | null,"reposicion"?: NonNullable<Json>,"tipo"?: string
                   }
                   Update: {
-                    "actualizado_en"?: string,"creado_en"?: string,"creado_por"?: string | null,"giro"?: string | null,"handle"?: string | null,"id"?: string,"liga_campos"?: (string)[],"liga_foto"?: boolean,"nombre"?: string,"portal_activo"?: boolean,"predeterminados"?: NonNullable<Json>,"qr_dato"?: string,"qr_liga"?: string | null,"qr_modo"?: string,"qr_mostrar"?: (string)[],"qr_vigencia"?: string | null,"reposicion"?: NonNullable<Json>
+                    "actualizado_en"?: string,"categorias"?: NonNullable<Json>,"creado_en"?: string,"creado_por"?: string | null,"datos_borrados_en"?: string | null,"evento_fin"?: string | null,"evento_inicio"?: string | null,"evento_limite"?: string | null,"evento_sede"?: string | null,"evento_tipo"?: string | null,"giro"?: string | null,"handle"?: string | null,"id"?: string,"liga_campos"?: (string)[],"liga_foto"?: boolean,"nombre"?: string,"padre_id"?: string | null,"portal_activo"?: boolean,"predeterminados"?: NonNullable<Json>,"qr_dato"?: string,"qr_liga"?: string | null,"qr_modo"?: string,"qr_mostrar"?: (string)[],"qr_vigencia"?: string | null,"reposicion"?: NonNullable<Json>,"tipo"?: string
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "empresas_padre_id_fkey"
+      columns: ["padre_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"facturas": {
                   Row: {
@@ -401,14 +407,14 @@ isOneToOne: false
                   ]
                 },"pedidos": {
                   Row: {
-                    "actualizado_en": string,"alertas": (string)[],"aprobacion": NonNullable<Json>,"articulos": Json | null,"cancelado_en": string | null,"conceptos": Json | null,"creado_en": string,"creado_por": string | null,"direccion": Json | null,"diseno": Json | null,"diseno_id": string | null,"disputa": string | null,"dos_caras": boolean,"empresa_id": string,"entregado_en": string | null,"enviado_en": string | null,"envio": number,"envio_de_saldo": boolean,"estado": string,"facturacion": Json | null,"ficha_url": string | null,"folio": string,"fuente": string,"gafetes_de_saldo": number,"gracia_hasta": string | null,"guia": string | null,"id": string,"intento": number,"iva": number,"material": string | null,"metodo": string | null,"modalidad": string,"notas": string | null,"pagado_en": string | null,"paqueteria": string | null,"piezas": number,"por_pieza": number,"primer_pedido": boolean,"produccion_en": string | null,"revisado_en": string | null,"revisado_por": string | null,"solo_transferencia": boolean,"stripe_pago": string | null,"stripe_sesion": string | null,"stripe_url": string | null,"subtotal": number,"tipo": string,"total": number
+                    "actualizado_en": string,"alertas": (string)[],"aprobacion": NonNullable<Json>,"articulos": Json | null,"cancelado_en": string | null,"conceptos": Json | null,"cordones": Json | null,"creado_en": string,"creado_por": string | null,"direccion": Json | null,"diseno": Json | null,"diseno_id": string | null,"disputa": string | null,"dos_caras": boolean,"empresa_id": string,"entregado_en": string | null,"enviado_en": string | null,"envio": number,"envio_de_saldo": boolean,"estado": string,"facturacion": Json | null,"ficha_url": string | null,"folio": string,"fuente": string,"gafetes_de_saldo": number,"gracia_hasta": string | null,"guia": string | null,"id": string,"intento": number,"iva": number,"material": string | null,"metodo": string | null,"modalidad": string,"notas": string | null,"pagado_en": string | null,"paqueteria": string | null,"piezas": number,"por_pieza": number,"primer_pedido": boolean,"produccion_en": string | null,"revisado_en": string | null,"revisado_por": string | null,"solo_transferencia": boolean,"stripe_pago": string | null,"stripe_sesion": string | null,"stripe_url": string | null,"subtotal": number,"tipo": string,"total": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "actualizado_en"?: string,"alertas"?: (string)[],"aprobacion": NonNullable<Json>,"articulos"?: Json | null,"cancelado_en"?: string | null,"conceptos"?: Json | null,"creado_en"?: string,"creado_por"?: string | null,"direccion"?: Json | null,"diseno"?: Json | null,"diseno_id"?: string | null,"disputa"?: string | null,"dos_caras"?: boolean,"empresa_id": string,"entregado_en"?: string | null,"enviado_en"?: string | null,"envio"?: number,"envio_de_saldo"?: boolean,"estado"?: string,"facturacion"?: Json | null,"ficha_url"?: string | null,"folio"?: string,"fuente": string,"gafetes_de_saldo"?: number,"gracia_hasta"?: string | null,"guia"?: string | null,"id"?: string,"intento"?: number,"iva": number,"material"?: string | null,"metodo"?: string | null,"modalidad"?: string,"notas"?: string | null,"pagado_en"?: string | null,"paqueteria"?: string | null,"piezas": number,"por_pieza": number,"primer_pedido"?: boolean,"produccion_en"?: string | null,"revisado_en"?: string | null,"revisado_por"?: string | null,"solo_transferencia"?: boolean,"stripe_pago"?: string | null,"stripe_sesion"?: string | null,"stripe_url"?: string | null,"subtotal": number,"tipo"?: string,"total": number
+                    "actualizado_en"?: string,"alertas"?: (string)[],"aprobacion": NonNullable<Json>,"articulos"?: Json | null,"cancelado_en"?: string | null,"conceptos"?: Json | null,"cordones"?: Json | null,"creado_en"?: string,"creado_por"?: string | null,"direccion"?: Json | null,"diseno"?: Json | null,"diseno_id"?: string | null,"disputa"?: string | null,"dos_caras"?: boolean,"empresa_id": string,"entregado_en"?: string | null,"enviado_en"?: string | null,"envio"?: number,"envio_de_saldo"?: boolean,"estado"?: string,"facturacion"?: Json | null,"ficha_url"?: string | null,"folio"?: string,"fuente": string,"gafetes_de_saldo"?: number,"gracia_hasta"?: string | null,"guia"?: string | null,"id"?: string,"intento"?: number,"iva": number,"material"?: string | null,"metodo"?: string | null,"modalidad"?: string,"notas"?: string | null,"pagado_en"?: string | null,"paqueteria"?: string | null,"piezas": number,"por_pieza": number,"primer_pedido"?: boolean,"produccion_en"?: string | null,"revisado_en"?: string | null,"revisado_por"?: string | null,"solo_transferencia"?: boolean,"stripe_pago"?: string | null,"stripe_sesion"?: string | null,"stripe_url"?: string | null,"subtotal": number,"tipo"?: string,"total": number
                   }
                   Update: {
-                    "actualizado_en"?: string,"alertas"?: (string)[],"aprobacion"?: NonNullable<Json>,"articulos"?: Json | null,"cancelado_en"?: string | null,"conceptos"?: Json | null,"creado_en"?: string,"creado_por"?: string | null,"direccion"?: Json | null,"diseno"?: Json | null,"diseno_id"?: string | null,"disputa"?: string | null,"dos_caras"?: boolean,"empresa_id"?: string,"entregado_en"?: string | null,"enviado_en"?: string | null,"envio"?: number,"envio_de_saldo"?: boolean,"estado"?: string,"facturacion"?: Json | null,"ficha_url"?: string | null,"folio"?: string,"fuente"?: string,"gafetes_de_saldo"?: number,"gracia_hasta"?: string | null,"guia"?: string | null,"id"?: string,"intento"?: number,"iva"?: number,"material"?: string | null,"metodo"?: string | null,"modalidad"?: string,"notas"?: string | null,"pagado_en"?: string | null,"paqueteria"?: string | null,"piezas"?: number,"por_pieza"?: number,"primer_pedido"?: boolean,"produccion_en"?: string | null,"revisado_en"?: string | null,"revisado_por"?: string | null,"solo_transferencia"?: boolean,"stripe_pago"?: string | null,"stripe_sesion"?: string | null,"stripe_url"?: string | null,"subtotal"?: number,"tipo"?: string,"total"?: number
+                    "actualizado_en"?: string,"alertas"?: (string)[],"aprobacion"?: NonNullable<Json>,"articulos"?: Json | null,"cancelado_en"?: string | null,"conceptos"?: Json | null,"cordones"?: Json | null,"creado_en"?: string,"creado_por"?: string | null,"direccion"?: Json | null,"diseno"?: Json | null,"diseno_id"?: string | null,"disputa"?: string | null,"dos_caras"?: boolean,"empresa_id"?: string,"entregado_en"?: string | null,"enviado_en"?: string | null,"envio"?: number,"envio_de_saldo"?: boolean,"estado"?: string,"facturacion"?: Json | null,"ficha_url"?: string | null,"folio"?: string,"fuente"?: string,"gafetes_de_saldo"?: number,"gracia_hasta"?: string | null,"guia"?: string | null,"id"?: string,"intento"?: number,"iva"?: number,"material"?: string | null,"metodo"?: string | null,"modalidad"?: string,"notas"?: string | null,"pagado_en"?: string | null,"paqueteria"?: string | null,"piezas"?: number,"por_pieza"?: number,"primer_pedido"?: boolean,"produccion_en"?: string | null,"revisado_en"?: string | null,"revisado_por"?: string | null,"solo_transferencia"?: boolean,"stripe_pago"?: string | null,"stripe_sesion"?: string | null,"stripe_url"?: string | null,"subtotal"?: number,"tipo"?: string,"total"?: number
                   }
                   Relationships: [
                     {
@@ -754,11 +760,17 @@ isOneToOne: true
               "bucket": string,"creado_en": string,"ruta": string
             }[]
                            },
+"borrar_datos_evento":
+{ Args: { "p_evento": string }; Returns: number
+                           },
 "cambiar_rol_usuario":
 { Args: { "p_empresa": string,"p_rol": string,"p_usuario": string }; Returns: undefined
                            },
 "crear_empresa":
 { Args: { "p_giro"?: string,"p_nombre": string }; Returns: string
+                           },
+"crear_evento":
+{ Args: { "p_categorias": Json,"p_fin": string,"p_inicio": string,"p_limite": string,"p_nombre": string,"p_organizacion": string,"p_sede": string,"p_tipo": string }; Returns: string
                            },
 "destinatarios_aviso":
 { Args: { "p_empresa"?: string }; Returns: {

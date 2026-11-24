@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { Bandeja, type Pendiente, type Seguimiento } from "@/components/portal/Bandeja";
 import { ligasDeFotos } from "@/lib/cuenta/fotos";
 import { valorDe } from "@/lib/cuenta/ligas";
@@ -17,6 +18,8 @@ export default async function Solicitudes({ searchParams }: { searchParams: Prom
   const { tipo } = await searchParams;
   const filtro = tipo === "foto" || tipo === "datos" || tipo === "reposicion" ? (tipo as TipoSolicitud) : null;
   const { supabase, empresa } = await requerirEmpresa();
+  // Los eventos no tienen portal «Mi gafete» ni solicitudes.
+  if (empresa.tipo === "evento") redirect("/cuenta/evento");
   const columnasPersona = "empleados(nombre, foto_path, numero_empleado, puesto, departamento, tipo_contrato, datos)";
 
   const [fotos, otras, campos, ajuste, enCursoFoto, enCursoOtras, resueltasFoto, resueltasOtras] = await Promise.all([

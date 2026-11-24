@@ -12,16 +12,16 @@ export type Tramo = { desde: number; hasta: number | null; precio: number };
 export const tramos: Tramo[] = [
   { desde: 1, hasta: 9, precio: 85 },
   { desde: 10, hasta: 29, precio: 60 },
-  { desde: 30, hasta: 99, precio: 45 },
-  { desde: 100, hasta: 299, precio: 36 },
-  { desde: 300, hasta: null, precio: 30 },
+  { desde: 30, hasta: 99, precio: 39 },
+  { desde: 100, hasta: 499, precio: 22 },
+  { desde: 500, hasta: null, precio: 18 },
 ];
 
 /** Extra por pieza cuando el gafete va impreso por frente y vuelta: también baja con la cantidad. */
 export const tramosDosCaras: Tramo[] = [
   { desde: 1, hasta: 29, precio: 12 },
   { desde: 30, hasta: 99, precio: 10 },
-  { desde: 100, hasta: null, precio: 8 },
+  { desde: 100, hasta: null, precio: 5 },
 ];
 
 export function extraDosCaras(cantidad: number): number {
@@ -36,6 +36,12 @@ export const extraDosCarasMaximo = Math.max(...tramosDosCaras.map((t) => t.preci
 
 /** Precio por pieza del gafete digital: el mismo si va solo o sumado a uno impreso. */
 export const precioDigital = 10;
+
+/**
+ * Cordón liso con broche, del color de la categoría, como agregado de un
+ * pedido de evento. Precio por pieza (propuesta, por confirmar con Gloria).
+ */
+export const precioCordon = 12;
 
 export const tasaIva = 0.16;
 export const notaIva = "más IVA";
@@ -64,20 +70,24 @@ export const precioMaximo = Math.max(...tramos.map((t) => t.precio));
 
 /**
  * Paquetes prepagados: se compran gafetes impresos por adelantado y se van
- * pidiendo de a poquitos. Cada paquete incluye cierto número de envíos.
+ * pidiendo de a poquitos. Cada paquete incluye cierto número de envíos y sale
+ * un poco más barato por pieza que pedir esa misma cantidad suelta.
  */
 export type Paquete = { piezas: number; porPieza: number; envios: number };
 
 export const paquetes: Paquete[] = [
-  { piezas: 10, porPieza: 79, envios: 2 },
-  { piezas: 25, porPieza: 62, envios: 3 },
-  { piezas: 50, porPieza: 52, envios: 4 },
-  { piezas: 100, porPieza: 42, envios: 6 },
+  { piezas: 10, porPieza: 55, envios: 2 },
+  { piezas: 25, porPieza: 52, envios: 3 },
+  { piezas: 50, porPieza: 36, envios: 4 },
+  { piezas: 100, porPieza: 20, envios: 6 },
 ];
 
 export const paqueteVigenciaMeses = 12;
 
-export const precioPaquete = (p: Paquete) => p.piezas * p.porPieza;
+/** A centavos: los paquetes tienen precio por pieza con decimales. */
+const centavos = (n: number) => Math.round(n * 100) / 100;
+
+export const precioPaquete = (p: Paquete) => centavos(p.piezas * p.porPieza);
 
 /**
  * Paquete a la medida: la empresa combina varios tipos de gafete (cada renglón
@@ -117,9 +127,9 @@ export function cotizarPaquete(renglones: RenglonPaquete[]): CotizacionPaquete {
   const detalle = limpios.map((r) => {
     const material = materialPara(r.material);
     const porPieza = base.porPieza + material.extra + (r.dosCaras ? extraDosCaras(piezas) : 0);
-    return { piezas: r.piezas, dosCaras: r.dosCaras, material, porPieza, importe: porPieza * r.piezas };
+    return { piezas: r.piezas, dosCaras: r.dosCaras, material, porPieza, importe: centavos(porPieza * r.piezas) };
   });
-  const subtotal = detalle.reduce((suma, r) => suma + r.importe, 0);
+  const subtotal = centavos(detalle.reduce((suma, r) => suma + r.importe, 0));
   const iva = Math.round(subtotal * tasaIva * 100) / 100;
   return {
     piezas,
@@ -208,8 +218,8 @@ export function cotizar(cantidad: number, opciones: Opciones = {}): Cotizacion {
     conceptos.push({ nombre: "Gafete digital", porPieza: precioDigital });
   }
 
-  const porPieza = conceptos.reduce((suma, c) => suma + c.porPieza, 0);
-  const subtotal = porPieza * piezas;
+  const porPieza = centavos(conceptos.reduce((suma, c) => suma + c.porPieza, 0));
+  const subtotal = centavos(porPieza * piezas);
   // En un paquete los envíos ya van incluidos en el precio por pieza.
   const envioGratis = impreso && !paquete && subtotal >= envio.gratisDesde;
   const costoEnvio = impreso && !paquete && !envioGratis ? envio.tarifa : 0;

@@ -233,25 +233,40 @@ export const funcionesPlataforma: { grupo: string; resumen: string; funciones: F
   },
 ];
 
-/** Lo que cuida que nadie haga gafetes a nombre de tu empresa ni abuse de la plataforma. */
-export const confianzaPlataforma: Funcion[] = [
+/**
+ * Todo lo que se verifica en LaGafetería, de la empresa al pago. Es la fuente
+ * única: la usan la landing, cómo funciona, la plataforma, llms.txt y Gafi.
+ */
+export const verificaciones: Funcion[] = [
   {
-    titulo: "Verificación a tu elección",
+    titulo: "Tu empresa, una sola vez",
     texto:
-      "Con tu constancia de situación fiscal, con tu INE y una prueba de tu negocio, o con un correo de tu empresa. La revisamos a mano y se hace una sola vez.",
+      "Antes de tu primer pedido, con la opción que elijas: tu constancia de situación fiscal, tu INE y una prueba de tu negocio, o un correo de tu empresa. Aceptas una carta de responsabilidad y la revisamos a mano.",
   },
   {
-    titulo: "Insignia «Empresa verificada»",
-    texto: "Cuando tu empresa queda verificada, lo ves en tu plataforma y ya puedes pedir.",
-  },
-  {
-    titulo: "Entra con Google",
-    texto: "Crea tu cuenta o entra con tu cuenta de Google en un clic, o con tu correo y contraseña.",
-  },
-  {
-    titulo: "Protección contra abuso",
+    titulo: "Tu primer pedido, a mano",
     texto:
-      "Límites de intentos, verificación contra robots y revisión automática de cada foto e identificación que se sube, para que tu plataforma solo tenga lo que debe.",
+      "Lo revisamos antes de producirlo, igual que cualquier diseño que parezca una identificación oficial o mencione a una autoridad.",
+  },
+  {
+    titulo: "Cada foto e identificación",
+    texto:
+      "Se revisan de forma automática al subirse. La liga para subir datos y foto se cierra al enviar, y nada se imprime sin que lo apruebes en la vista previa.",
+  },
+  {
+    titulo: "Cada gafete, con su código QR",
+    texto:
+      "Quien lo escanea ve al momento si está vigente, expirado, no válido o aún no activo, con solo los datos que tú elijas. Si lo desactivas, deja de aparecer como vigente en ese instante.",
+  },
+  {
+    titulo: "Cada entrada a «Mi gafete»",
+    texto:
+      "Tu gente entra con un código que le llega a su correo, o con su número de empleado y un NIP de 6 números que se bloquea tras varios intentos fallidos.",
+  },
+  {
+    titulo: "Tu cuenta y tu pago",
+    texto:
+      "Entras con tu correo o con Google, con verificación contra robots y límite de intentos. Pagas en la página segura de Stripe, con la verificación de tu banco (3D Secure).",
   },
 ];
 

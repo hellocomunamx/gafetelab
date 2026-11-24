@@ -9,7 +9,7 @@
  */
 
 import type { MaterialId } from "@/lib/materiales";
-import { cotizar, type Modalidad, precioDigital, tasaIva } from "@/lib/precios";
+import { cotizar, type Modalidad, precioCordon, precioDigital, tasaIva } from "@/lib/precios";
 import { type ConceptoCobro, cotizarConSaldo, type PedidoConSaldo, type SaldoDisponible } from "./saldo";
 
 export type PedidoCotizado = PedidoConSaldo & {
@@ -60,6 +60,26 @@ function parteDigital(piezas: number, saldos: SaldoDisponible[]) {
  * sale de `cotizarConSaldo`, sin cambios; lo digital se suma aparte.
  */
 export function cotizarPedido(
+  piezas: number,
+  opciones: { modalidad: Modalidad; dosCaras: boolean; material: MaterialId; cordon?: boolean },
+  saldos: SaldoDisponible[],
+): PedidoCotizado {
+  const base = cotizarSinCordon(piezas, opciones, saldos);
+  return opciones.cordon && llevaImpreso(opciones.modalidad) ? sumarCordon(base) : base;
+}
+
+/**
+ * Suma un cordón por gafete impreso (eventos). No cambia el envío ni el saldo:
+ * el cordón se cobra aparte, a precio de lista.
+ */
+function sumarCordon(c: PedidoCotizado): PedidoCotizado {
+  const conceptos = [...c.conceptos, { nombre: "Cordón con broche, del color de cada categoría", cantidad: c.piezas, precio: precioCordon }];
+  const subtotal = redondear(conceptos.reduce((s, x) => s + x.cantidad * x.precio, 0));
+  const iva = redondear((subtotal + c.envio) * tasaIva);
+  return { ...c, conceptos, porPieza: c.porPieza + precioCordon, subtotal, iva, total: redondear(subtotal + c.envio + iva) };
+}
+
+function cotizarSinCordon(
   piezas: number,
   opciones: { modalidad: Modalidad; dosCaras: boolean; material: MaterialId },
   saldos: SaldoDisponible[],

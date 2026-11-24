@@ -24,6 +24,7 @@ import { cotizarPedido, esModalidad, llevaDigital, llevaImpreso } from "@/lib/pe
 import { stripeActivo } from "@/lib/stripe";
 import { clienteServicio } from "@/lib/supabase/publico";
 import type { Json } from "@/lib/supabase/tipos";
+import { categoriasDe, cordonesDe } from "@/lib/eventos";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const SIN_ACTIVAR = "Los pedidos en línea todavía no están activos. Escríbenos y lo resolvemos.";
@@ -41,6 +42,8 @@ export type EntradaPedido = {
   facturacion: string | null;
   /** La casilla "revisé la vista previa y apruebo que se imprima así". */
   aprobado: boolean;
+  /** Eventos: un cordón por gafete impreso, del color de la categoría de cada persona. */
+  cordon?: boolean;
   /** Por persona, por qué se pide: se perdió, se dañó o cambiaron sus datos. Quien no aparece es alta o reposición según su historial. */
   razones?: Record<string, string>;
 };
@@ -109,7 +112,15 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
 
   const dosCaras = impreso && llevaVuelta(fuente, ids);
   // Primero se usa el saldo prepagado de la empresa; solo se cobra lo que falte.
-  const c = cotizarPedido(ids.length, { modalidad, dosCaras, material: material.id as MaterialId }, await saldoDe(servicio, empresa.id));
+  // El cordón solo se ofrece en eventos y va con el gafete impreso.
+  const cordon = empresa.tipo === "evento" && impreso && entrada.cordon === true;
+  const c = cotizarPedido(ids.length, { modalidad, dosCaras, material: material.id as MaterialId, cordon }, await saldoDe(servicio, empresa.id));
+  const cordones = cordon
+    ? cordonesDe(
+        copias.map((x) => x.gafete!.copia.valores?.categoria),
+        categoriasDe(empresa.categorias),
+      )
+    : null;
   const h = await headers();
   const aprobacion: AprobacionPedido = {
     vista_previa: true,
@@ -184,6 +195,7 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
       primer_pedido: (pagados ?? 0) === 0,
       alertas,
       solo_transferencia: soloTransferencia(c.piezas, c.total),
+      cordones: cordones as unknown as Json,
     })
     .select("*")
     .single();

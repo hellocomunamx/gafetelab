@@ -6,6 +6,10 @@ import { crearClienteServidor } from "@/lib/supabase/server";
 
 export const COOKIE_EMPRESA = "lg_empresa";
 
+/** Columnas del proyecto: equipo de trabajo o evento, y los datos del evento. */
+export const COLUMNAS_PROYECTO =
+  "tipo, padre_id, evento_tipo, evento_inicio, evento_fin, evento_limite, evento_sede, categorias, datos_borrados_en";
+
 /** Usuario con sesión iniciada; si no hay, manda a /entrar. No revisa si aceptó los términos. */
 export const usuarioDeSesion = cache(async () => {
   const supabase = await crearClienteServidor();
@@ -55,7 +59,7 @@ export const misInvitaciones = cache(async () => {
 export const requerirEmpresa = cache(async () => {
   const { supabase, usuario } = await requerirUsuario();
   const [{ data: empresas }, { data: membresias }] = await Promise.all([
-    supabase.from("empresas").select(`id, nombre, giro, ${COLUMNAS_QR}`).order("creado_en"),
+    supabase.from("empresas").select(`id, nombre, giro, ${COLUMNAS_QR}, ${COLUMNAS_PROYECTO}`).order("creado_en"),
     supabase.from("miembros").select("empresa_id, rol").eq("usuario_id", usuario.id),
   ]);
   if (!empresas?.length) {
@@ -72,6 +76,8 @@ export const requerirEmpresa = cache(async () => {
     rol,
     /** Dueño o administrador: puede cambiar datos de la empresa, envío y facturación. */
     administra: rol !== "editor",
+    /** El proyecto activo es un evento (y no el equipo de trabajo de la organización). */
+    esEvento: empresa.tipo === "evento",
   };
 });
 

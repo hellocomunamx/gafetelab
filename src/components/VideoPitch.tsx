@@ -6,8 +6,11 @@ import { useEffect, useRef, useState } from "react";
  * Video de presentación. Arranca solo y en silencio cuando entra en pantalla,
  * y se pausa al salir. El botón «Activar sonido» lo reinicia con audio y deja
  * los controles del navegador. Si la persona pidió menos movimiento, no
- * arranca solo: espera a que le den play.
+ * arranca solo: espera a que le den play. Si hay otro video en la página y se
+ * le activa el sonido o se le da play con sonido, este se pausa.
  */
+const EVENTO_SONIDO = "lagafeteria:video-con-sonido";
+
 export function VideoPitch({
   src,
   portada,
@@ -44,6 +47,16 @@ export function VideoPitch({
     return () => observador.disconnect();
   }, []);
 
+  useEffect(() => {
+    const v = video.current;
+    if (!v) return;
+    const otroConSonido = (e: Event) => {
+      if ((e as CustomEvent<HTMLVideoElement>).detail !== v) v.pause();
+    };
+    window.addEventListener(EVENTO_SONIDO, otroConSonido);
+    return () => window.removeEventListener(EVENTO_SONIDO, otroConSonido);
+  }, []);
+
   function activarSonido() {
     const v = video.current;
     if (!v) return;
@@ -67,7 +80,13 @@ export function VideoPitch({
         loop
         controls={conSonido}
         aria-label={titulo}
-        onPlay={() => setAndando(true)}
+        onPlay={() => {
+          setAndando(true);
+          const v = video.current;
+          if (v && !v.muted) {
+            window.dispatchEvent(new CustomEvent(EVENTO_SONIDO, { detail: v }));
+          }
+        }}
         onPause={() => setAndando(false)}
       >
         <source src={src} type="video/mp4" />

@@ -14,6 +14,7 @@ import { type FuenteDePedido, prepararPedido } from "@/lib/pedidos/preparar";
 import { saldoDe } from "@/lib/pedidos/servidor";
 import { stripeActivo } from "@/lib/stripe";
 import { clienteServicio } from "@/lib/supabase/publico";
+import { categoriasDe, hoyIso } from "@/lib/eventos";
 
 export const metadata: Metadata = { title: "Hacer un pedido" };
 
@@ -161,6 +162,24 @@ export default async function Nuevo({
     })),
   ]);
   const ligasImagenes = Object.fromEntries(imagenes);
+  const { data: categoriasPersonas } =
+    empresa.tipo === "evento"
+      ? await supabase.from("empleados").select("id, datos").eq("empresa_id", empresa.id).eq("estatus", "activo").limit(10000)
+      : { data: null };
+  const evento =
+    empresa.tipo === "evento"
+      ? {
+          categorias: categoriasDe(empresa.categorias),
+          categoriaDe: Object.fromEntries(
+            (categoriasPersonas ?? []).map((p) => {
+              const v = (p.datos as Record<string, unknown> | null)?.categoria;
+              return [p.id, typeof v === "string" ? v : ""];
+            }),
+          ),
+          limite: empresa.evento_limite ?? hoyIso(),
+          inicio: empresa.evento_inicio ?? hoyIso(),
+        }
+      : null;
   const [saldos, { data: digitales }] = await Promise.all([
     saldoDe(supabase, empresa.id),
     supabase.from("gafetes").select("empleado_id").eq("empresa_id", empresa.id).eq("tipo", "digital").in("estado", ["en_pedido", "activo"]).limit(20000),
@@ -262,6 +281,7 @@ export default async function Nuevo({
         fiscales={(fiscales ?? []).map((f) => ({ id: f.id, titulo: f.rfc, texto: f.razon_social }))}
         saldos={saldos}
         conDigital={[...new Set((digitales ?? []).map((g) => g.empleado_id))]}
+        evento={evento}
         inicial={{
           fuente: predeterminados.fuente,
           material: predeterminados.material,

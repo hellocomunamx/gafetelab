@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BotonAgregar } from "@/components/carrito/BotonAgregar";
+import { CalculadoraCasa } from "@/components/CalculadoraCasa";
 import { Afiliados } from "@/components/Afiliados";
 import { Faq } from "@/components/Faq";
 import { GruposFunciones, MuyPronto, Palomita, SinCostoExtra } from "@/components/Funciones";
@@ -12,11 +13,11 @@ import { Boton, Cierre, Contenedor, CTA_TEXTO, Seccion } from "@/components/ui";
 import { faqsGenerales } from "@/lib/faqs";
 import { giros } from "@/lib/giros";
 import { formasDeEmpezar, pasos } from "@/lib/pasos";
-import { confianzaPlataforma, funcionesPlataforma, modalidadesDetalle, portalEmpleados } from "@/lib/plataforma";
+import { funcionesPlataforma, modalidadesDetalle, portalEmpleados, verificaciones } from "@/lib/plataforma";
 import { envio, notaIva, paqueteVigenciaMeses, paquetes, pesos, precioMinimo, precioPaquete } from "@/lib/precios";
-import { paginaFaq, producto, video, videoPitch } from "@/lib/schema";
+import { paginaFaq, producto, video, videoEventos, videoPitch } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
-import { entregaTexto, site, verificacion } from "@/lib/site";
+import { entregaTexto, site } from "@/lib/site";
 
 export const metadata = metadatos({
   titulo: `${site.titulo} | ${site.nombre}`,
@@ -97,19 +98,26 @@ export default function Inicio() {
 
       <section id="video" className="scroll-mt-28">
         <Contenedor className="py-12 sm:py-16">
-          <div className="mx-auto max-w-4xl">
-            <p className="text-center font-mano text-2xl text-rojo">Te lo contamos rapidito</p>
-            <h2 className="mt-1 text-center text-3xl font-extrabold">{videoPitch.titulo}</h2>
-            <p className="mx-auto mt-3 mb-8 max-w-2xl text-center text-lg text-gris">
-              De las fotos por chat y el Excel a los gafetes y credenciales de todo tu equipo, sin
-              mandar archivos por correo.
-            </p>
-            <VideoPitch
-              src={videoPitch.src}
-              portada={videoPitch.portada}
-              titulo={videoPitch.titulo}
-              duracion={videoPitch.duracion}
-            />
+          <p className="text-center font-mano text-2xl text-rojo">Te lo contamos rapidito</p>
+          <h2 className="mt-1 text-center text-3xl font-extrabold">
+            {site.nombre} en 50 segundos
+          </h2>
+          <p className="mx-auto mt-3 mb-8 max-w-2xl text-center text-lg text-gris">
+            Gafetes y credenciales para tu equipo de trabajo o para tu próximo evento, sin mandar
+            archivos por correo.
+          </p>
+          <div className="grid gap-8 lg:grid-cols-2 lg:gap-6">
+            {[
+              { v: videoPitch, etiqueta: "Para tu equipo" },
+              { v: videoEventos, etiqueta: "Para tus eventos" },
+            ].map(({ v, etiqueta }) => (
+              <figure key={v.src}>
+                <VideoPitch src={v.src} portada={v.portada} titulo={v.titulo} duracion={v.duracion} />
+                <figcaption className="mt-3 text-center font-titulos text-lg font-extrabold">
+                  {etiqueta}
+                </figcaption>
+              </figure>
+            ))}
           </div>
         </Contenedor>
       </section>
@@ -216,15 +224,17 @@ export default function Inicio() {
             </li>
           ))}
         </ol>
-        <p className="mt-6 max-w-3xl text-sm text-gris">
-          <strong className="text-tinta">Antes de empezar:</strong> {verificacion.corto}{" "}
+        <h3 className="mt-12 text-2xl font-extrabold">Verificado de principio a fin</h3>
+        <p className="mt-2 max-w-2xl text-gris">
+          Un gafete abre puertas. Por eso, antes de tu primer pedido verificamos que los gafetes
+          sean de tu propia empresa, y cualquiera puede comprobar con el código QR si uno sigue
+          vigente.{" "}
           <Link href="/como-funciona#verificacion" className="underline underline-offset-4">
-            Por qué lo pedimos
+            Cómo verificar tu empresa
           </Link>
         </p>
-        <h3 className="mt-12 text-2xl font-extrabold">Nadie hace gafetes a nombre de tu empresa</h3>
-        <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {confianzaPlataforma.map((c) => (
+        <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {verificaciones.map((c) => (
             <li key={c.titulo} className="flex gap-2.5 rounded-tarjeta bg-papel p-5">
               <Palomita className="mt-0.5 text-[#0a7d4f]" />
               <div>
@@ -306,6 +316,14 @@ export default function Inicio() {
         </p>
       </Seccion>
 
+      <Seccion id="cuanto-te-cuesta" titulo="¿Cuánto te cuesta imprimirlo tú mismo?">
+        <p className="-mt-2 mb-6 max-w-2xl text-lg text-gris">
+          El gafete de papel enmicado parece gratis, pero alguien de tu equipo lo diseña, lo imprime,
+          lo recorta y lo enmica. Pon cuántos haces al mes y compara tu costo real con el nuestro.
+        </p>
+        <CalculadoraCasa />
+      </Seccion>
+
       <Seccion titulo="Gafetes y credenciales para tu giro">
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {giros.map((g) => (
@@ -340,7 +358,7 @@ export default function Inicio() {
         titulo="¿Listo para decir “Hola, soy”?"
       />
 
-      <JsonLd data={[producto(), paginaFaq(faqsInicio), video()]} />
+      <JsonLd data={[producto(), paginaFaq(faqsInicio), video(), video(videoEventos)]} />
     </>
   );
 }

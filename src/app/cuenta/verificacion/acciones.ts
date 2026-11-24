@@ -22,6 +22,7 @@ const escapar = (t: string) => t.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)
 async function revisarQuePuede() {
   const sesion = await requerirEmpresa();
   if (!sesion.administra) return { sesion, error: "Solo quien administra la empresa puede verificarla." };
+  if (sesion.esEvento) return { sesion, error: "Los eventos usan la verificación de su organización: verifícala desde tu empresa." };
   const actual = await constanciaDe(sesion.supabase, sesion.empresa.id);
   if (actual?.estado === "aprobada") return { sesion, error: "Tu empresa ya está verificada." };
   if (actual?.estado === "pendiente") return { sesion, error: "Ya tienes una verificación en revisión." };

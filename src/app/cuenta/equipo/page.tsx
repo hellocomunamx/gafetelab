@@ -16,7 +16,7 @@ export default async function Equipo({
 }: {
   searchParams: Promise<{ estatus?: string; departamento?: string; contrato?: string; foto?: string; q?: string }>;
 }) {
-  const { supabase, empresa } = await requerirEmpresa();
+  const { supabase, empresa, esEvento } = await requerirEmpresa();
   const f = await searchParams;
 
   let consulta = supabase
@@ -85,7 +85,7 @@ export default async function Equipo({
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-3xl font-extrabold">Equipo</h1>
+        <h1 className="text-3xl font-extrabold">{esEvento ? "Asistentes" : "Equipo"}</h1>
         <Link href="/cuenta/equipo/nuevo" className={claseBoton}>Agregar persona</Link>
       </div>
 
