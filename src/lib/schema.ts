@@ -247,11 +247,11 @@ export const videoPitch: VideoSitio = {
 export const videoEventos: VideoSitio = {
   src: "/video/pitch-eventos.mp4",
   portada: "/video/pitch-eventos-portada.jpg",
-  titulo: `${site.nombre} para eventos en 50 segundos`,
+  titulo: `${site.nombre} para eventos en 55 segundos`,
   descripcion:
     "Gafetes y credenciales para congresos, expos y capacitaciones: creas tu evento con una categoría y un color para cada quien, subes tu lista de registro, cada persona lleva su QR de acceso y cotizas en línea al momento, con tu fecha límite para pedir a tiempo.",
-  duracion: "50 segundos",
-  duracionIso: "PT50S",
+  duracion: "55 segundos",
+  duracionIso: "PT55S",
   publicado: "2026-11-24T12:00:00-07:00",
 };
 
