@@ -23,7 +23,33 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "aceptaciones": {
+            "accesos_empleado": {
+                  Row: {
+                    "actualizado_en": string,"bloqueado_hasta": string | null,"empleado_id": string,"empresa_id": string,"id_acceso": string,"intentos": number,"nip_cambiado_en": string | null,"nip_hash": string | null,"nip_temporal": boolean,"ultimo_ingreso": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "actualizado_en"?: string,"bloqueado_hasta"?: string | null,"empleado_id": string,"empresa_id": string,"id_acceso": string,"intentos"?: number,"nip_cambiado_en"?: string | null,"nip_hash"?: string | null,"nip_temporal"?: boolean,"ultimo_ingreso"?: string | null
+                  }
+                  Update: {
+                    "actualizado_en"?: string,"bloqueado_hasta"?: string | null,"empleado_id"?: string,"empresa_id"?: string,"id_acceso"?: string,"intentos"?: number,"nip_cambiado_en"?: string | null,"nip_hash"?: string | null,"nip_temporal"?: boolean,"ultimo_ingreso"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "accesos_empleado_empleado_id_fkey"
+      columns: ["empleado_id"]
+isOneToOne: true
+      referencedRelation: "empleados"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "accesos_empleado_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"aceptaciones": {
                   Row: {
                     "aceptado_en": string,"aviso_version": string,"id": string,"terminos_version": string,"usuario_id": string
                   }
@@ -51,6 +77,32 @@ export type Database = {
                   Relationships: [
                     {
       foreignKeyName: "campos_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"codigos_empleado": {
+                  Row: {
+                    "codigo_hash": string,"creado_en": string,"empleado_id": string,"empresa_id": string,"enlace_hash": string,"expira_en": string,"id": string,"intentos": number,"usado_en": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "codigo_hash": string,"creado_en"?: string,"empleado_id": string,"empresa_id": string,"enlace_hash": string,"expira_en": string,"id"?: string,"intentos"?: number,"usado_en"?: string | null
+                  }
+                  Update: {
+                    "codigo_hash"?: string,"creado_en"?: string,"empleado_id"?: string,"empresa_id"?: string,"enlace_hash"?: string,"expira_en"?: string,"id"?: string,"intentos"?: number,"usado_en"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "codigos_empleado_empleado_id_fkey"
+      columns: ["empleado_id"]
+isOneToOne: false
+      referencedRelation: "empleados"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "codigos_empleado_empresa_id_fkey"
       columns: ["empresa_id"]
 isOneToOne: false
       referencedRelation: "empresas"
@@ -159,14 +211,14 @@ isOneToOne: false
                   ]
                 },"empresas": {
                   Row: {
-                    "actualizado_en": string,"creado_en": string,"creado_por": string | null,"giro": string | null,"id": string,"liga_campos": (string)[],"liga_foto": boolean,"nombre": string,"predeterminados": NonNullable<Json>,"qr_dato": string,"qr_liga": string | null,"qr_modo": string,"qr_mostrar": (string)[],"qr_vigencia": string | null,"reposicion": NonNullable<Json>
+                    "actualizado_en": string,"creado_en": string,"creado_por": string | null,"giro": string | null,"handle": string | null,"id": string,"liga_campos": (string)[],"liga_foto": boolean,"nombre": string,"portal_activo": boolean,"predeterminados": NonNullable<Json>,"qr_dato": string,"qr_liga": string | null,"qr_modo": string,"qr_mostrar": (string)[],"qr_vigencia": string | null,"reposicion": NonNullable<Json>
                   }
                   ComputedFields: never
                   Insert: {
-                    "actualizado_en"?: string,"creado_en"?: string,"creado_por"?: string | null,"giro"?: string | null,"id"?: string,"liga_campos"?: (string)[],"liga_foto"?: boolean,"nombre": string,"predeterminados"?: NonNullable<Json>,"qr_dato"?: string,"qr_liga"?: string | null,"qr_modo"?: string,"qr_mostrar"?: (string)[],"qr_vigencia"?: string | null,"reposicion"?: NonNullable<Json>
+                    "actualizado_en"?: string,"creado_en"?: string,"creado_por"?: string | null,"giro"?: string | null,"handle"?: string | null,"id"?: string,"liga_campos"?: (string)[],"liga_foto"?: boolean,"nombre": string,"portal_activo"?: boolean,"predeterminados"?: NonNullable<Json>,"qr_dato"?: string,"qr_liga"?: string | null,"qr_modo"?: string,"qr_mostrar"?: (string)[],"qr_vigencia"?: string | null,"reposicion"?: NonNullable<Json>
                   }
                   Update: {
-                    "actualizado_en"?: string,"creado_en"?: string,"creado_por"?: string | null,"giro"?: string | null,"id"?: string,"liga_campos"?: (string)[],"liga_foto"?: boolean,"nombre"?: string,"predeterminados"?: NonNullable<Json>,"qr_dato"?: string,"qr_liga"?: string | null,"qr_modo"?: string,"qr_mostrar"?: (string)[],"qr_vigencia"?: string | null,"reposicion"?: NonNullable<Json>
+                    "actualizado_en"?: string,"creado_en"?: string,"creado_por"?: string | null,"giro"?: string | null,"handle"?: string | null,"id"?: string,"liga_campos"?: (string)[],"liga_foto"?: boolean,"nombre"?: string,"portal_activo"?: boolean,"predeterminados"?: NonNullable<Json>,"qr_dato"?: string,"qr_liga"?: string | null,"qr_modo"?: string,"qr_mostrar"?: (string)[],"qr_vigencia"?: string | null,"reposicion"?: NonNullable<Json>
                   }
                   Relationships: [
                     
@@ -545,16 +597,74 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"solicitudes_foto": {
+                },"sesiones_empleado": {
                   Row: {
-                    "con_impreso": boolean,"creado_en": string,"empleado_id": string,"empresa_id": string,"estado": string,"foto_anterior_path": string | null,"foto_path": string | null,"id": string,"motivo": string | null,"reposicion_apartada": boolean,"resuelto_en": string | null,"resuelto_por": string | null
+                    "creado_en": string,"empleado_id": string,"empresa_id": string,"expira_en": string,"id": string,"metodo": string,"token_hash": string,"visto_en": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "con_impreso"?: boolean,"creado_en"?: string,"empleado_id": string,"empresa_id": string,"estado"?: string,"foto_anterior_path"?: string | null,"foto_path"?: string | null,"id"?: string,"motivo"?: string | null,"reposicion_apartada"?: boolean,"resuelto_en"?: string | null,"resuelto_por"?: string | null
+                    "creado_en"?: string,"empleado_id": string,"empresa_id": string,"expira_en": string,"id"?: string,"metodo": string,"token_hash": string,"visto_en"?: string
                   }
                   Update: {
-                    "con_impreso"?: boolean,"creado_en"?: string,"empleado_id"?: string,"empresa_id"?: string,"estado"?: string,"foto_anterior_path"?: string | null,"foto_path"?: string | null,"id"?: string,"motivo"?: string | null,"reposicion_apartada"?: boolean,"resuelto_en"?: string | null,"resuelto_por"?: string | null
+                    "creado_en"?: string,"empleado_id"?: string,"empresa_id"?: string,"expira_en"?: string,"id"?: string,"metodo"?: string,"token_hash"?: string,"visto_en"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sesiones_empleado_empleado_id_fkey"
+      columns: ["empleado_id"]
+isOneToOne: false
+      referencedRelation: "empleados"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sesiones_empleado_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"solicitudes_empleado": {
+                  Row: {
+                    "archivo_path": string | null,"causa": string | null,"costo": number | null,"creado_en": string,"datos": NonNullable<Json>,"empleado_id": string,"empresa_id": string,"estado": string,"id": string,"impresion": string | null,"motivo": string | null,"nota": string | null,"pedido_id": string | null,"reposicion_apartada": boolean,"requisitos": (string)[],"resuelto_en": string | null,"resuelto_por": string | null,"tipo": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "archivo_path"?: string | null,"causa"?: string | null,"costo"?: number | null,"creado_en"?: string,"datos"?: NonNullable<Json>,"empleado_id": string,"empresa_id": string,"estado"?: string,"id"?: string,"impresion"?: string | null,"motivo"?: string | null,"nota"?: string | null,"pedido_id"?: string | null,"reposicion_apartada"?: boolean,"requisitos"?: (string)[],"resuelto_en"?: string | null,"resuelto_por"?: string | null,"tipo": string
+                  }
+                  Update: {
+                    "archivo_path"?: string | null,"causa"?: string | null,"costo"?: number | null,"creado_en"?: string,"datos"?: NonNullable<Json>,"empleado_id"?: string,"empresa_id"?: string,"estado"?: string,"id"?: string,"impresion"?: string | null,"motivo"?: string | null,"nota"?: string | null,"pedido_id"?: string | null,"reposicion_apartada"?: boolean,"requisitos"?: (string)[],"resuelto_en"?: string | null,"resuelto_por"?: string | null,"tipo"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "solicitudes_empleado_empleado_id_fkey"
+      columns: ["empleado_id"]
+isOneToOne: false
+      referencedRelation: "empleados"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "solicitudes_empleado_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "solicitudes_empleado_pedido_id_fkey"
+      columns: ["pedido_id"]
+isOneToOne: false
+      referencedRelation: "pedidos"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"solicitudes_foto": {
+                  Row: {
+                    "con_impreso": boolean,"creado_en": string,"empleado_id": string,"empresa_id": string,"estado": string,"foto_anterior_path": string | null,"foto_path": string | null,"id": string,"impresion": string | null,"motivo": string | null,"pedido_id": string | null,"reposicion_apartada": boolean,"resuelto_en": string | null,"resuelto_por": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "con_impreso"?: boolean,"creado_en"?: string,"empleado_id": string,"empresa_id": string,"estado"?: string,"foto_anterior_path"?: string | null,"foto_path"?: string | null,"id"?: string,"impresion"?: string | null,"motivo"?: string | null,"pedido_id"?: string | null,"reposicion_apartada"?: boolean,"resuelto_en"?: string | null,"resuelto_por"?: string | null
+                  }
+                  Update: {
+                    "con_impreso"?: boolean,"creado_en"?: string,"empleado_id"?: string,"empresa_id"?: string,"estado"?: string,"foto_anterior_path"?: string | null,"foto_path"?: string | null,"id"?: string,"impresion"?: string | null,"motivo"?: string | null,"pedido_id"?: string | null,"reposicion_apartada"?: boolean,"resuelto_en"?: string | null,"resuelto_por"?: string | null
                   }
                   Relationships: [
                     {
@@ -568,6 +678,12 @@ isOneToOne: false
       columns: ["empresa_id"]
 isOneToOne: false
       referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "solicitudes_foto_pedido_id_fkey"
+      columns: ["pedido_id"]
+isOneToOne: false
+      referencedRelation: "pedidos"
       referencedColumns: ["id"]
     }
                   ]

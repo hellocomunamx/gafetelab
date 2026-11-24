@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const ENLACES = [
   { href: "/cuenta", texto: "Resumen" },
   { href: "/cuenta/equipo", texto: "Equipo" },
+  { href: "/cuenta/solicitudes", texto: "Solicitudes" },
   { href: "/cuenta/campos", texto: "Datos del equipo" },
   { href: "/cuenta/disenos", texto: "Diseños" },
   { href: "/cuenta/pedidos", texto: "Pedidos" },

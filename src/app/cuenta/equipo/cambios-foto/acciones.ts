@@ -5,11 +5,18 @@ import { RUTA_CAMBIOS_FOTO } from "@/lib/avisos/tipos";
 import { rutaFoto } from "@/lib/cuenta/imagen";
 import { esRequisito } from "@/lib/cuenta/reposicion";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
+import { avisarEstado } from "@/lib/portal/servidor";
+import { clienteServicio } from "@/lib/supabase/publico";
 import type { Resultado } from "@/lib/cuenta/tipos";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ERROR_GENERAL = "No pudimos guardar. Intenta de nuevo.";
 const refrescar = () => revalidatePath("/cuenta", "layout");
+/** Le avisa por correo a la persona (si tiene correo registrado). */
+const avisar = (id: string) => {
+  const servicio = clienteServicio();
+  return servicio ? avisarEstado(servicio, { tabla: "solicitudes_foto", id }) : Promise.resolve();
+};
 
 /**
  * Aprueba la foto nueva: guarda una copia de la anterior en el historial,
@@ -82,6 +89,7 @@ export async function aprobarCambioFoto(_: Resultado, d: FormData): Promise<Resu
       resuelto_por: usuario.id,
     })
     .eq("id", solicitud.id);
+  await avisar(solicitud.id);
   refrescar();
   return { ok: apartada ? "Aprobada. Su reposición quedó en tu pedido abierto." : "Aprobada. Su gafete digital ya tiene la foto nueva." };
 }
@@ -107,8 +115,9 @@ export async function rechazarCambioFoto(_: Resultado, d: FormData): Promise<Res
     .update({ estado: "rechazada", motivo, foto_path: null, resuelto_en: new Date().toISOString(), resuelto_por: usuario.id })
     .eq("id", solicitud.id);
   if (error) return { error: ERROR_GENERAL };
+  await avisar(solicitud.id);
   refrescar();
-  return { ok: "Listo. Lo verá en su gafete digital." };
+  return { ok: "Listo. Lo verá en su gafete y le llega por correo si lo tienes registrado." };
 }
 
 /** Lo que la empresa cobra y pide por un gafete impreso nuevo. */

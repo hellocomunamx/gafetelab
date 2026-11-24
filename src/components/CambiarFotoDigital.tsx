@@ -5,6 +5,7 @@ import { type ChangeEvent, useEffect, useState } from "react";
 import { cancelarCambioFoto, solicitarCambioFoto } from "@/app/mi-gafete/cambio-foto";
 import { claseBoton, claseBotonSecundario } from "@/components/cuenta/clases";
 import type { CambioFotoPersona } from "@/lib/cuenta/cambio-foto";
+import type { Resultado } from "@/lib/cuenta/tipos";
 import { prepararFoto } from "@/lib/cuenta/imagen";
 import { pesos, REQUISITOS } from "@/lib/cuenta/reposicion";
 import { site } from "@/lib/site";
@@ -65,11 +66,15 @@ export function CambiarFotoDigital({
   empresa,
   fotoActual,
   cambio,
+  acciones = { solicitar: solicitarCambioFoto, cancelar: cancelarCambioFoto },
 }: {
+  /** Liga de la persona; en el portal de empleados va vacía (manda la sesión). */
   liga: string;
   empresa: string;
   fotoActual?: string | null;
   cambio: CambioFotoPersona;
+  /** Por omisión, las de la liga por persona; el portal pasa las suyas. */
+  acciones?: { solicitar: (d: FormData) => Promise<Resultado>; cancelar: (d: FormData) => Promise<Resultado> };
 }) {
   const router = useRouter();
   const [foto, setFoto] = useState<Blob>();
@@ -106,7 +111,7 @@ export function CambiarFotoDigital({
     if (acepto) datos.set("acepto_reposicion", "on");
     setError("");
     setOcupado(true);
-    const resultado = await solicitarCambioFoto(datos).catch(() => ({ error: "No pudimos mandar tu foto. Revisa tu conexión e intenta de nuevo." }));
+    const resultado = await acciones.solicitar(datos).catch(() => ({ error: "No pudimos mandar tu foto. Revisa tu conexión e intenta de nuevo." }));
     setOcupado(false);
     if (resultado.error) return setError(resultado.error);
     setFoto(undefined);
@@ -119,7 +124,7 @@ export function CambiarFotoDigital({
     const datos = new FormData();
     datos.set("liga", liga);
     setOcupado(true);
-    await cancelarCambioFoto(datos).catch(() => null);
+    await acciones.cancelar(datos).catch(() => null);
     setOcupado(false);
     router.refresh();
   }
