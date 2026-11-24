@@ -29,29 +29,29 @@ export default async function CuentaLayout({ children }: { children: ReactNode }
     <div className="min-h-[70vh] bg-papel">
       <AvisoInvitaciones empresas={invitaciones.map((i) => i.empresa)} />
       <div className="border-b border-linea">
-        <Contenedor className="flex flex-col gap-3 py-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <Contenedor className="flex flex-col gap-3 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
             {empresas && empresas.length > 1 ? (
               <SelectorEmpresa empresas={empresas} actual={actual?.id} />
             ) : (
               <p className="font-titulos text-lg font-extrabold">{actual?.nombre ?? "Mi cuenta"}</p>
             )}
-            {actual ? <NavCuenta /> : null}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+              {esAdmin ? (
+                <Link href={RUTA_ADMIN} className="font-semibold underline">Administración</Link>
+              ) : null}
+              <Link href="/cuenta/acceso" title="Mi acceso: nombre y contraseña" className="max-w-full truncate text-gris underline decoration-linea underline-offset-4 hover:text-tinta">
+                {usuario.email}
+              </Link>
+              {actual ? (
+                <Link href="/cuenta/empresa/nueva" className="underline">Otra empresa</Link>
+              ) : null}
+              <form action="/salir" method="post">
+                <button type="submit" className="font-semibold underline">Salir</button>
+              </form>
+            </div>
           </div>
-          <div className="flex items-center gap-4 text-sm">
-            {esAdmin ? (
-              <Link href={RUTA_ADMIN} className="font-semibold underline">Administración</Link>
-            ) : null}
-            <Link href="/cuenta/acceso" title="Mi acceso: nombre y contraseña" className="text-gris underline decoration-linea underline-offset-4 hover:text-tinta">
-              {usuario.email}
-            </Link>
-            {actual ? (
-              <Link href="/cuenta/empresa/nueva" className="underline">Otra empresa</Link>
-            ) : null}
-            <form action="/salir" method="post">
-              <button type="submit" className="font-semibold underline">Salir</button>
-            </form>
-          </div>
+          {actual ? <NavCuenta /> : null}
         </Contenedor>
       </div>
       <Contenedor className="py-8 sm:py-10">{children}</Contenedor>
