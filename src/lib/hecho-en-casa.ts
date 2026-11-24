@@ -11,10 +11,17 @@ import { cotizar, type Paquete, paqueteVigenciaMeses, paquetes } from "./precios
 export type Rango = { min: number; max: number; omision: number; paso: number };
 
 /** Materiales por gafete: hoja o cartulina, tinta, mica para enmicar, cordón o clip. */
-export const materialesCasa: Rango = { min: 9, max: 16, omision: 12, paso: 1 };
+export const materialesCasa: Rango = { min: 9, max: 20, omision: 12, paso: 1 };
 
 /** Minutos de trabajo por gafete: acomodar el diseño, imprimir, recortar, enmicar y perforar. */
 export const minutosCasa: Rango = { min: 6, max: 15, omision: 10, paso: 1 };
+
+/**
+ * Porcentaje de gafetes que se vuelven a hacer (E): mica con burbuja, nombre mal
+ * escrito, foto movida o gafete de papel que se dobla o despega. Repite
+ * materiales y tiempo.
+ */
+export const mermaCasa: Rango = { min: 0, max: 30, omision: 10, paso: 5 };
 
 /** Lo que cuesta una hora de quien los hace, con prestaciones. */
 export const costoHoraCasa = { omision: 100, min: 0, max: 2000 };
@@ -34,24 +41,22 @@ export type ComparacionCasa = {
 
 const centavos = (n: number) => Math.round(n * 100) / 100;
 
-export function costoCasaPorPieza(materiales: number, minutos: number, costoHora: number): number {
-  return centavos(materiales + (minutos / 60) * costoHora);
+/** Supuestos de quien hace los gafetes en casa. `merma` en porcentaje. */
+export type SupuestosCasa = { materiales: number; minutos: number; costoHora: number; merma: number };
+
+export function costoCasaPorPieza({ materiales, minutos, costoHora, merma }: SupuestosCasa): number {
+  return centavos((materiales + (minutos / 60) * costoHora) * (1 + merma / 100));
 }
 
-export function compararCasa(
-  gafetes: number,
-  materiales: number,
-  minutos: number,
-  costoHora: number,
-): ComparacionCasa {
-  const casaPieza = costoCasaPorPieza(materiales, minutos, costoHora);
+export function compararCasa(gafetes: number, supuestos: SupuestosCasa): ComparacionCasa {
+  const casaPieza = costoCasaPorPieza(supuestos);
   const cot = cotizar(gafetes);
   const n = cot.piezas;
   const nosotrosMes = cot.subtotal + cot.envio;
   const casaMes = centavos(casaPieza * n);
   return {
     gafetes: n,
-    casa: { porPieza: casaPieza, mes: casaMes, horasMes: (n * minutos) / 60 },
+    casa: { porPieza: casaPieza, mes: casaMes, horasMes: (n * supuestos.minutos * (1 + supuestos.merma / 100)) / 60 },
     nosotros: { porPieza: centavos(nosotrosMes / n), mes: nosotrosMes, envio: cot.envio },
     ahorroMes: centavos(casaMes - nosotrosMes),
   };
@@ -62,9 +67,9 @@ export function compararCasa(
  * hacerlos en casa, con esos supuestos, y así sigue con cualquier cantidad mayor.
  * null si con ninguna cantidad del rango conviene.
  */
-export function gafetesParaQueConvenga(materiales: number, minutos: number, costoHora: number): number | null {
+export function gafetesParaQueConvenga(supuestos: SupuestosCasa): number | null {
   for (let n = gafetesMesMaximo; n >= 1; n--) {
-    if (compararCasa(n, materiales, minutos, costoHora).ahorroMes < 0) {
+    if (compararCasa(n, supuestos).ahorroMes < 0) {
       return n === gafetesMesMaximo ? null : n + 1;
     }
   }
