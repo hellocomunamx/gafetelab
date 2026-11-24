@@ -59,6 +59,7 @@ type Contenido = {
 };
 
 function contenido(etapa: EtapaCorreo, p: PedidoCorreo, extras: ExtrasCorreo): Contenido {
+  const uno = p.piezas === 1;
   const pedido = urlAbsoluta(`/cuenta/pedidos/${p.id}`);
   const verPedido = { texto: "Ver mi pedido", liga: pedido };
 
@@ -83,8 +84,12 @@ function contenido(etapa: EtapaCorreo, p: PedidoCorreo, extras: ExtrasCorreo): C
           parrafos: [
             `¡Gracias! Tu pedido ${p.folio} de ${gafetes(p.piezas, true)} quedó confirmado.`,
             extras.digitalesActivos
-              ? "Los gafetes ya quedaron activos: cada persona con correo recibió la liga de su gafete, y las demás ligas las encuentras en tu cuenta para mandarlas por WhatsApp."
-              : "Le damos una revisada rápida y en cuanto los activemos, cada persona con correo recibe la liga de su gafete. Las demás ligas las encuentras en tu cuenta.",
+              ? uno
+                ? "El gafete ya quedó activo: si la persona tiene correo, ya recibió su liga; si no, la encuentras en tu cuenta para mandarla por WhatsApp."
+                : "Los gafetes ya quedaron activos: cada persona con correo recibió la liga de su gafete, y las demás ligas las encuentras en tu cuenta para mandarlas por WhatsApp."
+              : uno
+                ? "Le damos una revisada rápida y, en cuanto lo activemos, la persona recibe la liga de su gafete si tiene correo. Si no, la encuentras en tu cuenta."
+                : "Le damos una revisada rápida y, en cuanto los activemos, cada persona con correo recibe la liga de su gafete. Las demás ligas las encuentras en tu cuenta.",
           ],
           boton: verPedido,
           avance: false,
@@ -98,8 +103,12 @@ function contenido(etapa: EtapaCorreo, p: PedidoCorreo, extras: ExtrasCorreo): C
           ...(p.modalidad === "ambos"
             ? [
                 extras.digitalesActivos
-                  ? "Los gafetes digitales ya quedaron activos: cada persona con correo recibió su liga."
-                  : "Los gafetes digitales se activan en cuanto terminemos la revisión, y cada persona con correo recibe su liga.",
+                  ? uno
+                    ? "El gafete digital ya quedó activo: si la persona tiene correo, ya recibió su liga."
+                    : "Los gafetes digitales ya quedaron activos: cada persona con correo recibió su liga."
+                  : uno
+                    ? "El gafete digital se activa en cuanto terminemos la revisión, y si la persona tiene correo, recibe su liga."
+                    : "Los gafetes digitales se activan en cuanto terminemos la revisión, y cada persona con correo recibe su liga.",
               ]
             : []),
           `Te avisamos por correo en cada paso. La entrega es en ${site.entrega}, contados desde hoy.`,
@@ -114,7 +123,7 @@ function contenido(etapa: EtapaCorreo, p: PedidoCorreo, extras: ExtrasCorreo): C
         titulo: "¡Manos a la obra!",
         parrafos: [
           `Tu pedido ${p.folio} ya entró a producción: estamos imprimiendo ${tus(p.piezas)}.`,
-          "Revisamos cada pieza para que nombres, fotos y colores queden tal como los aprobaste. Te escribimos en cuanto estén listos.",
+          `Revisamos cada detalle para que nombres, fotos y colores queden tal como los aprobaste. Te escribimos en cuanto ${uno ? "esté listo" : "estén listos"}.`,
         ],
         boton: verPedido,
         avance: true,
@@ -122,10 +131,12 @@ function contenido(etapa: EtapaCorreo, p: PedidoCorreo, extras: ExtrasCorreo): C
     case "listo":
       return {
         asunto: `Pedido ${p.folio} listo para enviarse`,
-        titulo: "Tus gafetes ya están listos",
+        titulo: uno ? "Tu gafete ya está listo" : "Tus gafetes ya están listos",
         parrafos: [
           `${mayuscula(tus(p.piezas))} del pedido ${p.folio} ya ${p.piezas === 1 ? "está impreso, revisado y empacado" : "están impresos, revisados y empacados"}.`,
-          "Estamos por entregarlos a la paquetería. En cuanto salgan, te mandamos la guía con la liga para rastrearlos.",
+          uno
+            ? "Estamos por entregarlo a la paquetería. En cuanto salga, te mandamos la guía con la liga para rastrearlo."
+            : "Estamos por entregarlos a la paquetería. En cuanto salgan, te mandamos la guía con la liga para rastrearlos.",
         ],
         boton: verPedido,
         avance: true,
@@ -139,7 +150,9 @@ function contenido(etapa: EtapaCorreo, p: PedidoCorreo, extras: ExtrasCorreo): C
           `${mayuscula(tus(p.piezas))} del pedido ${p.folio} ya ${p.piezas === 1 ? "salió" : "salieron"}${por ? ` ${por}` : ""}.`,
           extras.rastreo
             ? "Puedes seguir el paquete en todo momento con el botón de rastreo."
-            : "Puedes ver su avance desde tu cuenta, y con el número de guía en la página de la paquetería.",
+            : p.guia
+              ? "Puedes ver su avance desde tu cuenta, o con el número de guía en la página de la paquetería."
+              : "Puedes ver su avance desde tu cuenta.",
         ],
         boton: extras.rastreo ? { texto: "Rastrear mi envío", liga: extras.rastreo } : verPedido,
         avance: true,
@@ -148,9 +161,9 @@ function contenido(etapa: EtapaCorreo, p: PedidoCorreo, extras: ExtrasCorreo): C
     case "entregado":
       return {
         asunto: `Pedido ${p.folio} entregado`,
-        titulo: "¡Llegaron tus gafetes!",
+        titulo: uno ? "¡Llegó tu gafete!" : "¡Llegaron tus gafetes!",
         parrafos: [
-          `Tu pedido ${p.folio} ya se entregó. Esperamos que tu equipo los luzca con orgullo.`,
+          `Tu pedido ${p.folio} ya se entregó. ${uno ? "Esperamos que se luzca con él." : "Esperamos que tu equipo los luzca con orgullo."}`,
           "Si algo no quedó como esperabas, escríbenos y lo resolvemos. Y cuando llegue alguien nuevo o se pierda un gafete, lo vuelves a pedir desde tu cuenta en un par de clics.",
         ],
         boton: verPedido,
