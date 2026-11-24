@@ -89,7 +89,8 @@ export function faltantes(
     for (const e of cara?.elementos ?? []) {
       if (e.tipo === "foto" && !tieneFoto) faltan.add("Fotografía");
       if (e.tipo === "qr" && !qr) faltan.add("El dato de su código QR");
-      if (e.tipo === "texto" && e.campo && !datos[e.campo]?.trim()) {
+      // El nombre es opcional: sin él sale un gafete genérico, no falta nada.
+      if (e.tipo === "texto" && e.campo && e.campo !== "nombre" && !datos[e.campo]?.trim()) {
         faltan.add(campos.find((c) => c.clave === e.campo)?.etiqueta ?? e.campo);
       }
     }

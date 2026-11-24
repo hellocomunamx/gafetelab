@@ -240,8 +240,8 @@ const hoy = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Hermosil
 
 export async function guardarEmpleado(_: Resultado, d: FormData): Promise<Resultado> {
   const { supabase, empresa } = await requerirEmpresa();
+  // El nombre es opcional: puede haber gafetes genéricos, como «Visitante».
   const nombre = texto(d, "nombre", 160);
-  if (!nombre) return { error: "Escribe el nombre de la persona." };
 
   const { data: campos } = await supabase
     .from("campos")
@@ -265,6 +265,9 @@ export async function guardarEmpleado(_: Resultado, d: FormData): Promise<Result
   if (correo && !correoValido(correo)) return { error: "Revisa el correo de la persona: no parece válido." };
 
   const estatus = ESTATUS.includes(texto(d, "estatus")) ? texto(d, "estatus") : "activo";
+  const conAlgo =
+    nombre || ["numero_empleado", "puesto", "departamento", "tipo_contrato"].some((c) => texto(d, c)) || Object.keys(datos).length;
+  if (!conAlgo) return { error: "Escribe al menos un dato: el nombre, el puesto o el número." };
   const fila = {
     nombre,
     correo: correoValido(correo),
@@ -363,7 +366,7 @@ export async function importarEmpleados(
   const porNombre = new Map<string, Previa | null>();
   for (const e of existentes ?? []) {
     if (e.numero_empleado) porNumero.set(e.numero_empleado, e);
-    else porNombre.set(normalizar(e.nombre), porNombre.has(normalizar(e.nombre)) ? null : e);
+    else if (e.nombre) porNombre.set(normalizar(e.nombre), porNombre.has(normalizar(e.nombre)) ? null : e);
   }
 
   // Por persona existente (id) o por número nuevo, para que un renglón repetido no duplique.
@@ -371,10 +374,11 @@ export async function importarEmpleados(
   const altas = new Map<string, Record<string, unknown>>();
   const sinNumero: Record<string, unknown>[] = [];
   for (const f of filas) {
-    const nombre = corto(f?.nombre, 160);
-    if (!nombre) return { error: "Hay renglones sin nombre. Corrige el archivo y vuelve a subirlo." };
+    if (!f || typeof f !== "object") return { error: "El archivo no se leyó bien. Vuelve a subirlo." };
+    // Sin nombre se sube como gafete genérico.
+    const nombre = corto(f.nombre, 160) ?? "";
     const numero = corto(f.numero_empleado, 40);
-    const previa = (numero ? porNumero.get(numero) : undefined) ?? porNombre.get(normalizar(nombre)) ?? undefined;
+    const previa = (numero ? porNumero.get(numero) : undefined) ?? (nombre ? porNombre.get(normalizar(nombre)) : undefined) ?? undefined;
     const datos: Record<string, string> = { ...((previa?.datos as Record<string, string> | null) ?? {}) };
     for (const [clave, valor] of Object.entries(f.datos ?? {})) {
       const v = corto(valor, 200);
@@ -475,7 +479,8 @@ export async function agregarCampo(_: Resultado, d: FormData): Promise<Resultado
     clave,
     etiqueta,
     tipo: texto(d, "tipo") === "fecha" ? "fecha" : "texto",
-    cara: texto(d, "cara") === "vuelta" ? "vuelta" : "frente",
+    // De entrada, un dato nuevo se propone impreso en la vuelta; cada diseño decide.
+    cara: "vuelta",
     en_gafete: true,
     orden: Math.max(0, ...(actuales ?? []).map((c) => c.orden)) + 1,
   });
@@ -484,7 +489,7 @@ export async function agregarCampo(_: Resultado, d: FormData): Promise<Resultado
   return { ok: "Campo agregado." };
 }
 
-/** Guarda de una vez qué campos van en el gafete, en qué cara y en qué orden. */
+/** Guarda el nombre y el orden (en el Excel) de los datos. Qué va impreso lo decide cada diseño. */
 export async function guardarCampos(_: Resultado, d: FormData): Promise<Resultado> {
   const { supabase, empresa } = await requerirEmpresa();
   const { data: campos } = await supabase
@@ -497,9 +502,6 @@ export async function guardarCampos(_: Resultado, d: FormData): Promise<Resultad
       return supabase
         .from("campos")
         .update({
-          // El nombre siempre va en el gafete.
-          en_gafete: c.clave === "nombre" || d.get(`en_${c.id}`) === "on",
-          cara: texto(d, `cara_${c.id}`) === "vuelta" ? "vuelta" : "frente",
           orden: Math.min(99, Math.max(0, Number(texto(d, `orden_${c.id}`)) || 0)),
           ...(etiqueta ? { etiqueta } : {}),
         })

@@ -364,7 +364,7 @@ export default async function Pedido({
           {personas.map((p) => (
             <li key={p.id} className="flex flex-wrap items-baseline justify-between gap-x-3 py-2">
               <Link href={`/cuenta/equipo/${p.empleado}`} className="font-semibold hover:underline">
-                {p.nombre}
+                {p.nombre || "Sin nombre"}
               </Link>
               <span className="text-gris">
                 {[p.numero, etiquetaMotivo(p.motivo, p.razon)].filter(Boolean).join(" · ")}

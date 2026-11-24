@@ -9,8 +9,8 @@ import {
 } from "./tipos";
 
 /**
- * Plantillas para empezar un diseño. Cada una acomoda los campos que la
- * empresa marcó "en el gafete", en la cara que eligió, y después todo se
+ * Plantillas para empezar un diseño. Cada una acomoda los datos que se eligieron
+ * como «impresos» al crear el diseño, en la cara elegida, y después todo se
  * puede mover en el editor.
  */
 
@@ -22,6 +22,21 @@ export type CampoPlantilla = {
   cara: string;
   orden: number;
 };
+
+/** Dónde va impreso un dato en un diseño nuevo. */
+export type Impreso = "frente" | "vuelta" | "no";
+
+/** Aplica a los campos lo que se eligió para un diseño: qué va impreso y en qué cara. */
+export function conImpresos<T extends CampoPlantilla>(campos: T[], elegidos: Record<string, Impreso>): T[] {
+  return campos.map((c) => {
+    const v = elegidos[c.clave];
+    if (!v) return c;
+    return { ...c, en_gafete: v !== "no", cara: v === "no" ? c.cara : v };
+  });
+}
+
+/** Lo que una empresa tiene elegido de entrada para cada dato. */
+export const impresoDe = (c: CampoPlantilla): Impreso => (c.en_gafete ? (c.cara === "vuelta" ? "vuelta" : "frente") : "no");
 
 export const plantillas = [
   { id: "clasica", nombre: "Clásica", descripcion: "Franja de color arriba, foto y datos." },
@@ -93,6 +108,8 @@ export function crearDesdePlantilla(
   const { w: W, h: H } = tamano(orientacion);
   const vertical = orientacion === "vertical";
   const enGafete = campos.filter((c) => c.en_gafete).sort((a, b) => a.orden - b.orden);
+  // El nombre es opcional: un diseño genérico (por ejemplo, «Visitante») no lo imprime.
+  const conNombre = enGafete.some((c) => c.clave === "nombre");
   const textos = (cara: string) =>
     enGafete.filter((c) => c.cara === cara && (c.tipo === "texto" || c.tipo === "fecha") && c.clave !== "nombre");
   const conFoto = enGafete.some((c) => c.tipo === "foto");
@@ -167,6 +184,12 @@ export function crearDesdePlantilla(
       renglones(5, 28.5, ancho, "izquierda");
       if (qrFrente) e.push(qr(5, H - 4 - 8, 8));
     }
+  }
+
+  if (!conNombre) {
+    const sinNombre = e.filter((x) => !(x.tipo === "texto" && "campo" in x && x.campo === "nombre"));
+    e.length = 0;
+    e.push(...sinNombre);
   }
 
   const atras = [...sobrantes, ...textos("vuelta")];

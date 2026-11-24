@@ -17,6 +17,7 @@ export function NuevaRegla({
   disenos: { id: string; nombre: string }[];
 }) {
   const [campo, setCampo] = useState(campos[0].clave);
+  const [valor, setValor] = useState("");
   const sugerencias = valores[campo] ?? [];
   return (
     <Formulario accion={agregarRegla} boton="Agregar regla" limpiarAlGuardar>
@@ -24,7 +25,10 @@ export function NuevaRegla({
         <div
           onChange={(e) => {
             const t = e.target as unknown as HTMLInputElement;
-            if (t.name === "campo") setCampo(t.value);
+            if (t.name === "campo") {
+              setCampo(t.value);
+              setValor("");
+            }
           }}
         >
           <Chips
@@ -34,19 +38,41 @@ export function NuevaRegla({
             opciones={campos.map((c) => ({ valor: c.clave, texto: c.etiqueta }))}
           />
         </div>
-        <label className="block max-w-md">
-          <span className="text-sm font-semibold">…es</span>
-          <input name="valor" required maxLength={120} list="valores-regla" placeholder={sugerencias[0] ?? "Por ejemplo, Seguridad"} className={claseEntrada} />
-          <datalist id="valores-regla">
-            {sugerencias.map((v) => (
-              <option key={v} value={v} />
-            ))}
-          </datalist>
-          <span className="mt-1 block text-xs text-gris">
-            No importan mayúsculas ni acentos.
-            {sugerencias.length ? ` En tu equipo hay: ${sugerencias.slice(0, 8).join(", ")}${sugerencias.length > 8 ? "…" : "."}` : ""}
-          </span>
-        </label>
+        <div className="max-w-2xl">
+          <label className="block max-w-md">
+            <span className="text-sm font-semibold">…es</span>
+            {/* Sin autocompletar del navegador: mezclaba lo que la persona escribió en otros sitios. */}
+            <input
+              name="valor"
+              required
+              maxLength={120}
+              autoComplete="off"
+              value={valor}
+              onChange={(e) => setValor(e.target.value)}
+              placeholder={sugerencias[0] ?? "Por ejemplo, Seguridad"}
+              className={claseEntrada}
+            />
+          </label>
+          {sugerencias.length ? (
+            <div className="mt-2">
+              <span className="block text-xs text-gris">En tu equipo hay estos; toca uno para elegirlo:</span>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {sugerencias.slice(0, 30).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setValor(v)}
+                    aria-pressed={valor === v}
+                    className={`rounded-full border px-3 py-1 text-xs font-semibold ${valor === v ? "border-tinta bg-tinta text-white" : "border-linea bg-white hover:border-tinta"}`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+          <span className="mt-1.5 block text-xs text-gris">No importan mayúsculas ni acentos.</span>
+        </div>
         <Chips etiqueta="…lleva el diseño" name="diseno" inicial={disenos[0]?.id} opciones={disenos.map((d) => ({ valor: d.id, texto: d.nombre }))} />
       </div>
     </Formulario>

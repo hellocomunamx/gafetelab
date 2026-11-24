@@ -33,7 +33,7 @@ export function BotonPlantilla({
         data: [
           [negrita("Cómo llenar esta plantilla")],
           ["1. Una persona por renglón, en la hoja Equipo. No cambies los títulos de las columnas."],
-          ["2. El nombre es obligatorio. Lo demás puede ir vacío."],
+          ["2. Nada es obligatorio. Sin nombre, la persona queda como gafete genérico (por ejemplo, Visitante)."],
           ["3. Con número de empleado, si la persona ya existe se actualiza en lugar de duplicarse."],
           [`4. En "${COLUMNA_FOTO}" puedes escribir el nombre del archivo de su foto (por ejemplo 0042.jpg) para asignarla sola al subir las fotos.`],
           [`5. En "${COLUMNA_CORREO}" escribe el correo de cada persona si quieres mandarle su liga para que llene sus datos y suba su foto. No se imprime en el gafete.`],

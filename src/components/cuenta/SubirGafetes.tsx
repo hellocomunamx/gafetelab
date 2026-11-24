@@ -318,7 +318,7 @@ export function SubirGafetes({ empresaId, personas }: { empresaId: string; perso
                         <option value="">Sin asignar</option>
                         {personas.map((p) => (
                           <option key={p.id} value={p.id}>
-                            {p.nombre}{p.numero_empleado ? ` (${p.numero_empleado})` : ""}
+                            {p.nombre || "Sin nombre"}{p.numero_empleado ? ` (${p.numero_empleado})` : ""}
                           </option>
                         ))}
                       </select>

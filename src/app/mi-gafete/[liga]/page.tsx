@@ -6,7 +6,7 @@ import { GafeteDigitalVista } from "@/components/GafeteDigitalVista";
 import { Contenedor } from "@/components/ui";
 import { gafeteDigitalDe } from "@/lib/cuenta/gafete-digital";
 import { personaDeLiga } from "@/lib/cuenta/liga-publica";
-import { datosPropuestos, FORMATO_LIGA, RUTA_LIGA, valorDe } from "@/lib/cuenta/ligas";
+import { datosPropuestos, FORMATO_LIGA, fraseCorreccion, RUTA_LIGA, valorDe } from "@/lib/cuenta/ligas";
 import { site } from "@/lib/site";
 import { verificarGafete } from "@/lib/verificacion";
 
@@ -57,24 +57,28 @@ export default async function MiGafete({ params }: { params: Promise<{ liga: str
   const digital = await gafeteDigitalDe(servicio, persona);
   const verificado = digital?.verificable ? await verificarGafete(persona.codigo) : null;
 
+  // Ya mandó su información: la liga queda cerrada hasta que la empresa pida una corrección.
+  const cerrada = Boolean(propuesta && propuesta.estado !== "rechazada");
+  const loEnviado = empresa.liga_foto ? "Tu fotografía ya fue enviada" : "Tu información ya fue enviada";
+  const paraCambiar = `Si necesitas cambiar${empresa.liga_foto ? "la" : " algo"}, solicítalo al departamento correspondiente de ${empresa.nombre}.`;
   const aviso =
     propuesta?.estado === "pendiente"
       ? {
           clase: "border-[#0a7d4f] bg-[#dff3ea]",
-          titulo: "Listo, ya lo recibimos.",
-          texto: `${empresa.nombre} va a revisar lo que mandaste. Si te equivocaste en algo, corrígelo aquí mismo y vuelve a enviarlo.`,
+          titulo: `Listo. ${loEnviado}.`,
+          texto: `${empresa.nombre} la va a revisar. ${paraCambiar}`,
         }
       : propuesta?.estado === "rechazada"
         ? {
             clase: "border-rojo bg-rojo/10",
             titulo: `${empresa.nombre} te pide una corrección.`,
-            texto: propuesta.motivo || "Revisa tus datos y tu foto, y vuelve a enviarlos.",
+            texto: propuesta.motivo ? fraseCorreccion(empresa.nombre, propuesta.motivo) : "Revisa tus datos y tu foto, y vuelve a enviarlos.",
           }
         : propuesta?.estado === "aprobada"
           ? {
               clase: "border-[#0a7d4f] bg-[#dff3ea]",
-              titulo: "Tus datos ya están aprobados.",
-              texto: `No tienes que hacer nada más. Si algo cambió, puedes mandarle una corrección a ${empresa.nombre}.`,
+              titulo: `${loEnviado} y ya está aprobada.`,
+              texto: `No tienes que hacer nada más. ${paraCambiar}`,
             }
           : null;
 
@@ -105,7 +109,9 @@ export default async function MiGafete({ params }: { params: Promise<{ liga: str
         ) : (
           <p className="mt-2 text-gris">
             {empresa.nombre} está preparando tu gafete.{" "}
-            {nadaQuePedir
+            {cerrada
+              ? ""
+              : nadaQuePedir
               ? "Por ahora no necesita nada de ti."
               : `${lista.length ? "Revisa que tus datos estén bien escritos" : "Sube tu foto"}${lista.length && empresa.liga_foto ? " y sube tu foto" : ""}. Toma un minuto.`}
           </p>
@@ -118,7 +124,7 @@ export default async function MiGafete({ params }: { params: Promise<{ liga: str
           </div>
         ) : null}
 
-        {nadaQuePedir ? null : digital ? (
+        {nadaQuePedir || cerrada ? null : digital ? (
           <details className="mt-5 rounded-tarjeta border border-linea bg-white p-5 sm:p-6" open={propuesta?.estado === "rechazada"}>
             <summary className="cursor-pointer text-sm font-semibold">¿Cambió algún dato? Mándale una corrección a {empresa.nombre}</summary>
             <div className="mt-4">
@@ -132,7 +138,7 @@ export default async function MiGafete({ params }: { params: Promise<{ liga: str
               campos={lista}
               conFoto={empresa.liga_foto}
               fotoActual={fotoActual}
-              boton={propuesta ? "Enviar de nuevo" : `Enviar a ${empresa.nombre}`}
+              boton={propuesta ? "Enviar mi corrección" : `Enviar a ${empresa.nombre}`}
             />
           </div>
         )}

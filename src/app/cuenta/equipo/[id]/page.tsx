@@ -23,6 +23,7 @@ import { contenidoQr, rutaVerificacion } from "@/lib/cuenta/qr";
 import { datosDePersona } from "@/lib/diseno/datos";
 import { etiquetaMotivo, razones, razonesReposicion } from "@/lib/pedidos/predeterminados";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
+import { quien } from "@/lib/cuenta/texto";
 
 export const metadata: Metadata = { title: "Persona" };
 
@@ -79,9 +80,9 @@ export default async function Persona({ params }: { params: Promise<{ id: string
 
   return (
     <div className="space-y-5">
-      <p className="text-sm"><Link href="/cuenta/equipo" className="underline">Equipo</Link> / {persona.nombre}</p>
+      <p className="text-sm"><Link href="/cuenta/equipo" className="underline">Equipo</Link> / {quien(persona)}</p>
       <div className="flex flex-wrap items-center gap-3">
-        <h1 className="text-3xl font-extrabold">{persona.nombre}</h1>
+        <h1 className="text-3xl font-extrabold">{quien(persona)}</h1>
         <Estatus valor={persona.estatus} />
       </div>
 
@@ -153,7 +154,7 @@ export default async function Persona({ params }: { params: Promise<{ id: string
                     <img
                       key={cara}
                       src={url}
-                      alt={`${cara} del gafete de ${persona.nombre}`}
+                      alt={`${cara} del gafete de ${quien(persona)}`}
                       className="max-h-32 min-w-0 flex-1 rounded object-contain drop-shadow"
                     />
                   ) : null;
@@ -300,7 +301,7 @@ export default async function Persona({ params }: { params: Promise<{ id: string
           <Bloque titulo="Código QR">
             {qr ? (
               <>
-                <QrSvg texto={qr} titulo={`Código QR de ${persona.nombre}`} className="w-32 rounded border border-linea" />
+                <QrSvg texto={qr} titulo={`Código QR de ${quien(persona)}`} className="w-32 rounded border border-linea" />
                 <p className="mt-3 text-sm break-all text-gris">{qr}</p>
               </>
             ) : (

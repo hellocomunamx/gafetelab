@@ -32,8 +32,8 @@ export function ImportarExcel({ campos, empresa }: { campos: CampoExcel[]; empre
     try {
       const { readSheet } = await import("read-excel-file/browser");
       const resultado = leerFilas(await readSheet(elegido), campos);
-      if (resultado.faltaNombre) setError('No encontramos la columna "Nombre". Usa la plantilla para que los títulos coincidan.');
-      else if (!resultado.filas.length) setError("El archivo no trae personas. Llena al menos un renglón con nombre.");
+      if (resultado.faltaNombre) setError("No reconocimos ninguna columna. Usa la plantilla para que los títulos coincidan.");
+      else if (!resultado.filas.length) setError("El archivo no trae personas. Llena al menos un renglón.");
       else if (resultado.filas.length > MAXIMO) setError(`El archivo trae ${numero(resultado.filas.length)} personas. Sube como máximo ${numero(MAXIMO)} por archivo.`);
       else setLectura(resultado);
     } catch {
@@ -80,7 +80,7 @@ export function ImportarExcel({ campos, empresa }: { campos: CampoExcel[]; empre
         <li className="rounded-tarjeta border-2 border-tinta bg-white p-5">
           <p className="font-titulos text-lg font-extrabold">2. Descarga tu plantilla</p>
           <p className="mt-1 text-sm text-gris">
-            Se arma al momento con tus campos. Llénala con una persona por renglón: solo el nombre es obligatorio.
+            Se arma al momento con tus campos. Llénala con una persona por renglón. Nada es obligatorio: sin nombre queda como gafete genérico.
           </p>
           <BotonPlantilla campos={campos} empresa={empresa} className={`${claseBoton} mt-4`}>
             Descargar mi plantilla de Excel
@@ -122,10 +122,11 @@ export function ImportarExcel({ campos, empresa }: { campos: CampoExcel[]; empre
           </p>
           <ul className="mt-2 space-y-1 text-sm">
             {lectura.sinNombre.length ? (
-              <li className="text-rojo-oscuro">
-                {lectura.sinNombre.length === 1 ? "Se salta 1 renglón" : `Se saltan ${lectura.sinNombre.length} renglones`} sin
-                nombre (renglón {lectura.sinNombre.slice(0, 8).join(", ")}
-                {lectura.sinNombre.length > 8 ? "…" : ""}).
+              <li>
+                {lectura.sinNombre.length === 1 ? "1 renglón no trae" : `${numero(lectura.sinNombre.length)} renglones no traen`} nombre
+                (renglón {lectura.sinNombre.slice(0, 8).join(", ")}
+                {lectura.sinNombre.length > 8 ? "…" : ""}): se suben como gafetes genéricos, sin nombre impreso. Si fue un
+                olvido, corrige el archivo antes de importar.
               </li>
             ) : null}
             {lectura.repetidos.length ? (

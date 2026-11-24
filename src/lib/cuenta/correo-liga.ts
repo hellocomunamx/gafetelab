@@ -1,6 +1,6 @@
 import { site } from "@/lib/site";
 import { escapar } from "@/lib/solicitudes";
-import { loQueSePide } from "./ligas";
+import { fraseCorreccion, loQueSePide } from "./ligas";
 
 /** Correo que le lleva a una persona su liga para llenar sus datos y subir su foto. */
 export function correoLiga(opts: {
@@ -17,7 +17,7 @@ export function correoLiga(opts: {
   const pide = loQueSePide(opts.conDatos, opts.conFoto);
   const titulo = opts.correccion ? `${opts.empresa} te pide una corrección` : `${opts.empresa} está preparando tu gafete`;
   const cuerpo = opts.correccion
-    ? `${opts.empresa} revisó lo que mandaste para tu gafete y te pide corregirlo: ${opts.correccion}`
+    ? `${fraseCorreccion(opts.empresa, opts.correccion)} Corrígelo en tu liga personal y vuelve a enviarlo.`
     : `${opts.empresa} está preparando tu gafete y necesita que ${pide}. Toma un minuto, se puede desde el celular y no necesitas crear cuenta.`;
   const boton = opts.correccion ? "Corregir mis datos" : opts.conFoto ? "Llenar mis datos y subir mi foto" : "Revisar mis datos";
   const nota = `Esta liga es personal: no la compartas. Si no trabajas en ${opts.empresa}, ignora este mensaje.`;

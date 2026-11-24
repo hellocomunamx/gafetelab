@@ -14,6 +14,7 @@ export function AccionesLiga({
   mensaje,
   correo,
   yaEnviada = false,
+  correccion = false,
 }: {
   id: string;
   /** La liga completa de la persona. */
@@ -22,14 +23,16 @@ export function AccionesLiga({
   mensaje: string;
   correo: string | null;
   yaEnviada?: boolean;
+  /** Para avisar de una corrección: botones con texto completo y copiar el mensaje entero. */
+  correccion?: boolean;
 }) {
   const [aviso, setAviso] = useState<Resultado>({});
   const [enviando, iniciar] = useTransition();
 
   async function copiar() {
     try {
-      await navigator.clipboard.writeText(url);
-      setAviso({ ok: "Liga copiada." });
+      await navigator.clipboard.writeText(correccion ? mensaje : url);
+      setAviso({ ok: correccion ? "Mensaje copiado: pégalo en WhatsApp o donde quieras." : "Liga copiada." });
       void marcarLigaEnviada(id);
     } catch {
       setAviso({ error: "No se pudo copiar. Selecciónala y cópiala a mano." });
@@ -45,7 +48,12 @@ export function AccionesLiga({
   return (
     <div>
       <div className="flex flex-wrap gap-1.5">
-        <button type="button" onClick={copiar} className={claseChico}>Copiar liga</button>
+        {correccion && correo ? (
+          <button type="button" onClick={porCorreo} disabled={enviando} className={claseChico}>
+            {enviando ? "Enviando…" : "Enviar por correo"}
+          </button>
+        ) : null}
+        <button type="button" onClick={copiar} className={claseChico}>{correccion ? "Copiar mensaje de WhatsApp" : "Copiar liga"}</button>
         <a
           href={`https://wa.me/?text=${encodeURIComponent(mensaje)}`}
           target="_blank"
@@ -53,9 +61,9 @@ export function AccionesLiga({
           onClick={() => void marcarLigaEnviada(id)}
           className={claseChico}
         >
-          WhatsApp
+          {correccion ? "Abrir WhatsApp" : "WhatsApp"}
         </a>
-        {correo ? (
+        {correo && !correccion ? (
           <button type="button" onClick={porCorreo} disabled={enviando} className={claseChico}>
             {enviando ? "Enviando…" : yaEnviada ? "Reenviar correo" : "Enviar correo"}
           </button>
