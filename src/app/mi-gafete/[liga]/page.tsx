@@ -99,7 +99,7 @@ export default async function MiGafete({ params }: { params: Promise<{ liga: str
     <Contenedor className="py-8 sm:py-12">
       <div className="mx-auto max-w-md">
         <p className="text-sm font-semibold text-gris">{empresa.nombre}</p>
-        <h1 className="mt-1 text-3xl font-extrabold">Hola, {primerNombre}</h1>
+        <h1 className="mt-1 text-3xl font-extrabold">{primerNombre ? `Hola, ${primerNombre}` : "¡Hola!"}</h1>
         {digital ? (
           <>
             <p className="mt-2 text-gris">Este es tu gafete digital. Muéstralo cuando te lo pidan.</p>
