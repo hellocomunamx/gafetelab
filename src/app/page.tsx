@@ -73,7 +73,8 @@ export default function Inicio() {
                 .
               </span>
             </p>
-            <Link
+            {/* <a> normal, no <Link>: Link no vuelve a bajar si la URL ya trae este #. */}
+            <a
               href="#cuanto-te-cuesta"
               className="group mt-4 inline-flex max-w-xl items-center gap-2 rounded-full border border-linea bg-white px-4 py-2 text-sm transition-colors hover:border-tinta"
             >
@@ -83,7 +84,7 @@ export default function Inicio() {
                 <span className="font-semibold underline underline-offset-4">Calcula cuánto te cuestan en realidad</span>
               </span>
               <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span>
-            </Link>
+            </a>
           </div>
           <HeroAnimado />
         </Contenedor>
