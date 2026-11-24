@@ -4,10 +4,13 @@ import { revalidatePath } from "next/cache";
 import { RUTA_CAMBIOS_FOTO } from "@/lib/avisos/tipos";
 import { registrarCambioFoto, retirarCambioFoto } from "@/lib/cuenta/cambio-foto-servidor";
 import { gafeteDigitalDe } from "@/lib/cuenta/gafete-digital";
+import { ligaBloqueada } from "@/lib/cuenta/candado";
 import { personaDeLiga } from "@/lib/cuenta/liga-publica";
 import { RUTA_LIGA } from "@/lib/cuenta/ligas";
 import type { Resultado } from "@/lib/cuenta/tipos";
 import { dentroDelLimite, ipActual, MENSAJE_LIMITE } from "@/lib/seguridad/limites";
+
+const CERRADA = "Tu gafete se volvió a cerrar. Recarga la página y ábrelo con tu huella o tu cara.";
 
 /**
  * Pide cambiar la foto desde el gafete digital, como una foto de perfil. La
@@ -21,6 +24,7 @@ export async function solicitarCambioFoto(datos: FormData): Promise<Resultado> {
   const encontrada = await personaDeLiga(liga);
   if (!encontrada) return { error: "Esta liga ya no está activa. Pide una nueva en tu empresa." };
   const { servicio, persona, empresa } = encontrada;
+  if (await ligaBloqueada(servicio, liga, persona.id)) return { error: CERRADA };
   if (!(await gafeteDigitalDe(servicio, persona))) {
     return { error: `Tu gafete digital no está activo. Para cambiar tu foto, habla con ${empresa.nombre}.` };
   }
@@ -37,6 +41,7 @@ export async function cancelarCambioFoto(datos: FormData): Promise<Resultado> {
   const liga = String(datos.get("liga") ?? "");
   const encontrada = await personaDeLiga(liga);
   if (!encontrada) return { error: "Esta liga ya no está activa." };
+  if (await ligaBloqueada(encontrada.servicio, liga, encontrada.persona.id)) return { error: CERRADA };
   const resultado = await retirarCambioFoto(encontrada.servicio, encontrada.persona.id);
   revalidatePath(`${RUTA_LIGA}/${liga}`);
   revalidatePath(RUTA_CAMBIOS_FOTO);

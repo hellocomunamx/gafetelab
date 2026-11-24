@@ -603,6 +603,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"llaves_gafete": {
+                  Row: {
+                    "contador": number,"creada_en": string,"credencial_id": string,"dispositivo": string | null,"empleado_id": string,"empresa_id": string,"id": string,"llave_publica": string,"transportes": string[],"usada_en": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "contador"?: number,"creada_en"?: string,"credencial_id": string,"dispositivo"?: string | null,"empleado_id": string,"empresa_id": string,"id"?: string,"llave_publica": string,"transportes"?: string[],"usada_en"?: string | null
+                  }
+                  Update: {
+                    "contador"?: number,"creada_en"?: string,"credencial_id"?: string,"dispositivo"?: string | null,"empleado_id"?: string,"empresa_id"?: string,"id"?: string,"llave_publica"?: string,"transportes"?: string[],"usada_en"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "llaves_gafete_empleado_id_fkey"
+      columns: ["empleado_id"]
+isOneToOne: false
+      referencedRelation: "empleados"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "llaves_gafete_empresa_id_fkey"
+      columns: ["empresa_id"]
+isOneToOne: false
+      referencedRelation: "empresas"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"sesiones_empleado": {
                   Row: {
                     "creado_en": string,"empleado_id": string,"empresa_id": string,"expira_en": string,"id": string,"metodo": string,"token_hash": string,"visto_en": string

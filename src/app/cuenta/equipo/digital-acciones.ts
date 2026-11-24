@@ -47,3 +47,17 @@ export async function desactivarDigital(d: FormData) {
 export async function reactivarDigital(d: FormData) {
   await cambiar(d, "desactivado", "activo");
 }
+
+/**
+ * Quita el candado (huella, cara o PIN) de la liga de una persona, por ejemplo
+ * si cambió de celular. Su liga sigue igual y puede volver a activarlo.
+ */
+export async function quitarCandado(d: FormData) {
+  const id = String(d.get("id") ?? "");
+  if (!UUID.test(id)) return;
+  const { empresa, administra } = await requerirEmpresa();
+  const servicio = clienteServicio();
+  if (!administra || !servicio) return;
+  await servicio.from("llaves_gafete").delete().eq("empleado_id", id).eq("empresa_id", empresa.id);
+  revalidatePath(`/cuenta/equipo/${id}`);
+}
