@@ -1,0 +1,306 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import {
+  ImprimirGafetes,
+  type CaraListaParaImprimir,
+  type FuenteDeImpresion,
+  type PersonaParaImprimir,
+} from "@/components/admin/ImprimirGafetes";
+import { palabrasSensibles, textosDeDiseno } from "@/lib/admin/alertas";
+import { RUTA_ADMIN } from "@/lib/admin/ruta";
+import { requerirAdmin } from "@/lib/admin/sesion";
+import { camposDe } from "@/lib/cuenta/consultas";
+import { ligasDe } from "@/lib/cuenta/fotos";
+import { contenidoQr } from "@/lib/cuenta/qr";
+import { datosDePersona, disenoDeFila, faltantes } from "@/lib/diseno/datos";
+import { rutasDe } from "@/lib/diseno/limpiar";
+import type { GafeteCopiado } from "@/lib/pedidos/reglas";
+import type { Servicio } from "@/lib/pedidos/servidor";
+import { quien } from "@/lib/cuenta/texto";
+
+export const metadata: Metadata = { title: "PDF de impresión" };
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const LIMITE = 5000;
+const chip = (activo: boolean) =>
+  `rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors ${
+    activo ? "border-tinta bg-tinta text-white" : "border-linea bg-white hover:border-tinta"
+  }`;
+const formato = (ruta: string) => (ruta.toLowerCase().endsWith(".png") ? "png" : "jpg");
+
+export default async function Imprimir({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ empresa: string }>;
+  searchParams: Promise<{ fuente?: string; pedido?: string }>;
+}) {
+  const { empresa: empresaId } = await params;
+  if (!UUID.test(empresaId)) notFound();
+  const { servicio } = await requerirAdmin();
+  if (!servicio) {
+    return (
+      <p role="alert" className="rounded-tarjeta border border-rojo/30 bg-white p-4">
+        Falta configurar <code>SUPABASE_SECRET_KEY</code> en el servidor para armar los PDF de impresión.
+      </p>
+    );
+  }
+
+  const [{ data: empresa }, campos, { data: disenos }, { data: equipo }, { data: listos }] = await Promise.all([
+    servicio
+      .from("empresas")
+      .select("id, nombre, qr_modo, qr_mostrar, qr_vigencia, qr_liga, qr_dato")
+      .eq("id", empresaId)
+      .maybeSingle(),
+    camposDe(servicio, empresaId),
+    servicio
+      .from("disenos")
+      .select("id, nombre, orientacion, frente, vuelta, predeterminado")
+      .eq("empresa_id", empresaId)
+      .order("predeterminado", { ascending: false })
+      .order("creado_en"),
+    servicio
+      .from("empleados")
+      .select("id, codigo, nombre, numero_empleado, puesto, departamento, tipo_contrato, datos, foto_path")
+      .eq("empresa_id", empresaId)
+      .eq("estatus", "activo")
+      .order("nombre")
+      .limit(LIMITE),
+    servicio.from("gafetes_listos").select("*").eq("empresa_id", empresaId),
+  ]);
+  if (!empresa) notFound();
+
+  const consulta = await searchParams;
+  if (consulta.pedido) {
+    if (!UUID.test(consulta.pedido)) notFound();
+    return <ImprimirPedido servicio={servicio} empresa={empresa} pedidoId={consulta.pedido} etiquetas={Object.fromEntries(campos.map((c) => [c.clave, c.etiqueta]))} />;
+  }
+
+  const activos = equipo ?? [];
+  const elegida = consulta.fuente;
+  const fila =
+    elegida === "listos" ? undefined : (disenos?.find((d) => d.id === elegida) ?? (listos?.length && !disenos?.length ? undefined : disenos?.[0]));
+  const usaListos = !fila && Boolean(listos?.length);
+
+  let fuente: FuenteDeImpresion | null = null;
+  let personas: PersonaParaImprimir[] = [];
+  let alertas: string[] = [];
+
+  if (fila) {
+    const diseno = disenoDeFila(fila);
+    const etiquetas = Object.fromEntries(campos.map((c) => [c.clave, c.etiqueta]));
+    const [imagenes, fotos] = await Promise.all([
+      ligasDe(servicio, "disenos", [...rutasDe(diseno.frente), ...rutasDe(diseno.vuelta)]),
+      ligasDe(servicio, "fotos", activos.map((p) => p.foto_path)),
+    ]);
+    fuente = { tipo: "diseno", diseno, etiquetas, imagenes: Object.fromEntries(imagenes) };
+    personas = activos.map((p) => {
+      const datos = datosDePersona(p, campos);
+      const qr = contenidoQr(empresa, { codigo: p.codigo, valores: datos });
+      const foto = (p.foto_path && fotos.get(p.foto_path)) || undefined;
+      return {
+        id: p.id,
+        nombre: quien(p),
+        numero: p.numero_empleado,
+        datos,
+        qr,
+        foto,
+        faltan: faltantes(diseno, datos, Boolean(foto), campos, qr),
+      };
+    });
+    alertas = palabrasSensibles([
+      empresa.nombre,
+      ...textosDeDiseno(fila),
+      ...activos.flatMap((p) => [p.puesto, p.departamento]),
+    ]);
+  } else if (usaListos) {
+    const porPersona = new Map((listos ?? []).map((g) => [g.empleado_id, g]));
+    const ligas = await ligasDe(servicio, "gafetes", (listos ?? []).flatMap((g) => [g.frente_path, g.vuelta_path]));
+    const cara = (ruta: string | null, ancho: number | null, alto: number | null): CaraListaParaImprimir | undefined => {
+      const url = ruta ? ligas.get(ruta) : undefined;
+      return ruta && url && ancho && alto ? { url, formato: formato(ruta), ancho, alto } : undefined;
+    };
+    fuente = { tipo: "listos" };
+    personas = activos.flatMap((p) => {
+      const g = porPersona.get(p.id);
+      if (!g) return [];
+      const frente = cara(g.frente_path, g.frente_ancho, g.frente_alto);
+      const vuelta = cara(g.vuelta_path, g.vuelta_ancho, g.vuelta_alto);
+      return [{ id: p.id, nombre: quien(p), numero: p.numero_empleado, frente, vuelta, faltan: frente ? [] : ["El frente"] }];
+    });
+    alertas = palabrasSensibles([empresa.nombre]);
+  }
+
+  return (
+    <div className="space-y-5">
+      <p className="text-sm">
+        <Link href={RUTA_ADMIN} className="underline">Empresas</Link> / {empresa.nombre}
+      </p>
+      <h1 className="text-3xl font-extrabold">PDF de impresión</h1>
+
+      {(disenos?.length ?? 0) + (listos?.length ? 1 : 0) > 1 ? (
+        <nav aria-label="Qué imprimir" className="flex flex-wrap gap-2">
+          {(disenos ?? []).map((d) => (
+            <Link key={d.id} href={`${RUTA_ADMIN}/imprimir/${empresa.id}?fuente=${d.id}`} aria-current={fila?.id === d.id ? "page" : undefined} className={chip(fila?.id === d.id)}>
+              {d.nombre}
+            </Link>
+          ))}
+          {listos?.length ? (
+            <Link href={`${RUTA_ADMIN}/imprimir/${empresa.id}?fuente=listos`} aria-current={usaListos ? "page" : undefined} className={chip(usaListos)}>
+              Gafetes listos ({listos.length})
+            </Link>
+          ) : null}
+        </nav>
+      ) : null}
+
+      {alertas.length ? (
+        <p role="alert" className="rounded-tarjeta bg-resaltador/30 p-4 text-sm">
+          <strong>Revisa antes de producir.</strong> Aquí se menciona: {alertas.join(", ")}. Confirma que la
+          empresa tiene derecho a usar esos nombres.
+          {usaListos ? " Además, el texto de estos gafetes ya terminados no se puede leer de forma automática: revísalos a ojo." : ""}
+        </p>
+      ) : usaListos ? (
+        <p className="rounded-tarjeta border border-linea bg-white p-4 text-sm text-gris">
+          Estos gafetes los subió la empresa ya terminados y su texto no se puede leer de forma automática.
+          Revísalos a ojo antes de producir.
+        </p>
+      ) : null}
+
+      {fuente && personas.length ? (
+        <ImprimirGafetes key={fila?.id ?? "listos"} empresa={empresa.nombre} fuente={fuente} personas={personas} />
+      ) : (
+        <p className="rounded-tarjeta border border-dashed border-linea bg-white p-8 text-center font-semibold">
+          {fuente ? "Esta empresa no tiene personas activas con gafete para imprimir." : "Esta empresa todavía no tiene diseños ni gafetes listos."}
+        </p>
+      )}
+      {activos.length >= LIMITE ? (
+        <p className="text-sm text-gris">Se muestran las primeras {LIMITE.toLocaleString("es-MX")} personas activas.</p>
+      ) : null}
+    </div>
+  );
+}
+
+/** Estados en los que un pedido ya tiene el pago confirmado y se puede imprimir. */
+const IMPRIMIBLES = ["pagado", "en_produccion", "enviado", "entregado"];
+
+/**
+ * El PDF de un pedido: sale de la copia que se guardó al pedir (diseño y datos
+ * de cada persona), no de lo que la empresa tenga hoy en su plataforma.
+ */
+async function ImprimirPedido({
+  servicio,
+  empresa,
+  pedidoId,
+  etiquetas,
+}: {
+  servicio: Servicio;
+  empresa: { id: string; nombre: string };
+  pedidoId: string;
+  etiquetas: Record<string, string>;
+}) {
+  const [{ data: pedido }, { data: gafetes }] = await Promise.all([
+    servicio.from("pedidos").select("id, folio, estado, fuente, diseno_id, diseno, alertas").eq("id", pedidoId).eq("empresa_id", empresa.id).maybeSingle(),
+    servicio.from("gafetes").select("id, datos, diseno_id").eq("pedido_id", pedidoId).eq("tipo", "impreso").neq("estado", "cancelado").limit(LIMITE),
+  ]);
+  if (!pedido) notFound();
+  const copias = (gafetes ?? [])
+    .map((g) => ({ id: g.id, disenoId: g.diseno_id, ...(g.datos as unknown as GafeteCopiado) }))
+    .sort((a, b) => (a.nombre ?? "").localeCompare(b.nombre ?? "", "es"));
+
+  type CopiaDiseno = { nombre: string; orientacion: string; frente: unknown; vuelta: unknown };
+  let fuente: FuenteDeImpresion | null = null;
+  let personas: PersonaParaImprimir[] = [];
+  // Con diseños por reglas sale un PDF por cada diseño, con las personas que lo llevan.
+  const grupos: { id: string; nombre: string; fuente: FuenteDeImpresion; personas: PersonaParaImprimir[] }[] = [];
+  if (IMPRIMIBLES.includes(pedido.estado)) {
+    const copiaDiseno = pedido.diseno as (CopiaDiseno & { reglas?: Record<string, CopiaDiseno> }) | null;
+    if (pedido.fuente === "diseno" && copiaDiseno?.reglas) {
+      const fotos = await ligasDe(servicio, "fotos", copias.map((c) => c.foto));
+      for (const [id, copia] of Object.entries(copiaDiseno.reglas)) {
+        const diseno = disenoDeFila({ id, ...copia });
+        const imagenes = await ligasDe(servicio, "disenos", [...rutasDe(diseno.frente), ...rutasDe(diseno.vuelta)]);
+        const suyas = copias.filter((c) => c.disenoId === id);
+        if (!suyas.length) continue;
+        grupos.push({
+          id,
+          nombre: copia.nombre,
+          fuente: { tipo: "diseno", diseno, etiquetas, imagenes: Object.fromEntries(imagenes) },
+          personas: suyas.map((c) => ({
+            id: c.id,
+            nombre: c.nombre,
+            numero: c.numero,
+            datos: c.valores ?? {},
+            qr: c.qr ?? "",
+            foto: (c.foto && fotos.get(c.foto)) || undefined,
+            faltan: [],
+          })),
+        });
+      }
+    } else if (pedido.fuente === "diseno" && copiaDiseno) {
+      const diseno = disenoDeFila({ id: pedido.diseno_id ?? pedido.id, ...copiaDiseno });
+      const [imagenes, fotos] = await Promise.all([
+        ligasDe(servicio, "disenos", [...rutasDe(diseno.frente), ...rutasDe(diseno.vuelta)]),
+        ligasDe(servicio, "fotos", copias.map((c) => c.foto)),
+      ]);
+      fuente = { tipo: "diseno", diseno, etiquetas, imagenes: Object.fromEntries(imagenes) };
+      personas = copias.map((c) => ({
+        id: c.id,
+        nombre: c.nombre,
+        numero: c.numero,
+        datos: c.valores ?? {},
+        qr: c.qr ?? "",
+        foto: (c.foto && fotos.get(c.foto)) || undefined,
+        faltan: [],
+      }));
+    } else if (pedido.fuente === "listos") {
+      const ligas = await ligasDe(servicio, "gafetes", copias.flatMap((c) => [c.frente?.ruta, c.vuelta?.ruta]));
+      const cara = (c: GafeteCopiado["frente"]): CaraListaParaImprimir | undefined => {
+        const url = c ? ligas.get(c.ruta) : undefined;
+        return c && url ? { url, formato: formato(c.ruta), ancho: c.ancho, alto: c.alto } : undefined;
+      };
+      fuente = { tipo: "listos" };
+      personas = copias.map((c) => {
+        const frente = cara(c.frente);
+        return { id: c.id, nombre: c.nombre, numero: c.numero, frente, vuelta: cara(c.vuelta), faltan: frente ? [] : ["El frente"] };
+      });
+    }
+  }
+
+  return (
+    <div className="space-y-5">
+      <p className="text-sm">
+        <Link href={`${RUTA_ADMIN}/pedidos`} className="underline">Pedidos</Link> /{" "}
+        <Link href={`${RUTA_ADMIN}/pedidos/${pedido.id}`} className="underline">{pedido.folio}</Link> / PDF de impresión
+      </p>
+      <h1 className="text-3xl font-extrabold">PDF de impresión del pedido {pedido.folio}</h1>
+      <p className="text-gris">
+        {empresa.nombre}. Sale de la copia que se guardó al hacer el pedido: el diseño y los datos que la empresa aprobó.
+      </p>
+      {pedido.alertas.length ? (
+        <p role="alert" className="rounded-tarjeta bg-resaltador/30 p-4 text-sm">
+          <strong>Revisa antes de producir.</strong> Aquí se menciona: {pedido.alertas.join(", ")}. Confirma que la empresa tiene derecho a
+          usar esos nombres.
+        </p>
+      ) : null}
+      {grupos.length ? (
+        grupos.map((g) => (
+          <section key={g.id} className="space-y-3">
+            <h2 className="text-xl font-extrabold">
+              {g.nombre} <span className="font-semibold text-gris">· {g.personas.length.toLocaleString("es-MX")} {g.personas.length === 1 ? "gafete" : "gafetes"}</span>
+            </h2>
+            <ImprimirGafetes empresa={`${empresa.nombre} ${pedido.folio} ${g.nombre}`} fuente={g.fuente} personas={g.personas} />
+          </section>
+        ))
+      ) : fuente && personas.length ? (
+        <ImprimirGafetes key={pedido.id} empresa={`${empresa.nombre} ${pedido.folio}`} fuente={fuente} personas={personas} />
+      ) : (
+        <p className="rounded-tarjeta border border-dashed border-linea bg-white p-8 text-center font-semibold">
+          {IMPRIMIBLES.includes(pedido.estado)
+            ? "Este pedido no tiene gafetes para imprimir."
+            : "Este pedido todavía no tiene el pago confirmado, así que no se imprime."}
+        </p>
+      )}
+    </div>
+  );
+}

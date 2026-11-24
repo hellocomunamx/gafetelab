@@ -1,0 +1,46 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "lagafeteria",
+  "main": "worker.ts",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+    // Los videos pasan por worker.ts para responder pedazos (Range / 206) y
+    // así poder adelantar o regresar tocando la barra.
+    "run_worker_first": ["/video/*"],
+    // OpenNext lo exige cuando hay `run_worker_first`: los archivos públicos
+    // se sirven solo en su ruta exacta, para que nada se salte el middleware.
+    "html_handling": "none",
+    "not_found_handling": "none"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "lagafeteria"
+    }
+  ],
+  "observability": { "enabled": true },
+  // Resumen semanal de avisos a administradores: lunes a las 8:00 de
+  // Hermosillo (15:00 UTC). Lo atiende `scheduled` en worker.ts.
+  "triggers": { "crons": ["0 15 * * 1"] },
+  // Límite de uso del asistente de IA (/api/asistente): por persona (IP) y en
+  // todo el sitio, para que nadie dispare el gasto de la API de Claude.
+  "ratelimits": [
+    { "name": "LIMITE_ASISTENTE", "namespace_id": "4101", "simple": { "limit": 8, "period": 60 } },
+    { "name": "LIMITE_ASISTENTE_GLOBAL", "namespace_id": "4102", "simple": { "limit": 60, "period": 60 } },
+    // Contra registros masivos y bots (src/lib/seguridad/limites.ts): entrar o
+    // crear cuenta por IP, correos de acceso a una misma dirección, y
+    // formularios públicos (contacto, liga por persona, cotización) por IP.
+    { "name": "LIMITE_ACCESO", "namespace_id": "4103", "simple": { "limit": 10, "period": 60 } },
+    { "name": "LIMITE_ACCESO_CORREO", "namespace_id": "4104", "simple": { "limit": 3, "period": 60 } },
+    { "name": "LIMITE_FORMULARIOS", "namespace_id": "4105", "simple": { "limit": 10, "period": 60 } }
+  ],
+  // El dominio debe estar en la misma cuenta de Cloudflare. Los registros de
+  // correo (MX, SPF, DKIM) no se tocan: esto solo agrega el sitio.
+  "routes": [
+    { "pattern": "lagafeteria.com", "custom_domain": true },
+    { "pattern": "www.lagafeteria.com", "custom_domain": true }
+  ]
+}
