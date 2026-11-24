@@ -73,6 +73,17 @@ export default function Inicio() {
                 .
               </span>
             </p>
+            <Link
+              href="#cuanto-te-cuesta"
+              className="group mt-4 inline-flex max-w-xl items-center gap-2 rounded-full border border-linea bg-white px-4 py-2 text-sm transition-colors hover:border-tinta"
+            >
+              <span aria-hidden className="font-mano text-lg leading-none text-rojo">$</span>
+              <span>
+                ¿Hoy los imprimes tú?{" "}
+                <span className="font-semibold underline underline-offset-4">Calcula cuánto te cuestan en realidad</span>
+              </span>
+              <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span>
+            </Link>
           </div>
           <HeroAnimado />
         </Contenedor>
