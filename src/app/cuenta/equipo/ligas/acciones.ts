@@ -9,6 +9,7 @@ import { CORREOS_POR_ENVIO, QUE_CORREGIR, camposPedibles, datosPropuestos, urlDe
 import { faltanPorCorreo, personasConLiga } from "@/lib/cuenta/ligas-equipo";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
 import { esColumnaSistema, type Resultado } from "@/lib/cuenta/tipos";
+import { revisarDespues } from "@/lib/seguridad/revisar";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ERROR_GENERAL = "No pudimos guardar. Intenta de nuevo.";
@@ -159,6 +160,7 @@ async function aprobar(id: string): Promise<string | null> {
     const { error } = await supabase.storage.from("fotos").upload(destino, archivo, { contentType: "image/jpeg", upsert: true });
     if (error) return ERROR_GENERAL;
     cambios.foto_path = destino;
+    revisarDespues([{ bucket: "fotos", ruta: destino, origen: "foto" }]);
   }
   const { error } = await supabase.from("empleados").update(cambios as never).eq("id", id).eq("empresa_id", empresa.id);
   if (error) return error.code === "23505" ? "Ya hay otra persona con ese número de empleado. Corrígelo en su ficha o pide una corrección." : ERROR_GENERAL;

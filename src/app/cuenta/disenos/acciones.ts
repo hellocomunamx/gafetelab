@@ -9,6 +9,7 @@ import type { Resultado } from "@/lib/cuenta/tipos";
 import { limpiarCara, rutasDe } from "@/lib/diseno/limpiar";
 import { conImpresos, crearDesdePlantilla, esPlantilla, type Impreso } from "@/lib/diseno/plantillas";
 import type { Cara, Orientacion } from "@/lib/diseno/tipos";
+import { revisarDespues } from "@/lib/seguridad/revisar";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const COLOR = /^#[0-9a-f]{6}$/i;
@@ -119,6 +120,10 @@ export async function guardarDiseno(entrada: {
     .select("id");
   if (error || !data.length) return { error: ERROR_GENERAL };
   await limpiarArchivos(supabase, empresa.id);
+  revisarDespues(
+    [...rutasDe(frente), ...rutasDe(vuelta)].map((ruta) => ({ bucket: "disenos", ruta, origen: "diseno" as const })),
+    { soloNuevos: true },
+  );
   refrescar();
   return { ok: "Guardado." };
 }
@@ -245,6 +250,7 @@ export async function guardarGafetesListos(caras: CaraSubida[]): Promise<Resulta
     return antes && antes !== c.ruta ? [antes] : [];
   });
   if (sobran.length) await supabase.storage.from("gafetes").remove(sobran);
+  revisarDespues(caras.map((c) => ({ bucket: "gafetes", ruta: c.ruta, origen: "gafete" as const })));
   refrescar();
   return { ok: "Gafetes guardados." };
 }

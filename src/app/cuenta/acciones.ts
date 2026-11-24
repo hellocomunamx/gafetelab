@@ -11,6 +11,7 @@ import { recordarEmpresa, requerirEmpresa, requerirUsuario } from "@/lib/cuenta/
 import { claveDe, normalizar } from "@/lib/cuenta/texto";
 import type { FilaImportada, Resultado } from "@/lib/cuenta/tipos";
 import { revisarAviso } from "@/lib/pedidos/abierto";
+import { revisarDespues } from "@/lib/seguridad/revisar";
 import { carta, site } from "@/lib/site";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -78,6 +79,7 @@ export async function guardarConstancia(entrada: {
       carta_version: carta.version,
     });
   if (error) return { error: error.code === "P0001" ? error.message : ERROR_GENERAL };
+  revisarDespues([{ bucket: "constancias", ruta, origen: "verificacion" }]);
   refrescar();
   return { ok: "Recibimos tu constancia." };
 }
@@ -441,6 +443,7 @@ export async function asignarFotos(pares: { id: string; ruta: string }[]): Promi
         .then((r) => r.error),
     ),
   );
+  revisarDespues(pares.filter((_, i) => !fallas[i]).map((p) => ({ bucket: "fotos", ruta: p.ruta, origen: "foto" as const })));
   refrescar();
   return fallas.some(Boolean) ? { error: "Algunas fotos no se pudieron asignar." } : { ok: "Fotos guardadas." };
 }

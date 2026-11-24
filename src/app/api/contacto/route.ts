@@ -1,6 +1,8 @@
 import { limitesContacto, motivosContacto } from "@/lib/contacto";
 import { correoActivo, enviarCorreo } from "@/lib/correo";
 import { correoAcuse } from "@/lib/correo-acuse";
+import { dentroDelLimite, ipDe, MENSAJE_LIMITE } from "@/lib/seguridad/limites";
+import { MENSAJE_TURNSTILE, verificarTurnstile } from "@/lib/seguridad/turnstile";
 import { site } from "@/lib/site";
 import { CORREO_VALIDO, error, esBot, escapar, leerCuerpo, mismoOrigen } from "@/lib/solicitudes";
 
@@ -31,6 +33,13 @@ export async function POST(solicitud: Request) {
     return error("Escribe un correo válido.", 400);
   }
   if (mensaje.length < 10) return error("Cuéntanos un poco más en tu mensaje.", 400);
+
+  // Contra envíos masivos: por IP y por correo (el acuse le llega a ese correo).
+  const ip = ipDe(solicitud.headers);
+  if (!(await dentroDelLimite("LIMITE_FORMULARIOS", `contacto:${ip}`)) || !(await dentroDelLimite("LIMITE_ACCESO_CORREO", `contacto:${correo}`))) {
+    return error(MENSAJE_LIMITE, 429);
+  }
+  if (!(await verificarTurnstile(cuerpo.turnstile, ip))) return error(MENSAJE_TURNSTILE, 403);
 
   if (!correoActivo()) {
     return error(

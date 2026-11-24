@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { origenSolicitud, proveedoresActivos } from "@/lib/cuenta/sesion";
 import { LARGO_MINIMO_CONTRASENA } from "@/lib/cuenta/roles";
 import { destinoSeguro, recordarSiguiente, tomarSiguiente } from "@/lib/cuenta/siguiente";
+import { dentroDelLimite, ipActual, MENSAJE_LIMITE } from "@/lib/seguridad/limites";
+import { tokenTurnstile } from "@/lib/seguridad/turnstile";
 import { crearClienteServidor } from "@/lib/supabase/server";
 
 export type EstadoAcceso = {
@@ -16,21 +18,43 @@ export type EstadoAcceso = {
 
 const CORREO_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
+/**
+ * Freno contra registros masivos y adivinar contraseñas: por IP y por correo.
+ * Además, el token de Cloudflare Turnstile se le pasa a Supabase (captchaToken),
+ * que lo verifica cuando la protección con CAPTCHA está encendida en Supabase.
+ */
+async function frenar(correo: string): Promise<string | null> {
+  const ip = await ipActual();
+  if (!(await dentroDelLimite("LIMITE_ACCESO", ip))) return MENSAJE_LIMITE;
+  if (!(await dentroDelLimite("LIMITE_ACCESO_CORREO", correo))) return MENSAJE_LIMITE;
+  return null;
+}
+
+const ERROR_CAPTCHA = "No pudimos confirmar que eres una persona. Recarga la página y vuelve a intentar.";
+const esCaptcha = (e: { code?: string; message?: string }) => e.code === "captcha_failed" || /captcha/i.test(e.message ?? "");
+
 /** Envía al correo una liga y un código de un solo uso. Crea la cuenta si no existe. */
 export async function pedirAcceso(_: EstadoAcceso, datos: FormData): Promise<EstadoAcceso> {
   const correo = String(datos.get("correo") ?? "").trim().toLowerCase();
   if (correo.length > 254 || !CORREO_VALIDO.test(correo)) {
     return { paso: "correo", error: "Escribe un correo válido." };
   }
+  const frenado = await frenar(correo);
+  if (frenado) return { paso: "correo", correo, error: frenado };
   const olvido = datos.get("motivo") === "olvido";
   // Quien olvidó su contraseña regresa a "Mi acceso" para crear otra, salvo que venga del carrito.
   await recordarSiguiente(destinoSeguro(datos.get("siguiente")) ?? (olvido ? "/cuenta/acceso" : null));
   const supabase = await crearClienteServidor();
   const { error } = await supabase.auth.signInWithOtp({
     email: correo,
-    options: { shouldCreateUser: true, emailRedirectTo: `${await origenSolicitud()}/auth/confirmar` },
+    options: {
+      shouldCreateUser: true,
+      emailRedirectTo: `${await origenSolicitud()}/auth/confirmar`,
+      captchaToken: tokenTurnstile(datos),
+    },
   });
   if (error) {
+    if (esCaptcha(error)) return { paso: "correo", correo, error: ERROR_CAPTCHA };
     const espera = error.status === 429 || error.code === "over_email_send_rate_limit";
     return {
       paso: "correo",
@@ -53,14 +77,17 @@ export async function crearCuenta(_: EstadoAcceso, datos: FormData): Promise<Est
   if (contrasena.length < LARGO_MINIMO_CONTRASENA || contrasena.length > 72) {
     return { paso: "correo", correo, error: `Tu contraseña debe tener entre ${LARGO_MINIMO_CONTRASENA} y 72 caracteres.` };
   }
+  const frenado = await frenar(correo);
+  if (frenado) return { paso: "correo", correo, error: frenado };
   await recordarSiguiente(destinoSeguro(datos.get("siguiente")));
   const supabase = await crearClienteServidor();
   const { data, error } = await supabase.auth.signUp({
     email: correo,
     password: contrasena,
-    options: { emailRedirectTo: `${await origenSolicitud()}/auth/confirmar` },
+    options: { emailRedirectTo: `${await origenSolicitud()}/auth/confirmar`, captchaToken: tokenTurnstile(datos) },
   });
   if (error) {
+    if (esCaptcha(error)) return { paso: "correo", correo, error: ERROR_CAPTCHA };
     const espera = error.status === 429 || error.code === "over_email_send_rate_limit";
     return {
       paso: "correo",
@@ -90,6 +117,7 @@ export async function verificarCodigo(_: EstadoAcceso, datos: FormData): Promise
   const correo = String(datos.get("correo") ?? "").trim().toLowerCase();
   const codigo = String(datos.get("codigo") ?? "").replace(/\D/g, "");
   if (codigo.length < 6) return { paso: "codigo", correo, error: "Escribe el código de 6 dígitos." };
+  if (!(await dentroDelLimite("LIMITE_ACCESO", await ipActual()))) return { paso: "codigo", correo, error: MENSAJE_LIMITE };
   const supabase = await crearClienteServidor();
   const { error } = await supabase.auth.verifyOtp({ email: correo, token: codigo, type: "email" });
   if (error) {
@@ -106,9 +134,16 @@ export async function entrarConContrasena(_: EstadoAcceso, datos: FormData): Pro
     return { paso: "correo", error: "Escribe un correo válido." };
   }
   if (!contrasena) return { paso: "correo", correo, error: "Escribe tu contraseña." };
+  const frenado = await frenar(correo);
+  if (frenado) return { paso: "correo", correo, error: frenado };
   const supabase = await crearClienteServidor();
-  const { error } = await supabase.auth.signInWithPassword({ email: correo, password: contrasena });
+  const { error } = await supabase.auth.signInWithPassword({
+    email: correo,
+    password: contrasena,
+    options: { captchaToken: tokenTurnstile(datos) },
+  });
   if (error) {
+    if (esCaptcha(error)) return { paso: "correo", correo, error: ERROR_CAPTCHA };
     return {
       paso: "correo",
       correo,

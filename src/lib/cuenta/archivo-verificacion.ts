@@ -25,8 +25,9 @@ export async function prepararArchivo(a: File, nombre: string): Promise<{ archiv
       return { error: `No pudimos abrir ${nombre}. Tómale una captura de pantalla y súbela en PNG o JPG.` };
     }
   }
-  // Una foto muy pesada (pasa con las de celular) se achica en lugar de rechazarse.
-  if (archivo.size > PESO_MAXIMO_CONSTANCIA && archivo.type.startsWith("image/")) archivo = (await achicar(archivo)) ?? archivo;
+  // Toda foto se vuelve a dibujar: así se le quitan los metadatos (ubicación GPS,
+  // celular) y, si pesa mucho (pasa con las de celular), se achica en lugar de rechazarse.
+  if (archivo.type.startsWith("image/")) archivo = (await achicar(archivo)) ?? archivo;
   if (!(archivo.type in TIPOS_CONSTANCIA)) return { error: `Sube ${nombre} en ${FORMATOS_VERIFICACION.replace(", de hasta 5 MB", "")}.` };
   if (archivo.size > PESO_MAXIMO_CONSTANCIA) return { error: `${mayuscula(nombre)} pesa más de 5 MB. Sube un archivo más ligero.` };
   return { archivo };
@@ -35,7 +36,7 @@ export async function prepararArchivo(a: File, nombre: string): Promise<{ archiv
 /** La imagen a lo mucho de 2400 px por lado, en JPG. Null si el navegador no puede. */
 async function achicar(a: File): Promise<File | null> {
   try {
-    const imagen = await createImageBitmap(a);
+    const imagen = await createImageBitmap(a, { imageOrientation: "from-image" });
     const escala = Math.min(1, 2400 / Math.max(imagen.width, imagen.height));
     const lienzo = document.createElement("canvas");
     lienzo.width = Math.round(imagen.width * escala);

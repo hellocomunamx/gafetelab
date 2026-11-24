@@ -4,6 +4,9 @@ import { revalidatePath } from "next/cache";
 import { personaDeLiga } from "@/lib/cuenta/liga-publica";
 import { PESO_MAXIMO_FOTO, RUTA_LIGA, rutaFotoPendiente } from "@/lib/cuenta/ligas";
 import type { Resultado } from "@/lib/cuenta/tipos";
+import { dentroDelLimite, ipActual, MENSAJE_LIMITE } from "@/lib/seguridad/limites";
+import { anotarRevision, moderarAlMomento } from "@/lib/seguridad/revisar";
+import { CAMPO_TURNSTILE, MENSAJE_TURNSTILE, verificarTurnstile } from "@/lib/seguridad/turnstile";
 
 const ERROR_GENERAL = "No pudimos mandar tus datos. Intenta de nuevo.";
 
@@ -12,6 +15,9 @@ const ERROR_GENERAL = "No pudimos mandar tus datos. Intenta de nuevo.";
  * en su ficha: queda como propuesta hasta que su empresa la apruebe.
  */
 export async function enviarMisDatos(datos: FormData): Promise<Resultado> {
+  const ip = await ipActual();
+  if (!(await dentroDelLimite("LIMITE_FORMULARIOS", `liga:${ip}`))) return { error: MENSAJE_LIMITE };
+  if (!(await verificarTurnstile(datos.get(CAMPO_TURNSTILE), ip))) return { error: MENSAJE_TURNSTILE };
   const liga = String(datos.get("liga") ?? "");
   const encontrada = await personaDeLiga(liga);
   if (!encontrada) return { error: "Esta liga ya no está activa. Pide una nueva en tu empresa." };
@@ -36,9 +42,15 @@ export async function enviarMisDatos(datos: FormData): Promise<Resultado> {
     const bytes = new Uint8Array(await archivo.arrayBuffer());
     // Solo JPEG: el navegador ya la recortó y la convirtió antes de mandarla.
     if (bytes[0] !== 0xff || bytes[1] !== 0xd8 || bytes[2] !== 0xff) return { error: "No pudimos leer la foto. Elige otra." };
+    // Revisión automática al momento: lo claramente inapropiado ni se guarda.
+    const revision = await moderarAlMomento(bytes, "liga");
+    if (revision?.veredicto === "bloquear") {
+      return { error: "Esta foto no se puede usar para un gafete. Usa una foto tuya, de frente, con buena luz y fondo liso." };
+    }
     const ruta = rutaFotoPendiente(empresa.id, persona.id);
     const { error } = await servicio.storage.from("fotos").upload(ruta, bytes, { contentType: "image/jpeg", upsert: true });
     if (error) return { error: ERROR_GENERAL };
+    await anotarRevision("fotos", ruta, "liga", bytes, revision);
     foto = ruta;
   }
   if (empresa.liga_foto && !foto && !persona.foto_path) return { error: "Falta tu foto." };

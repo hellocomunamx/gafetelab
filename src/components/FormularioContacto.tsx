@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { CampoTelefono, telefonoCompleto } from "@/components/CampoTelefono";
+import { Turnstile } from "@/components/Turnstile";
 import { limitesContacto, MOTIVO_IDEA, type MotivoContacto, motivosContacto } from "@/lib/contacto";
 import { PAIS_PREDETERMINADO } from "@/lib/paises";
 
@@ -26,6 +27,7 @@ export function FormularioContacto({ correoSitio, nombreSitio }: { correoSitio: 
   const [pais, setPais] = useState(PAIS_PREDETERMINADO);
   const [mensaje, setMensaje] = useState("");
   const [sitioWeb, setSitioWeb] = useState("");
+  const [turnstile, setTurnstile] = useState("");
   const [estado, setEstado] = useState<Estado>({ tipo: "inactivo" });
   const cajaMensaje = useRef<HTMLTextAreaElement>(null);
   const esIdea = motivo === MOTIVO_IDEA;
@@ -62,6 +64,7 @@ export function FormularioContacto({ correoSitio, nombreSitio }: { correoSitio: 
           telefono: telefonoCompleto(pais, telefono),
           mensaje,
           sitioWeb,
+          turnstile,
         }),
       });
       const datos = await respuesta.json().catch(() => ({}));
@@ -222,6 +225,8 @@ export function FormularioContacto({ correoSitio, nombreSitio }: { correoSitio: 
         aria-hidden="true"
         className="hidden"
       />
+
+      <Turnstile alToken={setTurnstile} reinicio={estado} />
 
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
         <button

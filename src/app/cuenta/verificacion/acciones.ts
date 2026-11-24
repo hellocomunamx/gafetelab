@@ -10,6 +10,7 @@ import { requerirEmpresa } from "@/lib/cuenta/sesion";
 import type { Resultado } from "@/lib/cuenta/tipos";
 import { correoActivo, enviarCorreo } from "@/lib/correo";
 import { carta, site } from "@/lib/site";
+import { revisarDespues } from "@/lib/seguridad/revisar";
 import { clienteServicio } from "@/lib/supabase/publico";
 
 const ERROR_GENERAL = "No pudimos guardar. Intenta de nuevo.";
@@ -61,6 +62,9 @@ export async function guardarIne(entrada: {
     carta_version: carta.version,
   });
   if (error) return { error: error.code === "P0001" ? error.message : ERROR_GENERAL };
+  revisarDespues(
+    [ruta, reverso, prueba].filter((r): r is string => Boolean(r)).map((r) => ({ bucket: "constancias", ruta: r, origen: "verificacion" as const })),
+  );
   revalidatePath("/cuenta", "layout");
   return { ok: "Recibimos tu verificación." };
 }

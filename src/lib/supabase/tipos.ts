@@ -413,6 +413,18 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"revision_archivos": {
+                  Row: {
+                    "bucket": string,"categorias": string[],"creado_en": string,"empresa_id": string | null,"estado": string,"id": string,"modelo": string | null,"motivo": string | null,"origen": string | null,"peso": number | null,"resuelto_en": string | null,"resuelto_por": string | null,"revisado_en": string | null,"ruta": string,"tipo_real": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "bucket": string,"categorias"?: string[],"creado_en"?: string,"empresa_id"?: string | null,"estado"?: string,"id"?: string,"modelo"?: string | null,"motivo"?: string | null,"origen"?: string | null,"peso"?: number | null,"resuelto_en"?: string | null,"resuelto_por"?: string | null,"revisado_en"?: string | null,"ruta": string,"tipo_real"?: string | null
+                  }
+                  Update: {
+                    "bucket"?: string,"categorias"?: string[],"creado_en"?: string,"empresa_id"?: string | null,"estado"?: string,"id"?: string,"modelo"?: string | null,"motivo"?: string | null,"origen"?: string | null,"peso"?: number | null,"resuelto_en"?: string | null,"resuelto_por"?: string | null,"revisado_en"?: string | null,"ruta"?: string,"tipo_real"?: string | null
+                  }
+                  Relationships: []
                 },"reglas_diseno": {
                   Row: {
                     "campo": string,"creado_en": string,"diseno_id": string,"empresa_id": string,"id": string,"orden": number,"valor": string
@@ -547,6 +559,11 @@ isOneToOne: true
           Functions: {
             "aceptar_invitacion":
 { Args: { "p_invitacion": string }; Returns: string
+                           },
+"archivos_por_revisar":
+{ Args: { "p_limite"?: number }; Returns: {
+              "bucket": string,"creado_en": string,"ruta": string
+            }[]
                            },
 "admin_empresas":
 { Args: Record<PropertyKey, never>; Returns: {

@@ -77,7 +77,7 @@ export default async function Pedido({
 
   const { data: pedido } = await servicio.from("pedidos").select("*").eq("id", id).maybeSingle();
   if (!pedido) notFound();
-  const [{ data: empresa }, { data: gafetes }, { data: eventos }, { data: verificada }] = await Promise.all([
+  const [{ data: empresa }, { data: gafetes }, { data: eventos }, { data: verificada }, { count: retenidos }] = await Promise.all([
     servicio.from("empresas").select("id, nombre").eq("id", pedido.empresa_id).maybeSingle(),
     servicio.from("gafetes").select("id, tipo, motivo, razon, datos").eq("pedido_id", id).limit(5000),
     servicio.from("pedido_eventos").select("id, tipo, detalle, creado_en").eq("pedido_id", id).order("creado_en").limit(500),
@@ -88,6 +88,11 @@ export default async function Pedido({
       .order("creado_en", { ascending: false })
       .limit(1)
       .maybeSingle(),
+    servicio
+      .from("revision_archivos")
+      .select("id", { count: "exact", head: true })
+      .eq("empresa_id", pedido.empresa_id)
+      .eq("estado", "retenido"),
   ]);
 
   const aprobacion = aprobacionDe(pedido);
@@ -134,6 +139,16 @@ export default async function Pedido({
         {prepago ? "" : ` · ${nombreModalidad(pedido.modalidad as Modalidad)}`} ·{" "}
         {pesos(Number(pedido.total))} con IVA
       </p>
+      {retenidos ? (
+        <p role="alert" className="rounded-tarjeta border border-rojo/30 bg-white p-4 text-sm">
+          Esta empresa tiene {retenidos === 1 ? "1 archivo retenido" : `${retenidos} archivos retenidos`} por la revisión
+          automática. Decide en{" "}
+          <Link href={`${RUTA_ADMIN}/archivos`} className="font-semibold underline underline-offset-4">
+            Archivos
+          </Link>{" "}
+          antes de imprimir.
+        </p>
+      ) : null}
 
       {pedido.disputa === "abierta" ? (
         <p role="alert" className="rounded-tarjeta border border-rojo/30 bg-white p-4 text-sm">

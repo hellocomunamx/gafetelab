@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { Turnstile } from "@/components/Turnstile";
 import { LARGO_MINIMO_CONTRASENA } from "@/lib/cuenta/roles";
 import {
   type EstadoAcceso,
@@ -130,6 +131,7 @@ export function FormularioEntrar({
           <input type="hidden" name="correo" value={enviado.correo} />
           <input type="hidden" name="motivo" value={enviado.motivo === "olvido" ? "olvido" : "liga"} />
           {destino ? <input type="hidden" name="siguiente" value={destino} /> : null}
+          <Turnstile reinicio={pedido} />
           <button type="submit" disabled={pidiendo} className="underline">
             {pidiendo ? "Enviando…" : "Enviar otro correo"}
           </button>
@@ -232,6 +234,7 @@ export function FormularioEntrar({
             autoComplete="current-password"
             className={entrada}
           />
+          <Turnstile reinicio={conClave} />
           <p role="alert" className="mt-2 min-h-5 text-sm text-rojo-oscuro">{conClave.error ?? aviso}</p>
           <button type="submit" disabled={entrando} className={boton}>
             {entrando ? "Entrando…" : "Iniciar sesión"}
@@ -260,6 +263,7 @@ export function FormularioEntrar({
             />
             <span className="mt-1 block text-sm text-gris">Mínimo {LARGO_MINIMO_CONTRASENA} caracteres.</span>
           </label>
+          <Turnstile reinicio={creado} />
           <p role="alert" className="mt-2 min-h-5 text-sm text-rojo-oscuro">{creado.error}</p>
           <button type="submit" disabled={creando} className={boton}>
             {creando ? "Creando tu cuenta…" : "Crear cuenta"}
@@ -278,6 +282,7 @@ export function FormularioEntrar({
               : "Te enviamos una liga y un código de un solo uso. Si es tu primera vez, tu cuenta se crea sola."}
           </p>
           {campoCorreo}
+          <Turnstile reinicio={pedido} />
           <p role="alert" className="mt-2 min-h-5 text-sm text-rojo-oscuro">{pedido.error ?? aviso}</p>
           <button type="submit" disabled={pidiendo} className={boton}>
             {pidiendo ? "Enviando…" : "Enviarme mi acceso"}

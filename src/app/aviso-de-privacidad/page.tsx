@@ -153,7 +153,13 @@ export default function AvisoDePrivacidad() {
             </p>
             <ul>
               <li>
-                <strong>Cloudflare</strong> (Estados Unidos): alojamiento y protección del sitio.
+                <strong>Cloudflare</strong> (Estados Unidos): alojamiento y protección del sitio,
+                incluida la verificación anti-bots de los formularios (Turnstile).
+              </li>
+              <li>
+                <strong>Anthropic</strong> (Estados Unidos): revisión automática de las imágenes que
+                se suben (fotos, diseños y documentos de verificación) para detectar contenido
+                inapropiado, y el asistente del sitio. No usa esos datos para entrenar sus modelos.
               </li>
               <li>
                 <strong>Supabase</strong> (Estados Unidos): base de datos y almacenamiento de

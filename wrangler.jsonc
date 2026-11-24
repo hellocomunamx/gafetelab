@@ -19,7 +19,13 @@
   // todo el sitio, para que nadie dispare el gasto de la API de Claude.
   "ratelimits": [
     { "name": "LIMITE_ASISTENTE", "namespace_id": "4101", "simple": { "limit": 8, "period": 60 } },
-    { "name": "LIMITE_ASISTENTE_GLOBAL", "namespace_id": "4102", "simple": { "limit": 60, "period": 60 } }
+    { "name": "LIMITE_ASISTENTE_GLOBAL", "namespace_id": "4102", "simple": { "limit": 60, "period": 60 } },
+    // Contra registros masivos y bots (src/lib/seguridad/limites.ts): entrar o
+    // crear cuenta por IP, correos de acceso a una misma dirección, y
+    // formularios públicos (contacto, liga por persona, cotización) por IP.
+    { "name": "LIMITE_ACCESO", "namespace_id": "4103", "simple": { "limit": 10, "period": 60 } },
+    { "name": "LIMITE_ACCESO_CORREO", "namespace_id": "4104", "simple": { "limit": 3, "period": 60 } },
+    { "name": "LIMITE_FORMULARIOS", "namespace_id": "4105", "simple": { "limit": 10, "period": 60 } }
   ],
   // El dominio debe estar en la misma cuenta de Cloudflare. Los registros de
   // correo (MX, SPF, DKIM) no se tocan: esto solo agrega el sitio.

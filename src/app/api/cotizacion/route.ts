@@ -2,6 +2,7 @@ import { correoActivo, enviarCorreo } from "@/lib/correo";
 import { condiciones, fechaLarga, nuevoFolio, renglones, totales } from "@/lib/cotizacion";
 import { materialPara } from "@/lib/materiales";
 import { cotizar, type Modalidad, modalidades } from "@/lib/precios";
+import { dentroDelLimite, ipDe, MENSAJE_LIMITE } from "@/lib/seguridad/limites";
 import { site, urlAbsoluta } from "@/lib/site";
 import { CORREO_VALIDO, error, esBot, escapar, leerCuerpo, mismoOrigen } from "@/lib/solicitudes";
 
@@ -20,6 +21,13 @@ export async function POST(solicitud: Request) {
   const correo = String(cuerpo.correo ?? "").trim().toLowerCase();
   if (correo.length > 254 || !CORREO_VALIDO.test(correo)) {
     return error("Escribe un correo válido.", 400);
+  }
+  // Contra envíos masivos de cotizaciones a correos ajenos: por IP y por correo.
+  if (
+    !(await dentroDelLimite("LIMITE_FORMULARIOS", `cotizacion:${ipDe(solicitud.headers)}`)) ||
+    !(await dentroDelLimite("LIMITE_ACCESO_CORREO", `cotizacion:${correo}`))
+  ) {
+    return error(MENSAJE_LIMITE, 429);
   }
 
   const modalidad = modalidades.some((m) => m.id === cuerpo.modalidad)

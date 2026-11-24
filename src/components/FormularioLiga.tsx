@@ -6,6 +6,7 @@ import { enviarMisDatos } from "@/app/mi-gafete/acciones";
 import { claseBoton, claseEntrada } from "@/components/cuenta/Formulario";
 import { prepararFoto } from "@/lib/cuenta/imagen";
 import { CamaraFoto } from "./CamaraFoto";
+import { Turnstile } from "./Turnstile";
 
 export type CampoDeLiga = { clave: string; etiqueta: string; tipo: string; obligatorio: boolean; valor: string };
 
@@ -148,6 +149,8 @@ export function FormularioLiga({
           }}
         />
       ) : null}
+
+      <Turnstile reinicio={ocupado} />
 
       {error ? <p role="alert" className="rounded-tarjeta-chica bg-rojo/10 p-3 text-sm font-medium text-rojo-oscuro">{error}</p> : null}
 
