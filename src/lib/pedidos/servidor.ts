@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { type Correo, correoActivo, enviarCorreo, enviarCorreos } from "@/lib/correo";
 import { correoGafeteDigital } from "@/lib/cuenta/correo-digital";
+import { correoEstadoPedido, type EtapaCorreo, type ExtrasCorreo } from "./correos-estado";
 import { CORREOS_POR_ENVIO, urlDeLiga } from "@/lib/cuenta/ligas";
 import { RUTA_ADMIN } from "@/lib/admin/ruta";
 import { pesos } from "@/lib/precios";
@@ -183,6 +184,7 @@ export async function marcarPagado(
   await anotar(servicio, pedido.id, estabaCancelado ? "pago_tras_cancelar" : "pagado", { metodo: datos.metodo, pago: datos.pago });
   if (pedido.tipo === "prepago") {
     await crearSaldos(servicio, pedido);
+    await avisarCliente(pedido, "recibido");
     await avisarInterno(
       `Compra ${pedido.folio} pagada`,
       [
@@ -194,6 +196,8 @@ export async function marcarPagado(
     return true;
   }
   const digitalesActivos = await activarDigitales(servicio, pedido);
+  // Si estaba cancelado, primero se decide si se produce o se devuelve: no se le escribe todavía.
+  if (!estabaCancelado) await avisarCliente(pedido, "recibido", { digitalesActivos });
   await avisarInterno(
     `Pedido ${pedido.folio} pagado${estabaCancelado ? " (estaba cancelado)" : ""}`,
     [
@@ -317,29 +321,18 @@ export const avisarDisputa = (pedido: Pedido) =>
 /** La evidencia de aprobación guardada en el pedido, con su tipo. */
 export const aprobacionDe = (pedido: Pick<Pedido, "aprobacion">) => pedido.aprobacion as unknown as AprobacionPedido;
 
-/** Avisa a quien hizo el pedido que ya va en camino. Si falla o no hay correo configurado, no pasa nada. */
-export async function avisarEnvio(pedido: Pedido, rastreo?: string | null) {
+/**
+ * Le escribe a quien hizo el pedido que cambió de estado (recibido, en
+ * producción, listo, enviado o entregado). Si falla o no hay correo
+ * configurado, no pasa nada: el pedido ya quedó en su nuevo estado.
+ */
+export async function avisarCliente(pedido: Pedido, etapa: EtapaCorreo, extras: ExtrasCorreo = {}) {
   const para = aprobacionDe(pedido).correo;
   if (!para || !correoActivo()) return;
-  const liga = urlAbsoluta(`/cuenta/pedidos/${pedido.id}`);
-  const guia = [pedido.paqueteria, pedido.guia ? `guía ${pedido.guia}` : null].filter(Boolean).join(", ");
-  const lineas = [
-    `Tu pedido ${pedido.folio} de ${pedido.piezas} gafetes y credenciales ya va en camino${guia ? ` por ${guia}` : ""}.`,
-    rastreo ? "Puedes seguirlo con la liga de rastreo de la paquetería." : "Puedes ver su avance en tu plataforma.",
-  ];
   try {
-    await enviarCorreo({
-      para,
-      asunto: `Tu pedido ${pedido.folio} va en camino`,
-      texto: [...lineas, ...(rastreo ? ["", `Rastreo: ${rastreo}`] : []), "", liga].join("\n"),
-      html: `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#1B1F3B;">${lineas
-        .map((l) => `<p style="margin:0 0 10px;">${escapar(l)}</p>`)
-        .join("")}${
-        rastreo ? `<p style="margin:16px 0 0;"><a href="${escapar(rastreo)}">Rastrear mi envío</a></p>` : ""
-      }<p style="margin:16px 0 0;"><a href="${escapar(liga)}">Ver mi pedido</a></p></div>`,
-    });
+    await enviarCorreo({ para, ...correoEstadoPedido(etapa, pedido, extras) });
   } catch {
-    // El aviso es una cortesía: el pedido ya quedó marcado como enviado.
+    // El aviso es una cortesía.
   }
 }
 

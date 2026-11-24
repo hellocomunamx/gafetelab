@@ -8,7 +8,7 @@ import { ErrorEnvia, generarGuia } from "@/lib/envios/envia";
 import { armarSobres } from "@/lib/envios/sobres";
 import { type DireccionCopiada, requiereRevision } from "@/lib/pedidos/reglas";
 import { avanzarSolicitudesDelPedido } from "@/lib/portal/servidor";
-import { activarDigitales, anotar, aprobacionDe, avisarEnvio, cancelarAutorizado, cerrarCobro, liberarSaldo, type Pedido, type Servicio } from "@/lib/pedidos/servidor";
+import { activarDigitales, anotar, aprobacionDe, avisarCliente, cancelarAutorizado, cerrarCobro, liberarSaldo, type Pedido, type Servicio } from "@/lib/pedidos/servidor";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -64,7 +64,22 @@ export async function producirPedido(d: FormData) {
   // Las compras del carrito no se producen: su contenido ya está en el saldo de la empresa.
   if (!x || x.pedido.tipo === "prepago" || x.pedido.modalidad === "digital" || x.pedido.estado !== "pagado" || x.pedido.disputa === "abierta") return;
   if (requiereRevision(x.pedido) && !x.pedido.revisado_en) return;
-  await mover(x, "pagado", { estado: "en_produccion", produccion_en: new Date().toISOString() }, "en_produccion", "en_produccion");
+  const movido = await mover(x, "pagado", { estado: "en_produccion", produccion_en: new Date().toISOString() }, "en_produccion", "en_produccion");
+  if (movido) await avisarCliente(movido, "en_produccion");
+  refrescar(x.pedido.id);
+}
+
+/**
+ * Avisa al cliente que su pedido ya está impreso y empacado, esperando la
+ * paquetería. Es opcional y va una sola vez: el pedido sigue en producción.
+ */
+export async function avisarListoPedido(d: FormData) {
+  const x = await abrir(d);
+  if (!x || x.pedido.estado !== "en_produccion") return;
+  const { count } = await x.servicio.from("pedido_eventos").select("id", { count: "exact", head: true }).eq("pedido_id", x.pedido.id).eq("tipo", "listo");
+  if (count) return;
+  await anotar(x.servicio, x.pedido.id, "listo", {}, x.usuario);
+  await avisarCliente(x.pedido, "listo");
   refrescar(x.pedido.id);
 }
 
@@ -81,7 +96,7 @@ export async function enviarPedido(d: FormData) {
     "enviado",
     "enviado",
   );
-  if (enviado) await avisarEnvio(enviado);
+  if (enviado) await avisarCliente(enviado, "enviado");
   refrescar(x.pedido.id);
 }
 
@@ -141,14 +156,15 @@ export async function generarGuiaPedido(d: FormData) {
     "enviado",
     "enviado",
   );
-  if (enviado) await avisarEnvio(enviado, guia.rastreo);
+  if (enviado) await avisarCliente(enviado, "enviado", { rastreo: guia.rastreo });
   refrescar(x.pedido.id);
 }
 
 export async function entregarPedido(d: FormData) {
   const x = await abrir(d);
   if (!x) return;
-  await mover(x, "enviado", { estado: "entregado", entregado_en: new Date().toISOString() }, "activo", "entregado");
+  const entregado = await mover(x, "enviado", { estado: "entregado", entregado_en: new Date().toISOString() }, "activo", "entregado");
+  if (entregado) await avisarCliente(entregado, "entregado");
   refrescar(x.pedido.id);
 }
 
