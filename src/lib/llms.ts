@@ -24,7 +24,7 @@ import {
   tramos,
 } from "./precios";
 import { grosorTexto, materiales, medidas, zonas } from "./materiales";
-import { accionesPlataforma, ajustesPlataforma, confianzaPlataforma, formasDeCargar, funcionesPlataforma } from "./plataforma";
+import { accionesPlataforma, ajustesPlataforma, formasDeCargar, funcionesPlataforma, verificaciones } from "./plataforma";
 import { rutasCiudades, rutasGiros, rutasPrincipales } from "./rutas";
 import { adicionalesPendientes } from "./contacto";
 import { constancia, entregaTexto, legal, site, urlAbsoluta } from "./site";
@@ -43,7 +43,7 @@ const funciones = (pronto: boolean) =>
 
 const datosClave = () =>
   [
-    `- Producto: gafetes y credenciales para empleados en tres modalidades: impreso (PVC rígido tamaño CR80, 8.6 × 5.4 cm, a una cara o por frente y vuelta), digital (en el celular) o impreso + digital. Todos pueden llevar un código QR con página de verificación (vigente o expirado), incluida sin costo extra; la empresa decide qué datos muestra, o si el código lleva a una liga propia o contiene solo un dato.`,
+    `- Producto: gafetes y credenciales para empleados en tres modalidades: impreso (PVC rígido tamaño CR80, 8.6 × 5.4 cm, a una cara o por frente y vuelta), digital (en el celular) o impreso + digital. Todos pueden llevar un código QR con página de verificación (vigente, expirado, no válido o aún no activo), incluida sin costo extra; la empresa decide qué datos muestra, o si el código lleva a una liga propia o contiene solo un dato.`,
     `- Precio impreso: de ${pesos(precioMinimo)} a ${pesos(precioMaximo)} MXN por pieza a una cara, ${notaIva}, según la cantidad. Frente y vuelta: ${extraDosCarasRango} MXN más por pieza, según la cantidad (${extraDosCarasDetalle}).`,
     `- Precio digital: ${pesos(precioDigital)} MXN por pieza, ${notaIva}, en cualquier cantidad, solo o sumado a un gafete impreso. Es un pago único por gafete, no un cobro recurrente, y sigue activo mientras la cuenta de la empresa esté activa y no lo desactive.`,
     `- Materiales: ${materiales.filter((m) => m.disponible).map((m) => `${m.nombre} de ${grosorTexto(m)}${m.extra ? `, ${pesos(m.extra)} más por pieza` : ""}`).join("; ")}.`,
@@ -67,7 +67,7 @@ const datosClave = () =>
     `- Diseño: los datos del equipo se guardan una vez y en cada diseño se elige qué se imprime y en qué cara; el nombre es opcional (gafetes genéricos). Diseños por reglas: un diseño distinto según puesto, departamento, sucursal, tipo de contrato o cualquier dato propio.`,
     `- Compra en línea: carrito con paquetes prepagados de lista o a la medida, o lo calculado en el cotizador; se pide cuenta solo al pagar. Los gafetes prepagados quedan a favor de la empresa y se usan primero en los siguientes pedidos.`,
     `- Seguimiento: la plataforma muestra el estado de cada pedido (pagado, en producción, enviado, entregado) y al enviarse llega un correo con la paquetería y el número de guía.`,
-    `- Seguridad y confianza: ${confianzaPlataforma.map((c) => `${c.titulo.charAt(0).toLowerCase()}${c.titulo.slice(1)} (${c.texto.charAt(0).toLowerCase()}${c.texto.slice(1).replace(/\.$/, "")})`).join("; ")}.`,
+    `- Verificaciones (todo lo que se verifica, sin costo extra): ${verificaciones.map((c) => `${c.titulo.charAt(0).toLowerCase()}${c.titulo.slice(1)} (${c.texto.charAt(0).toLowerCase()}${c.texto.slice(1).replace(/\.$/, "")})`).join("; ")}.`,
     `- Cómo se pide: en línea, con plantillas o diseño propio, campos variables (nombre, puesto, número, foto, código QR), carga del equipo y vista previa de cada gafete antes de pagar.`,
     `- Paquete a la medida: desde ${paqueteMinimoPiezas} gafetes, combinando cantidades, una cara o frente y vuelta, y materiales; el precio base por pieza es el del paquete de lista que corresponde al total.`,
     `- Requisito antes del primer pedido: verificar la empresa, con la opción que elija: su ${constancia.nombre} (no más de ${site.constanciaMeses} meses de antigüedad), INE más una prueba del negocio (liga a redes o Google Maps, o foto del local) si no tiene RFC, o un correo con el dominio de la empresa. Además acepta una carta de responsabilidad y la revisión es manual. El nombre debe coincidir con la empresa que aparece en los gafetes.`,

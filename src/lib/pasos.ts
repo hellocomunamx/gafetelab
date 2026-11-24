@@ -23,7 +23,7 @@ export const pasos = [
   },
   {
     titulo: "Paga y recibe",
-    texto: `El precio con envío está a la vista desde el primer paso. Pagas en línea, recibes tu factura y tu pedido llega en ${entregaTexto}.`,
+    texto: `El precio con envío está a la vista desde el primer paso. Pagas en línea y pides tu factura. Tus gafetes impresos llegan en ${entregaTexto} y los digitales se activan en tu plataforma, sin envío.`,
   },
 ];
 

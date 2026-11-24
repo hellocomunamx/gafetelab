@@ -5,7 +5,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { CelularPortal, VentanaPlataforma } from "@/components/Muestras";
 import { Boton, Contenedor, CTA_TEXTO, Portada, Seccion } from "@/components/ui";
 import { type Faq as FaqItem, faqsGenerales } from "@/lib/faqs";
-import { confianzaPlataforma, formasDeCargar, funcionesPlataforma, portalEmpleados } from "@/lib/plataforma";
+import { formasDeCargar, funcionesPlataforma, portalEmpleados, verificaciones } from "@/lib/plataforma";
 import { migas, paginaFaq, plataforma } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
 import { site } from "@/lib/site";
@@ -26,6 +26,7 @@ const preguntas = [
   "¿Un empleado puede cambiar la foto de su gafete?",
   "¿Me avisan cuando alguien de mi equipo pide algo?",
   "¿Puedo darle acceso a otras personas de mi empresa?",
+  `¿Qué verifican en ${site.nombre}?`,
   "¿Cómo protegen mi cuenta y la de mi equipo?",
   "¿Puedo ver cómo quedan antes de pagar?",
   "¿Puedo usar el diseño que ya tiene mi empresa?",
@@ -166,11 +167,12 @@ export default function Plataforma() {
 
       <Seccion id="confianza" titulo="Segura para tu empresa y para tu equipo" fondo>
         <p className="-mt-2 mb-8 max-w-2xl text-lg text-gris">
-          Verificamos cada empresa antes de su primer pedido para que nadie pueda hacer gafetes con
-          tu nombre o tu logo, y cuidamos cada entrada a tu plataforma.
+          Verificamos tu empresa antes de tu primer pedido para que nadie pueda hacer gafetes con
+          tu nombre o tu logo, y cada gafete se puede comprobar con su código QR. Esto es todo lo
+          que verificamos:
         </p>
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {confianzaPlataforma.map((c) => (
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {verificaciones.map((c) => (
             <li key={c.titulo} className="flex gap-2.5 rounded-tarjeta bg-white p-5">
               <Palomita className="mt-0.5 text-[#0a7d4f]" />
               <div>
