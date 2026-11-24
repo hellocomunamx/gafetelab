@@ -57,9 +57,27 @@ export default async function Invitacion({
     );
   }
 
-  const { correo, invita, tiene_cuenta } = invitaciones[0];
+  const { correo, invita, tiene_cuenta, vencida } = invitaciones[0];
   const aceptar = `/invitacion/${id}/aceptar`;
   const usuario = sesion.user;
+
+  if (vencida) {
+    return (
+      <Contenedor className="py-14 sm:py-20">
+        <div className="mx-auto max-w-md">
+          <p className="font-mano text-2xl text-rojo">Uy</p>
+          <h1 className="text-4xl font-extrabold">Esta invitación venció</h1>
+          <p className="mt-3 text-lg text-gris">
+            Las invitaciones a {invitaciones[0].empresa} duran 24 horas. Pide a {invita ?? "quien te invitó"} que te la
+            reenvíe: te llegará un correo nuevo con otra liga.
+          </p>
+          <Link href={usuario ? "/cuenta" : "/entrar"} className={`${boton} mt-8`}>
+            {usuario ? "Ir a mi cuenta" : "Iniciar sesión"}
+          </Link>
+        </div>
+      </Contenedor>
+    );
+  }
   // Con la sesión del correo invitado, se une de una vez.
   if (usuario && usuario.email?.toLowerCase() === correo) redirect(aceptar);
 

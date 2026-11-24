@@ -33,7 +33,7 @@ export function correoInvitacion(opts: { empresas: Invitada[]; invita: string; l
 <p style="margin:0 0 12px;font-size:18px;font-weight:bold;">Te invitaron a ${escapar(empresas)}</p>
 <p style="margin:0 0 20px;font-size:15px;line-height:1.55;">${escapar(opts.invita)} ${escapar(detalle)} en ${escapar(site.nombre)}, donde se administran los gafetes y credenciales del equipo.</p>
 ${lista}<p style="margin:0 0 20px;"><a href="${escapar(opts.liga)}" style="display:inline-block;background:#E63B2E;color:#fff;text-decoration:none;font-weight:bold;padding:12px 22px;border-radius:999px;font-size:15px;">Activar mi cuenta</a></p>
-<p style="margin:0;font-size:13px;line-height:1.5;color:#5C6178;">Crea tu cuenta con este mismo correo o, si ya tienes una, entra con ella. Al terminar quedas en el equipo. Si no esperabas esta invitación, ignora este mensaje.</p>
+<p style="margin:0;font-size:13px;line-height:1.5;color:#5C6178;">Crea tu cuenta con este mismo correo o, si ya tienes una, entra con ella. Al terminar quedas en el equipo. La liga vence en 24 horas. Si no esperabas esta invitación, ignora este mensaje.</p>
 </div></div>
 </div></body></html>`;
   const texto = [
@@ -43,6 +43,8 @@ ${lista}<p style="margin:0 0 20px;"><a href="${escapar(opts.liga)}" style="displ
     ...(una ? [] : ["", ...opts.empresas.map((e) => `- ${e.nombre}: ${rol(e)}`)]),
     "",
     `Crea tu cuenta o entra con este mismo correo: ${opts.liga}`,
+    "",
+    "La liga vence en 24 horas.",
   ].join("\n");
   return { asunto: `Te invitaron a ${empresas} en ${site.nombre}`, html, texto };
 }
