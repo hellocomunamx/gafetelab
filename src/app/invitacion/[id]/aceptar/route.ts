@@ -21,7 +21,10 @@ export async function GET(solicitud: Request, { params }: { params: Promise<{ id
 
   const { data: invitaciones } = await supabase.rpc("ver_invitacion", { p_invitacion: id });
   if (!invitaciones?.length) return ir("/cuenta/invitaciones");
-  if (invitaciones[0].correo !== sesion.user.email?.toLowerCase()) return ir(`/invitacion/${id}`);
+  // Vencida o para otro correo: la pantalla de la invitación lo explica.
+  if (invitaciones[0].vencida || invitaciones[0].correo !== sesion.user.email?.toLowerCase()) {
+    return ir(`/invitacion/${id}`);
+  }
 
   let primera: string | null = null;
   for (const i of invitaciones) {

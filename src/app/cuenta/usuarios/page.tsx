@@ -22,6 +22,8 @@ const chipRol: Record<Rol, string> = {
   editor: "bg-papel text-tinta",
 };
 const enlace = "font-semibold underline underline-offset-4";
+/** Las invitaciones vencen a las 24 horas; «Reenviar» renueva el plazo. */
+const vencio = (iso: string) => new Date(iso).getTime() <= new Date().getTime() - 24 * 60 * 60 * 1000;
 const fecha = (iso: string) =>
   new Date(iso).toLocaleDateString("es-MX", { day: "numeric", month: "short", year: "numeric" });
 
@@ -110,7 +112,7 @@ export default async function Usuarios() {
                 placeholder="persona@empresa.com"
                 autoComplete="off"
                 className="max-w-md"
-                ayuda="Le llega un correo con la liga para crear su cuenta o entrar con la que ya tiene."
+                ayuda="Le llega un correo con la liga para crear su cuenta o entrar con la que ya tiene. La liga vence en 24 horas."
               />
               {variasEmpresas.length > 1 ? (
                 <fieldset>
@@ -177,6 +179,11 @@ export default async function Usuarios() {
                       <span className="text-gris">
                         {" "}· {roles[i.rol as Rol].nombre} · Enviada el {fecha(i.creado_en)}
                       </span>
+                      {vencio(i.creado_en) ? (
+                        <span className="ml-2 rounded-full bg-resaltador/60 px-2 py-0.5 text-xs font-semibold">
+                          Venció: reenvíala
+                        </span>
+                      ) : null}
                     </p>
                     <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
                       <BotonReenviar accion={reenviarInvitacion} id={i.id} />

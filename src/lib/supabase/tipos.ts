@@ -651,7 +651,7 @@ isOneToOne: true
                            },
 "ver_invitacion":
 { Args: { "p_invitacion": string }; Returns: {
-              "correo": string,"empresa": string,"empresa_id": string,"id": string,"invita": string,"rol": string,"tiene_cuenta": boolean
+              "correo": string,"empresa": string,"empresa_id": string,"id": string,"invita": string,"rol": string,"tiene_cuenta": boolean,"vencida": boolean
             }[]
                            },
 "verificar_gafete":
