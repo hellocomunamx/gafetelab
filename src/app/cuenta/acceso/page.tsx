@@ -27,6 +27,13 @@ export default async function Acceso() {
         </p>
       </div>
 
+      <Bloque titulo="Avisos por correo">
+        <p className="text-sm text-gris">
+          Cambios de foto, datos por aprobar y más: elige si te avisamos al momento, en un resumen semanal o nunca.
+        </p>
+        <Link href="/cuenta/avisos" className="mt-3 inline-block font-semibold underline underline-offset-4">Elegir mis avisos</Link>
+      </Bloque>
+
       <Bloque titulo="Tu nombre">
         <Formulario accion={guardarPerfil} boton="Guardar">
           <Entrada

@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "lagafeteria",
-  "main": ".open-next/worker.js",
+  "main": "worker.ts",
   "compatibility_date": "2026-11-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": {
@@ -15,6 +15,9 @@
     }
   ],
   "observability": { "enabled": true },
+  // Resumen semanal de avisos a administradores: lunes a las 8:00 de
+  // Hermosillo (15:00 UTC). Lo atiende `scheduled` en worker.ts.
+  "triggers": { "crons": ["0 15 * * 1"] },
   // Límite de uso del asistente de IA (/api/asistente): por persona (IP) y en
   // todo el sitio, para que nadie dispare el gasto de la API de Claude.
   "ratelimits": [

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { avisarAlMomento } from "@/lib/avisos/enviar";
 import { personaDeLiga } from "@/lib/cuenta/liga-publica";
 import { PESO_MAXIMO_FOTO, RUTA_LIGA, rutaFotoPendiente } from "@/lib/cuenta/ligas";
 import type { Resultado } from "@/lib/cuenta/tipos";
@@ -69,6 +70,8 @@ export async function enviarMisDatos(datos: FormData): Promise<Resultado> {
     { onConflict: "empleado_id" },
   );
   if (error) return { error: ERROR_GENERAL };
+  // Aviso a quien lo pidió «al momento»; si solo corrige lo que ya estaba pendiente, no se repite.
+  if (propuesta?.estado !== "pendiente") await avisarAlMomento(servicio, { empresaId: empresa.id, tipo: "datos_liga", persona: valores.nombre || persona.nombre });
   revalidatePath(`${RUTA_LIGA}/${liga}`);
   revalidatePath("/cuenta", "layout");
   return { ok: "Listo." };
