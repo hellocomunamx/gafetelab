@@ -31,3 +31,13 @@ export const COLUMNAS_SISTEMA = ["nombre", "puesto", "numero_empleado", "departa
 export type ColumnaSistema = (typeof COLUMNAS_SISTEMA)[number];
 export const esColumnaSistema = (clave: string): clave is ColumnaSistema =>
   (COLUMNAS_SISTEMA as readonly string[]).includes(clave);
+
+/** Datos que trae cada empresa de entrada. Se pueden quitar y recuperar; «Nombre» siempre se queda. */
+export const DATOS_DE_ENTRADA = [
+  { clave: "puesto", etiqueta: "Puesto", tipo: "texto", cara: "frente" },
+  { clave: "numero_empleado", etiqueta: "Número de empleado", tipo: "texto", cara: "frente" },
+  { clave: "foto", etiqueta: "Fotografía", tipo: "foto", cara: "frente" },
+  { clave: "departamento", etiqueta: "Departamento", tipo: "texto", cara: "frente" },
+  { clave: "tipo_contrato", etiqueta: "Tipo de contrato", tipo: "texto", cara: "frente" },
+  { clave: "qr", etiqueta: "Código QR", tipo: "qr", cara: "vuelta" },
+] as const;

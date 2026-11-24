@@ -19,6 +19,10 @@ export function FormularioEmpleado({
   const etiqueta = (clave: string, respaldo: string) =>
     campos.find((c) => c.clave === clave)?.etiqueta ?? respaldo;
   const propios = campos.filter((c) => !c.de_sistema);
+  // Un dato de entrada que la empresa quitó no se muestra, pero se conserva lo capturado.
+  const tiene = (clave: string) => campos.some((c) => c.clave === clave);
+  const oculto = (clave: "numero_empleado" | "puesto" | "departamento" | "tipo_contrato") =>
+    tiene(clave) ? null : <input type="hidden" name={clave} value={empleado?.[clave] ?? ""} />;
   const datos = (empleado?.datos ?? {}) as Record<string, string>;
 
   return (
@@ -33,10 +37,18 @@ export function FormularioEmpleado({
           className="sm:col-span-2"
           ayuda="Déjalo vacío si es un gafete genérico, como «Visitante» o «Proveedor»."
         />
-        <Entrada etiqueta={etiqueta("numero_empleado", "Número de empleado")} name="numero_empleado" maxLength={40} defaultValue={empleado?.numero_empleado ?? ""} />
-        <Entrada etiqueta={etiqueta("puesto", "Puesto")} name="puesto" maxLength={120} defaultValue={empleado?.puesto ?? ""} />
-        <Entrada etiqueta={etiqueta("departamento", "Departamento")} name="departamento" maxLength={120} list="departamentos" autoComplete="off" defaultValue={empleado?.departamento ?? ""} />
-        <Entrada etiqueta={etiqueta("tipo_contrato", "Tipo de contrato")} name="tipo_contrato" maxLength={60} list="contratos" autoComplete="off" defaultValue={empleado?.tipo_contrato ?? ""} ayuda="Por ejemplo: Planta, Temporal o Visitante." />
+        {tiene("numero_empleado") ? (
+          <Entrada etiqueta={etiqueta("numero_empleado", "Número de empleado")} name="numero_empleado" maxLength={40} defaultValue={empleado?.numero_empleado ?? ""} />
+        ) : oculto("numero_empleado")}
+        {tiene("puesto") ? (
+          <Entrada etiqueta={etiqueta("puesto", "Puesto")} name="puesto" maxLength={120} defaultValue={empleado?.puesto ?? ""} />
+        ) : oculto("puesto")}
+        {tiene("departamento") ? (
+          <Entrada etiqueta={etiqueta("departamento", "Departamento")} name="departamento" maxLength={120} list="departamentos" autoComplete="off" defaultValue={empleado?.departamento ?? ""} />
+        ) : oculto("departamento")}
+        {tiene("tipo_contrato") ? (
+          <Entrada etiqueta={etiqueta("tipo_contrato", "Tipo de contrato")} name="tipo_contrato" maxLength={60} list="contratos" autoComplete="off" defaultValue={empleado?.tipo_contrato ?? ""} ayuda="Por ejemplo: Planta, Temporal o Visitante." />
+        ) : oculto("tipo_contrato")}
         <Entrada etiqueta="Correo" name="correo" type="email" maxLength={200} defaultValue={empleado?.correo ?? ""} ayuda="Para mandarle su liga. No se imprime en el gafete." />
         {propios.map((c) => (
           <Entrada

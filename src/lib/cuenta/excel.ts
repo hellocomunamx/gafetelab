@@ -26,13 +26,9 @@ const ALIAS: Record<string, string[]> = {
 const ALIAS_CORREO = ["correo", "correo electronico", "email", "e mail", "mail", "correo e"];
 const ALIAS_FOTO = ["foto archivo", "foto", "archivo de foto", "nombre de la foto", "fotografia"];
 
-/** Los campos que se capturan en Excel: los de texto y fecha, con los de siempre primero. */
-export function columnasDe(campos: CampoExcel[]): CampoExcel[] {
-  const capturables = campos.filter((c) => c.tipo === "texto" || c.tipo === "fecha");
-  return [
-    ...capturables.filter((c) => esColumnaSistema(c.clave)),
-    ...capturables.filter((c) => !esColumnaSistema(c.clave)),
-  ];
+/** Los campos que se capturan en Excel: los de texto y fecha, en el orden que eligió la empresa. */
+export function columnasDe<T extends CampoExcel>(campos: T[]): T[] {
+  return campos.filter((c) => c.tipo === "texto" || c.tipo === "fecha");
 }
 
 /** Para cada encabezado del archivo, la clave del campo al que corresponde, "correo", "foto_archivo" o null. */
