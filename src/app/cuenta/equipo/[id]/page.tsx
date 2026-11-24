@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { borrarEmpleado, cambiarEstatus, quitarFoto } from "@/app/cuenta/acciones";
-import { desactivarDigital, reactivarDigital } from "@/app/cuenta/equipo/digital-acciones";
+import { desactivarDigital, quitarCandado, reactivarDigital } from "@/app/cuenta/equipo/digital-acciones";
 import { renovarLiga } from "@/app/cuenta/equipo/ligas/acciones";
 import { apartarEnAbierto, quitarDeAbierto } from "@/app/cuenta/pedidos/abierto/acciones";
 import { Confirmar } from "@/components/cuenta/Confirmar";
@@ -63,7 +63,10 @@ export default async function Persona({ params }: { params: Promise<{ id: string
     supabase.from("propuestas").select("estado, motivo").eq("empleado_id", id).maybeSingle(),
     constanciaDe(supabase, empresa.id),
   ]);
-  const { data: enAbierto } = await supabase.from("pedido_abierto").select("razon").eq("empleado_id", id).maybeSingle();
+  const [{ data: enAbierto }, { data: llaves }] = await Promise.all([
+    supabase.from("pedido_abierto").select("razon").eq("empleado_id", id).maybeSingle(),
+    supabase.from("llaves_gafete").select("id, dispositivo").eq("empleado_id", id),
+  ]);
   const yaTuvoImpreso = (gafetes ?? []).some((g) => g.tipo === "impreso" && g.estado !== "cancelado");
   const estadoLiga = estadoDeLiga(persona, propuesta);
   const urlLiga = urlDeLiga(persona.liga);
@@ -191,6 +194,23 @@ export default async function Persona({ params }: { params: Promise<{ id: string
                   <Confirmar accion={desactivarDigital} id={persona.id} texto="Desactivar su gafete digital" confirmar="Sí, desactivar">
                     Su liga deja de mostrar el gafete. Lo puedes volver a activar sin costo.
                   </Confirmar>
+                </div>
+              ) : null}
+              {llaves?.length ? (
+                <div className="mt-3 rounded-tarjeta-chica bg-papel p-3 text-sm">
+                  <p>
+                    <strong>Con candado:</strong> su liga se abre con la huella, la cara o el PIN de{" "}
+                    {llaves.length === 1 ? "su dispositivo" : `sus ${llaves.length} dispositivos`} (
+                    {[...new Set(llaves.map((l) => l.dispositivo ?? "dispositivo"))].join(", ")}).
+                  </p>
+                  {administra ? (
+                    <div className="mt-2">
+                      <Confirmar accion={quitarCandado} id={persona.id} texto="Quitar el candado" confirmar="Sí, quitarlo">
+                        Úsalo si cambió de celular y ya no puede abrir su gafete. Su liga sigue siendo la misma y puede volver a
+                        activar el candado en su celular nuevo.
+                      </Confirmar>
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
               {administra && !deBaja && digital.estado === "desactivado" ? (

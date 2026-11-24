@@ -3,8 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { type CampoDeLiga, FormularioLiga } from "@/components/FormularioLiga";
 import { CambiarFotoDigital } from "@/components/CambiarFotoDigital";
+import { AjustesCandado, PantallaCandado } from "@/components/CandadoGafete";
 import { GafeteDigitalVista } from "@/components/GafeteDigitalVista";
 import { Contenedor } from "@/components/ui";
+import { candadoAbierto, llavesDe } from "@/lib/cuenta/candado";
 import { cambioFotoDe } from "@/lib/cuenta/cambio-foto";
 import { gafeteDigitalDe } from "@/lib/cuenta/gafete-digital";
 import { personaDeLiga } from "@/lib/cuenta/liga-publica";
@@ -37,6 +39,18 @@ export default async function MiGafete({ params }: { params: Promise<{ liga: str
   const encontrada = await personaDeLiga(liga);
   if (!encontrada) notFound();
   const { servicio, persona, empresa, campos, propuesta } = encontrada;
+
+  // Con candado, nada de la persona se muestra hasta que confirme con su dispositivo.
+  const llaves = await llavesDe(servicio, persona.id);
+  if (llaves.length && !(await candadoAbierto(liga, persona.id))) {
+    return (
+      <Contenedor className="py-8 sm:py-12">
+        <div className="mx-auto max-w-md">
+          <PantallaCandado liga={liga} empresa={empresa.nombre} />
+        </div>
+      </Contenedor>
+    );
+  }
 
   // Si ya mandó algo que sigue en revisión o le pidieron corregirlo, parte de eso.
   const enCurso = propuesta && propuesta.estado !== "aprobada" ? propuesta : null;
@@ -105,6 +119,12 @@ export default async function MiGafete({ params }: { params: Promise<{ liga: str
             <p className="mt-2 text-gris">Este es tu gafete digital. Muéstralo cuando te lo pidan.</p>
             <div className="mt-5">
               <GafeteDigitalVista gafete={digital} estado={verificado?.estado ?? null} />
+            </div>
+            <div className="mt-5">
+              <AjustesCandado
+                liga={liga}
+                dispositivos={llaves.map((l) => ({ id: l.id, dispositivo: l.dispositivo, creada: l.creada_en, usada: l.usada_en }))}
+              />
             </div>
             {cambioFoto ? (
               <div className="mt-5">

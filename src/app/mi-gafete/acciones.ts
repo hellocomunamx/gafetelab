@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { avisarAlMomento } from "@/lib/avisos/enviar";
+import { ligaBloqueada } from "@/lib/cuenta/candado";
 import { personaDeLiga } from "@/lib/cuenta/liga-publica";
 import { PESO_MAXIMO_FOTO, RUTA_LIGA, rutaFotoPendiente } from "@/lib/cuenta/ligas";
 import type { Resultado } from "@/lib/cuenta/tipos";
@@ -23,6 +24,9 @@ export async function enviarMisDatos(datos: FormData): Promise<Resultado> {
   const encontrada = await personaDeLiga(liga);
   if (!encontrada) return { error: "Esta liga ya no está activa. Pide una nueva en tu empresa." };
   const { servicio, persona, empresa, campos, propuesta } = encontrada;
+  if (await ligaBloqueada(servicio, liga, persona.id)) {
+    return { error: "Tu gafete se volvió a cerrar. Recarga la página y ábrelo con tu huella o tu cara." };
+  }
   // Una vez enviado, la liga se cierra: solo la empresa la reabre pidiendo una corrección.
   if (propuesta && propuesta.estado !== "rechazada") {
     return { error: "Ya enviaste tu información. Si necesitas cambiar algo, solicítalo al departamento correspondiente de tu empresa." };
