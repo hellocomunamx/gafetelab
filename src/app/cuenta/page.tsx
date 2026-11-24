@@ -8,9 +8,11 @@ import { requerirEmpresa } from "@/lib/cuenta/sesion";
 import { pedidoAbiertoDe } from "@/lib/pedidos/abierto";
 import { leerPredeterminados } from "@/lib/pedidos/predeterminados";
 import { claveDe } from "@/lib/cuenta/texto";
+import { EtiquetaEstado } from "@/components/cuenta/EtiquetaEstado";
+import { estadoEvento, fechaEvento, hoyIso, nombreTipoEvento, rangoEvento } from "@/lib/eventos";
 
 export default async function Resumen() {
-  const { supabase, usuario, empresa } = await requerirEmpresa();
+  const { supabase, usuario, empresa, esEvento } = await requerirEmpresa();
   const contar = (filtro: (q: ReturnType<typeof base>) => ReturnType<typeof base>) =>
     filtro(base()).then((r) => r.count ?? 0);
   const base = () =>
@@ -46,9 +48,16 @@ export default async function Resumen() {
       href: "/cuenta/verificacion",
       accion: constancia?.estado === "pendiente" ? "Ver" : constancia ? "Intentar de nuevo" : "Verificar",
     },
-    { hecho: activos + bajas > 0, texto: "Sube a tu equipo", href: "/cuenta/equipo/importar", accion: "Importar con Excel" },
-    { hecho: activos > 0 && sinFoto === 0, texto: "Sube las fotos", href: "/cuenta/equipo/fotos", accion: "Subir fotos" },
-    { hecho: disenos > 0, texto: "Crea el diseño de tu gafete", href: "/cuenta/disenos/nuevo", accion: "Crear diseño" },
+    ...(esEvento
+      ? [
+          { hecho: activos + bajas > 0, texto: "Sube la lista de asistentes", href: "/cuenta/equipo/importar", accion: "Importar con Excel" },
+          { hecho: disenos > 0, texto: "Revisa el diseño de cada categoría", href: "/cuenta/disenos", accion: "Ver diseños" },
+        ]
+      : [
+          { hecho: activos + bajas > 0, texto: "Sube a tu equipo", href: "/cuenta/equipo/importar", accion: "Importar con Excel" },
+          { hecho: activos > 0 && sinFoto === 0, texto: "Sube las fotos", href: "/cuenta/equipo/fotos", accion: "Subir fotos" },
+          { hecho: disenos > 0, texto: "Crea el diseño de tu gafete", href: "/cuenta/disenos/nuevo", accion: "Crear diseño" },
+        ]),
     { hecho: direcciones > 0, texto: "Guarda tu dirección de envío", href: "/cuenta/datos", accion: "Agregar dirección" },
     { hecho: fiscales > 0, texto: "Guarda tus datos de facturación", href: "/cuenta/datos#facturacion", accion: "Agregar datos" },
   ];
@@ -78,6 +87,21 @@ export default async function Resumen() {
           ) : null}
         </p>
       </div>
+      {esEvento ? (
+        <Link href="/cuenta/evento" className="block rounded-tarjeta border border-linea bg-white p-5 hover:border-tinta">
+          <p className="text-sm text-gris">{nombreTipoEvento(empresa.evento_tipo)}</p>
+          <p className="mt-1 font-titulos text-xl font-extrabold">
+            {rangoEvento(empresa.evento_inicio ?? hoyIso(), empresa.evento_fin ?? empresa.evento_inicio ?? hoyIso())}
+            {empresa.evento_sede ? ` · ${empresa.evento_sede}` : ""}
+          </p>
+          <p className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+            <EtiquetaEstado estado={estadoEvento(empresa)} />
+            {empresa.evento_limite && empresa.evento_limite >= hoyIso() ? (
+              <span>Pide a más tardar el {fechaEvento(empresa.evento_limite)} para recibir tus gafetes antes del evento.</span>
+            ) : null}
+          </p>
+        </Link>
+      ) : null}
       {!constancia || constancia.estado === "rechazada" || constancia.estado === "retirada" ? (
         <div role={constancia ? "alert" : undefined} className="rounded-tarjeta bg-resaltador/30 p-4 text-sm">
           <p>
@@ -121,10 +145,12 @@ export default async function Resumen() {
 
       <section className="grid gap-5 rounded-tarjeta bg-tinta p-5 text-white sm:p-6 lg:grid-cols-[1fr_auto] lg:items-center">
         <div>
-          <h2 className="text-xl font-extrabold">Sube a tu equipo con tu plantilla de Excel</h2>
+          <h2 className="text-xl font-extrabold">
+            {esEvento ? "Sube a tus asistentes con tu plantilla de Excel" : "Sube a tu equipo con tu plantilla de Excel"}
+          </h2>
           <p className="mt-1 max-w-xl text-sm text-white/75">
             Personaliza los campos de tu gafete y descarga una plantilla hecha a tu medida. La llenas,
-            la subes y cada renglón se convierte en una persona de tu equipo.
+            la subes y cada renglón se convierte en {esEvento ? "un asistente, con su categoría" : "una persona de tu equipo"}.
           </p>
         </div>
         <ol className="flex flex-wrap items-center gap-2 text-sm font-semibold">

@@ -52,7 +52,7 @@ const GRIS = "#5c6178";
 const S = 2; // sangrado
 
 /** Blanco o tinta, lo que se lea mejor sobre el color dado. */
-function sobre(color: string): string {
+export function sobre(color: string): string {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(color.slice(i, i + 2), 16) / 255);
   return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.6 ? TINTA : "#ffffff";
 }

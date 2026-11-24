@@ -37,6 +37,12 @@ export const extraDosCarasMaximo = Math.max(...tramosDosCaras.map((t) => t.preci
 /** Precio por pieza del gafete digital: el mismo si va solo o sumado a uno impreso. */
 export const precioDigital = 10;
 
+/**
+ * Cordón liso con broche, del color de la categoría, como agregado de un
+ * pedido de evento. Precio por pieza (propuesta, por confirmar con Gloria).
+ */
+export const precioCordon = 12;
+
 export const tasaIva = 0.16;
 export const notaIva = "más IVA";
 

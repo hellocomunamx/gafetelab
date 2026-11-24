@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { Contenedor } from "@/components/ui";
 import { site } from "@/lib/site";
 import { fotoVerificada, verificarGafete } from "@/lib/verificacion";
+import { sobre } from "@/lib/diseno/plantillas";
+import { rangoEvento } from "@/lib/eventos";
 
 export const metadata: Metadata = {
   title: "Verificación de gafete",
@@ -45,11 +47,20 @@ const ESTADOS = {
   },
 } as const;
 
+/** En un evento el QR es de acceso: se habla de acceso, no de vigencia. */
+const ESTADOS_EVENTO = {
+  ...ESTADOS,
+  vigente: { ...ESTADOS.vigente, sello: "Acceso válido", texto: "Este gafete da acceso al evento." },
+  expirado: { ...ESTADOS.expirado, sello: "Evento terminado", texto: "Este evento ya terminó." },
+  baja: { ...ESTADOS.baja, sello: "Sin acceso", texto: "Este gafete ya no da acceso al evento." },
+} as const;
+
 export default async function Verificar({ params }: { params: Promise<{ codigo: string }> }) {
   const { codigo } = await params;
   const gafete = await verificarGafete(codigo);
   if (!gafete) notFound();
-  const estado = ESTADOS[gafete.estado] ?? ESTADOS.baja;
+  const estados = gafete.evento ? ESTADOS_EVENTO : ESTADOS;
+  const estado = estados[gafete.estado] ?? estados.baja;
   const foto = gafete.con_foto ? await fotoVerificada(codigo) : null;
   const ahora = new Date().toLocaleString("es-MX", {
     day: "numeric",
@@ -95,6 +106,16 @@ export default async function Verificar({ params }: { params: Promise<{ codigo: 
               />
             ) : null}
             {gafete.nombre ? <p className="font-titulos text-2xl leading-tight font-extrabold">{gafete.nombre}</p> : null}
+            {gafete.categoria ? (
+              <p className="mt-3">
+                <span
+                  className="inline-block rounded-full px-4 py-1 font-titulos text-sm font-extrabold tracking-wide uppercase"
+                  style={{ background: gafete.categoria.color, color: sobre(gafete.categoria.color) }}
+                >
+                  {gafete.categoria.nombre}
+                </span>
+              </p>
+            ) : null}
             {renglones.length ? (
               <dl className="mx-auto mt-4 max-w-xs space-y-2 text-left">
                 {renglones.map((r) => (
@@ -112,7 +133,9 @@ export default async function Verificar({ params }: { params: Promise<{ codigo: 
             ) : null}
             <p className="mt-4 text-sm text-gris">
               {estado.texto}
-              {gafete.vigente_hasta
+              {gafete.evento
+                ? ` ${rangoEvento(gafete.evento.inicio, gafete.evento.fin)}${gafete.evento.sede ? `, ${gafete.evento.sede}` : ""}.`
+                : gafete.vigente_hasta
                 ? gafete.estado === "expirado"
                   ? ` Venció el ${fechaLarga(gafete.vigente_hasta)}.`
                   : ` Vence el ${fechaLarga(gafete.vigente_hasta)}.`

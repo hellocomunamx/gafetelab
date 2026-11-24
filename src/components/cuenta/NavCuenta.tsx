@@ -4,11 +4,24 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-const ENLACES = [
+const ENLACES_EQUIPO = [
   { href: "/cuenta", texto: "Resumen" },
   { href: "/cuenta/equipo", texto: "Equipo" },
   { href: "/cuenta/solicitudes", texto: "Solicitudes" },
   { href: "/cuenta/campos", texto: "Datos del equipo" },
+  { href: "/cuenta/disenos", texto: "Diseños" },
+  { href: "/cuenta/pedidos", texto: "Pedidos" },
+  { href: "/cuenta/eventos", texto: "Eventos" },
+  { href: "/cuenta/datos", texto: "Envío y facturación" },
+  { href: "/cuenta/usuarios", texto: "Usuarios" },
+];
+
+/** En un evento no hay portal ni solicitudes, y el equipo son los asistentes. */
+const ENLACES_EVENTO = [
+  { href: "/cuenta", texto: "Resumen" },
+  { href: "/cuenta/evento", texto: "Evento" },
+  { href: "/cuenta/equipo", texto: "Asistentes" },
+  { href: "/cuenta/campos", texto: "Datos de asistentes" },
   { href: "/cuenta/disenos", texto: "Diseños" },
   { href: "/cuenta/pedidos", texto: "Pedidos" },
   { href: "/cuenta/datos", texto: "Envío y facturación" },
@@ -16,7 +29,9 @@ const ENLACES = [
 ];
 
 function esActivo(href: string, ruta: string) {
-  return href === "/cuenta" ? ruta === href : ruta.startsWith(href);
+  if (href === "/cuenta") return ruta === href;
+  // "/cuenta/evento" no debe marcarse en "/cuenta/eventos" ni al revés.
+  return ruta === href || ruta.startsWith(`${href}/`);
 }
 
 /**
@@ -25,8 +40,9 @@ function esActivo(href: string, ruta: string) {
  *   en una cuadrícula, sin desplazar hacia los lados.
  * - Escritorio: pestañas en renglón que bajan de línea si no caben.
  */
-export function NavCuenta() {
+export function NavCuenta({ evento = false }: { evento?: boolean }) {
   const ruta = usePathname();
+  const ENLACES = evento ? ENLACES_EVENTO : ENLACES_EQUIPO;
   // Se guarda la ruta en la que se abrió: al cambiar de página se cierra solo.
   const [abiertoEn, setAbiertoEn] = useState<string | null>(null);
   const abierto = abiertoEn === ruta;

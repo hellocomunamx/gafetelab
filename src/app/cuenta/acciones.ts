@@ -54,8 +54,9 @@ export async function guardarConstancia(entrada: {
   fechaLeida: boolean;
   carta: boolean;
 }): Promise<Resultado> {
-  const { supabase, empresa, administra } = await requerirEmpresa();
+  const { supabase, empresa, administra, esEvento } = await requerirEmpresa();
   if (!administra) return { error: "Solo quien administra la empresa puede verificarla." };
+  if (esEvento) return { error: "Los eventos usan la verificación de su organización: verifícala desde tu empresa." };
   if (entrada?.carta !== true) return { error: "Para continuar, debes aceptar la carta de responsabilidad: léela y marca la casilla «Acepto la carta de responsabilidad»." };
   const ruta = String(entrada?.ruta ?? "");
   const fecha = String(entrada?.fecha ?? "");

@@ -12,6 +12,7 @@ import { requerirAdmin } from "@/lib/admin/sesion";
 import { nombreMetodo } from "@/lib/cuenta/constancia";
 import { eventosFactura } from "@/lib/facturas";
 import { materialPara } from "@/lib/materiales";
+import { nombreColor } from "@/lib/eventos";
 import {
   type DireccionCopiada,
   type FacturacionCopiada,
@@ -344,6 +345,19 @@ export default async function Pedido({
                         .join(", ")})`
                     : ""}
                 </p>
+                {Array.isArray(pedido.cordones) && pedido.cordones.length ? (
+                  <div>
+                    <p className="font-semibold">Cordones por color</p>
+                    <ul className="mt-1 flex flex-wrap gap-2">
+                      {(pedido.cordones as { categoria: string; color: string; piezas: number }[]).map((x) => (
+                        <li key={x.categoria} className="inline-flex items-center gap-2 rounded-full border border-linea px-3 py-1">
+                          <span aria-hidden className="size-3.5 rounded-full ring-1 ring-linea" style={{ background: x.color }} />
+                          {x.piezas.toLocaleString("es-MX")} {nombreColor(x.color).toLocaleLowerCase("es-MX")} ({x.categoria})
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
               </>
             )}
             {soloDigital ? null : (

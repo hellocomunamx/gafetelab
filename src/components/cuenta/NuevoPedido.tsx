@@ -10,7 +10,8 @@ import { razones as nombresRazon, type Razon } from "@/lib/pedidos/predeterminad
 import { pago, pedidoMaximoPiezas, soloTransferencia } from "@/lib/pedidos/reglas";
 import { cotizarPedido, llevaDigital, llevaImpreso } from "@/lib/pedidos/digital";
 import { resumenSaldo, type SaldoDisponible } from "@/lib/pedidos/saldo";
-import { envioGratisTexto, type Modalidad, modalidades, notaIva, pesos, precioDigital } from "@/lib/precios";
+import { envioGratisTexto, type Modalidad, modalidades, notaIva, pesos, precioCordon, precioDigital } from "@/lib/precios";
+import { type Categoria, cordonesDe, fechaEvento, hoyIso, nombreColor } from "@/lib/eventos";
 import { entregaTexto, site } from "@/lib/site";
 
 export type FuenteVista = {
@@ -69,6 +70,7 @@ export function NuevoPedido({
   saldos,
   conDigital,
   inicial,
+  evento = null,
 }: {
   fuentes: FuenteVista[];
   muestras: Record<string, ReactNode>;
@@ -80,6 +82,8 @@ export function NuevoPedido({
   saldos: SaldoDisponible[];
   /** Personas que ya tienen su gafete digital: no se les vuelve a cobrar. */
   conDigital: string[];
+  /** Si el proyecto es un evento: sus categorías, la de cada persona y sus fechas. */
+  evento?: { categorias: Categoria[]; categoriaDe: Record<string, string>; limite: string; inicio: string } | null;
   /** Con qué arranca el pedido: los predeterminados del negocio y, si viene de una reposición o del pedido abierto, a quiénes. */
   inicial: {
     fuente: string | null;
@@ -114,6 +118,8 @@ export function NuevoPedido({
   const [direccion, setDireccion] = useState(direcciones[0]?.id ?? "");
   const [facturacion, setFacturacion] = useState(inicial.sinFactura ? "" : (fiscales[0]?.id ?? ""));
   const [aprobado, setAprobado] = useState(false);
+  // En un evento el cordón va marcado de entrada: es lo que casi todos piden.
+  const [cordon, setCordon] = useState(Boolean(evento));
   const [error, setError] = useState("");
   const [enviando, iniciar] = useTransition();
 
@@ -126,7 +132,9 @@ export function NuevoPedido({
 
   const piezas = elegidas.size;
   const dosCaras = impreso && (fuente.tipo === "diseno" ? fuente.dosCaras : [...elegidas].some((id) => fuente.gafetes[id]?.vuelta));
-  const c = cotizarPedido(Math.max(1, piezas), { modalidad, dosCaras, material }, saldos);
+  const conCordon = Boolean(evento) && impreso && cordon;
+  const c = cotizarPedido(Math.max(1, piezas), { modalidad, dosCaras, material, cordon: conCordon }, saldos);
+  const cordones = evento && conCordon ? cordonesDe([...elegidas].map((id) => evento.categoriaDe[id]), evento.categorias) : [];
   const enSaldo = resumenSaldo(saldos);
   const porTransferencia = soloTransferencia(piezas, c.total);
 
@@ -166,6 +174,7 @@ export function NuevoPedido({
         direccion,
         facturacion: facturacion || null,
         aprobado,
+        cordon: conCordon,
         razones: Object.fromEntries([...elegidas].flatMap((id) => (inicial.razones[id] ? [[id, inicial.razones[id]]] : []))),
       });
       if (r.url) window.location.assign(r.url);
@@ -320,6 +329,27 @@ export function NuevoPedido({
               ))}
             </div>
             <p className="mt-3 text-sm text-gris">{materiales.find((m) => m.id === material)?.resumen}</p>
+            {evento ? (
+              <div className="mt-5 border-t border-linea pt-4">
+                <label className="flex items-start gap-3">
+                  <input type="checkbox" checked={cordon} onChange={(e) => setCordon(e.target.checked)} className="mt-1 size-4 accent-rojo" />
+                  <span>
+                    <span className="font-semibold">Agregar cordón con broche (+{pesos(precioCordon)} por pieza)</span>
+                    <span className="block text-sm text-gris">Uno por gafete, del color de la categoría de cada persona.</span>
+                  </span>
+                </label>
+                {cordones.length ? (
+                  <ul className="mt-3 flex flex-wrap gap-2 text-sm">
+                    {cordones.map((x) => (
+                      <li key={x.categoria} className="inline-flex items-center gap-2 rounded-full border border-linea px-3 py-1">
+                        <span aria-hidden className="size-3.5 rounded-full ring-1 ring-linea" style={{ background: x.color }} />
+                        {x.piezas.toLocaleString("es-MX")} {nombreColor(x.color).toLocaleLowerCase("es-MX")} · {x.categoria}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+            ) : null}
           </Paso>
         ) : null}
 
@@ -429,6 +459,11 @@ export function NuevoPedido({
             : porTransferencia
             ? "Por su tamaño, este pedido se paga por transferencia (SPEI). Al continuar te damos la CLABE y la referencia."
             : `Pagas con tarjeta, en efectivo en OXXO o por transferencia (SPEI). Con tarjeta tienes ${pago.minutosDeGracia} minutos para cancelar sin costo.`}{" "}
+          {evento && impreso && evento.limite < hoyIso()
+            ? `Ojo: pasó la fecha límite para pedir (${fechaEvento(evento.limite)}). Con envío estándar podría no llegar antes del ${fechaEvento(evento.inicio)}; escríbenos antes de pagar. `
+            : evento && impreso
+              ? `Pidiendo hoy, tus gafetes llegan antes del evento (${fechaEvento(evento.inicio)}). `
+              : ""}
           {impreso
             ? `Empezamos a producir cuando se confirma tu pago; la entrega es en ${entregaTexto}.${digital ? " Los gafetes digitales se activan al confirmarse el pago." : ""}`
             : "Los gafetes digitales se activan al confirmarse el pago, sin envío."}
