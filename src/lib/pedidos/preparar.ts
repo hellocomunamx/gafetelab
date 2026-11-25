@@ -133,16 +133,17 @@ export async function prepararPedido(
 }
 
 /**
- * ¿El pedido va impreso por frente y vuelta? Con un diseño, si tiene vuelta;
- * con reglas o con gafetes listos, si alguno de los elegidos la lleva.
+ * ¿Cuántos gafetes del pedido llevan vuelta? Con un diseño, todos o ninguno;
+ * con reglas o con gafetes listos, los elegidos que la llevan. Solo a ellos
+ * se les cobra la vuelta.
  */
-export function llevaVuelta(fuente: FuenteDePedido, personas: string[]): boolean {
-  if (fuente.tipo === "diseno") return Boolean(fuente.diseno?.vuelta);
+export function cuantosConVuelta(fuente: FuenteDePedido, personas: string[]): number {
+  if (fuente.tipo === "diseno") return fuente.diseno?.vuelta ? personas.length : 0;
   if (fuente.tipo === "reglas") {
-    return personas.some((id) => {
+    return personas.filter((id) => {
       const d = fuente.gafetes.get(id)?.disenoId;
       return Boolean(d && fuente.disenos?.get(d)?.diseno.vuelta);
-    });
+    }).length;
   }
-  return personas.some((id) => Boolean(fuente.gafetes.get(id)?.copia.vuelta));
+  return personas.filter((id) => Boolean(fuente.gafetes.get(id)?.copia.vuelta)).length;
 }

@@ -62,7 +62,7 @@ export default async function Facturas({ searchParams }: { searchParams: Promise
     servicio.from("facturas").select("*").order("solicitada_en").limit(3000),
     servicio
       .from("pedidos")
-      .select("id, folio, empresa_id, estado, piezas, material, dos_caras, por_pieza, subtotal, envio, iva, total, metodo, pagado_en, creado_en")
+      .select("id, folio, empresa_id, estado, piezas, material, dos_caras, conceptos, por_pieza, subtotal, envio, iva, total, metodo, pagado_en, creado_en")
       .not("pagado_en", "is", null)
       .order("pagado_en", { ascending: false })
       .limit(5000),
@@ -80,7 +80,7 @@ export default async function Facturas({ searchParams }: { searchParams: Promise
   const { data: otros } = faltan.length
     ? await servicio
         .from("pedidos")
-        .select("id, folio, empresa_id, estado, piezas, material, dos_caras, por_pieza, subtotal, envio, iva, total, metodo, pagado_en, creado_en")
+        .select("id, folio, empresa_id, estado, piezas, material, dos_caras, conceptos, por_pieza, subtotal, envio, iva, total, metodo, pagado_en, creado_en")
         .in("id", faltan.slice(0, 500))
     : { data: [] };
   const pedidoDe = new Map([...(pedidos ?? []), ...(otros ?? [])].map((p) => [p.id, p]));

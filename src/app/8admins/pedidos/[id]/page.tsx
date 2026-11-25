@@ -25,6 +25,7 @@ import {
   sigueEnGracia,
 } from "@/lib/pedidos/reglas";
 import { aprobacionDe, cobrarAutorizados, articulosDe, conceptosDe } from "@/lib/pedidos/servidor";
+import { carasDelPedido } from "@/lib/pedidos/saldo";
 import { type Modalidad, nombreModalidad, pesos } from "@/lib/precios";
 import { EnvioEnvia } from "./EnvioEnvia";
 import { avisarListoPedido, cancelarPedidoAdmin, entregarPedido, enviarPedido, guardarNotas, producirPedido, revisarPedido } from "../acciones";
@@ -336,7 +337,7 @@ export default async function Pedido({
                   </div>
                 ))}
                 <p className="text-gris">
-                  {soloDigital ? "Solo digital" : pedido.dos_caras ? "Frente y vuelta" : "Una cara"}
+                  {soloDigital ? "Solo digital" : carasDelPedido(pedido.dos_caras, conceptos)}
                   {material ? `, ${material.nombre}` : ""}
                   {pedido.fuente === "listos" ? ", gafetes que la empresa subió ya terminados" : ""}
                   {(pedido.diseno as { reglas?: Record<string, { nombre: string }> } | null)?.reglas
