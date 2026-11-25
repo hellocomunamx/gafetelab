@@ -20,7 +20,7 @@ import {
   precioMinimo,
   tramos,
   tramosDetalle,
-  textoEnvios,
+  textoEnviosIncluidos,
 } from "./precios";
 
 export type Faq = { pregunta: string; respuesta: string };
@@ -65,7 +65,7 @@ export const faqsGenerales: Faq[] = [
   },
   {
     pregunta: "¿Conviene pedir solo uno, dos o tres gafetes?",
-    respuesta: `Sí se puede, y para que el envío no pese más que el gafete existen los paquetes prepagados. Compras, por ejemplo, ${paquetes[0].piezas} gafetes por ${pesos(paquetes[0].piezas * paquetes[0].porPieza)} con ${textoEnvios(paquetes[0].envios)} incluidos, usas los que necesitas hoy y el resto queda a tu favor durante ${paqueteVigenciaMeses} meses. Son gafetes de PVC estándar impresos a una cara, sin gafete digital; ${paqueteDistinto.charAt(0).toLowerCase()}${paqueteDistinto.slice(1)} También puedes dejar un pedido abierto en tu plataforma e ir sumando altas y reposiciones hasta completar un envío.`,
+    respuesta: `Sí se puede, y para que el envío no pese más que el gafete existen los paquetes prepagados. Compras, por ejemplo, ${paquetes[0].piezas} gafetes por ${pesos(paquetes[0].piezas * paquetes[0].porPieza)} con ${textoEnviosIncluidos(paquetes[0].envios)}, usas los que necesitas hoy y el resto queda a tu favor durante ${paqueteVigenciaMeses} meses. Son gafetes de PVC estándar impresos a una cara, sin gafete digital; ${paqueteDistinto.charAt(0).toLowerCase()}${paqueteDistinto.slice(1)} También puedes dejar un pedido abierto en tu plataforma e ir sumando altas y reposiciones hasta completar un envío.`,
   },
   {
     pregunta: "¿Los paquetes prepagados se pueden reembolsar o transferir?",

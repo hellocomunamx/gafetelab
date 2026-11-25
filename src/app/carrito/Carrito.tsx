@@ -6,7 +6,7 @@ import { useState, useSyncExternalStore, useTransition } from "react";
 import { carritoMaximoPiezas, cotizarCarrito } from "@/lib/carrito";
 import { cambiarPiezas, quitarDelCarrito, useCarrito, vaciarCarrito } from "@/lib/carrito-navegador";
 import { pago, soloTransferencia } from "@/lib/pedidos/reglas";
-import { notaIva, paqueteDistinto, paqueteSaldoIguales, paqueteVigenciaMeses, pesos } from "@/lib/precios";
+import { notaIva, paqueteDistinto, paqueteSaldoIguales, paqueteVigenciaMeses, pesos, textoEnviosIncluidos } from "@/lib/precios";
 import { entregaTexto } from "@/lib/site";
 import { comprarCarrito } from "./acciones";
 
@@ -189,7 +189,7 @@ export function Carrito({ estado }: { estado: EstadoCompra }) {
         </p>
         {c.envios ? (
           <p className="text-sm text-gris">
-            y {c.envios} {c.envios === 1 ? "envío" : "envíos"} incluidos
+            y {textoEnviosIncluidos(c.envios)}
           </p>
         ) : null}
         <dl className="mt-4 space-y-2 text-sm">

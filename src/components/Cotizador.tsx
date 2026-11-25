@@ -17,6 +17,7 @@ import {
   precioPaquete,
   tramos,
   textoEnvios,
+  textoEnviosIncluidos,
 } from "@/lib/precios";
 import { entregaTexto } from "@/lib/site";
 import { ArmaPaquete } from "./ArmaPaquete";
@@ -202,7 +203,7 @@ export function Cotizador() {
           </div>
           <p className="mt-2 text-sm text-gris">
             {c.paquete
-              ? `Pagas hoy los ${c.paquete.piezas} gafetes y los pides cuando quieras, en uno o varios pedidos, con ${textoEnvios(c.paquete.envios)} incluidos. El precio por pieza no cambia aunque pidas de uno en uno. Los paquetes de lista son de PVC estándar a una cara; para frente y vuelta u otro material, arma uno a la medida.`
+              ? `Pagas hoy los ${c.paquete.piezas} gafetes y los pides cuando quieras, en uno o varios pedidos, con ${textoEnviosIncluidos(c.paquete.envios)}. El precio por pieza no cambia aunque pidas de uno en uno. Los paquetes de lista son de PVC estándar a una cara; para frente y vuelta u otro material, arma uno a la medida.`
               : "Arma tu paquete con varios tipos de gafete: cada uno con su cantidad, su impresión y su material. Cada gafete prepagado cubre solo un gafete igual al que elegiste."}
           </p>
         </fieldset>

@@ -87,6 +87,9 @@ export const paqueteVigenciaMeses = 12;
 /** «1 envío» o «3 envíos». */
 export const textoEnvios = (n: number) => `${n} ${n === 1 ? "envío" : "envíos"}`;
 
+/** «1 envío incluido» o «3 envíos incluidos». */
+export const textoEnviosIncluidos = (n: number) => `${textoEnvios(n)} ${n === 1 ? "incluido" : "incluidos"}`;
+
 /**
  * Qué incluye un paquete de lista y qué no. Lo leen todas las vistas donde
  * aparecen los paquetes, los términos, Gafi y llms.txt: cambiarlo aquí lo
