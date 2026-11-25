@@ -24,6 +24,8 @@ export function MenuPerfil({
   const [abiertoEn, setAbiertoEn] = useState<string | null>(null);
   const abierto = abiertoEn === ruta;
   const caja = useRef<HTMLDivElement>(null);
+  // En pantallas angostas el botón queda a la izquierda: el menú se abre hacia donde sí cabe.
+  const [haciaDerecha, setHaciaDerecha] = useState(false);
   const inicial = (nombre?.trim() || correo).charAt(0).toUpperCase();
 
   useEffect(() => {
@@ -50,7 +52,11 @@ export function MenuPerfil({
         type="button"
         aria-expanded={abierto}
         aria-controls="menu-perfil"
-        onClick={() => setAbiertoEn(abierto ? null : ruta)}
+        onClick={() => {
+          const lugar = caja.current?.getBoundingClientRect();
+          if (lugar) setHaciaDerecha(lugar.left + lugar.width / 2 < window.innerWidth / 2);
+          setAbiertoEn(abierto ? null : ruta);
+        }}
         className="flex items-center gap-2 rounded-full border border-linea bg-white py-1 pl-1 pr-3 text-sm font-semibold hover:border-tinta"
       >
         <span aria-hidden className="grid h-7 w-7 place-items-center rounded-full bg-tinta text-xs text-white">
@@ -71,7 +77,7 @@ export function MenuPerfil({
       {abierto ? (
         <div
           id="menu-perfil"
-          className="absolute right-0 top-full z-40 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-2xl border border-linea bg-white p-2 shadow-lg"
+          className={`absolute top-full z-40 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-2xl border border-linea bg-white p-2 shadow-lg ${haciaDerecha ? "left-0" : "right-0"}`}
         >
           <div className="border-b border-linea px-3 pb-3 pt-2">
             {nombre ? <p className="truncate font-semibold">{nombre}</p> : null}
