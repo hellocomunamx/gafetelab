@@ -290,7 +290,7 @@ export default async function Pedido({
                     {x.nombre}
                     <span className="block text-gris">
                       {x.cantidad.toLocaleString("es-MX")} × {x.precio ? pesos(x.precio) : "ya pagados"}
-                      {x.precio && material ? ` · ${pedido.dos_caras ? "Frente y vuelta" : "Una cara"}, ${material.nombre}` : ""}
+                      {x.precio && material && x.dosCaras === undefined ? ` · ${pedido.dos_caras ? "Frente y vuelta" : "Una cara"}, ${material.nombre}` : ""}
                     </span>
                   </dt>
                   <dd className="font-semibold">{pesos(x.cantidad * x.precio)}</dd>

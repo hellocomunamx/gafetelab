@@ -63,6 +63,8 @@ export type PedidoFacturable = {
   piezas: number;
   material: string | null;
   dos_caras: boolean;
+  /** Renglones del cobro; un pedido con y sin vuelta trae uno por cada tipo. */
+  conceptos?: unknown;
   por_pieza: number | string;
   subtotal: number | string;
   envio: number | string;
@@ -76,15 +78,31 @@ export type ConceptoSat = { descripcion: string; cantidad: number; unidad: strin
 /** Los renglones de la factura, con importes antes de IVA, como se capturan en el SAT. */
 export function conceptosSat(p: PedidoFacturable): ConceptoSat[] {
   const material = materialPara(p.material);
-  const conceptos: ConceptoSat[] = [
-    {
-      descripcion: `Gafete de identificación impreso, ${material.nombre}, ${p.dos_caras ? "frente y vuelta" : "una cara"}. Pedido ${p.folio}`,
-      cantidad: p.piezas,
-      unidad: "H87 Pieza",
-      valorUnitario: Number(p.por_pieza),
-      importe: Number(p.subtotal),
-    },
-  ];
+  const caras = (dos: boolean) => (dos ? "frente y vuelta" : "una cara");
+  const cobrados = Array.isArray(p.conceptos)
+    ? (p.conceptos as { nombre: string; cantidad: number; precio: number; dosCaras?: boolean }[]).filter((x) => x.precio > 0)
+    : [];
+  // Los pedidos nuevos guardan si cada renglón lleva vuelta: se factura un renglón por cada uno.
+  const conceptos: ConceptoSat[] = cobrados.some((x) => x.dosCaras !== undefined)
+    ? cobrados.map((x) => ({
+        descripcion:
+          x.dosCaras === undefined
+            ? `${x.nombre}. Pedido ${p.folio}`
+            : `Gafete de identificación impreso, ${material.nombre}, ${caras(x.dosCaras)}. Pedido ${p.folio}`,
+        cantidad: x.cantidad,
+        unidad: "H87 Pieza",
+        valorUnitario: x.precio,
+        importe: Math.round(x.cantidad * x.precio * 100) / 100,
+      }))
+    : [
+        {
+          descripcion: `Gafete de identificación impreso, ${material.nombre}, ${caras(p.dos_caras)}. Pedido ${p.folio}`,
+          cantidad: p.piezas,
+          unidad: "H87 Pieza",
+          valorUnitario: Number(p.por_pieza),
+          importe: Number(p.subtotal),
+        },
+      ];
   if (Number(p.envio) > 0) {
     conceptos.push({
       descripcion: `Envío del pedido ${p.folio}`,

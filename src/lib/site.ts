@@ -144,10 +144,18 @@ export const legal = {
   horario: "lunes a viernes de 09:00 a 15:00 horas (hora del centro de México)",
   avisoVersion: "1.7",
   avisoFecha: "2026-11-24",
-  terminosVersion: "1.3",
-  terminosFecha: "2026-11-24",
+  terminosVersion: "1.4",
+  terminosFecha: "2026-11-25",
+  /**
+   * Versión más antigua que todavía vale. Solo se sube cuando el cambio es
+   * importante (precios, garantía, cancelaciones o datos): entonces a quien
+   * aceptó una versión anterior se le vuelve a pedir la casilla al entrar.
+   * Las correcciones pequeñas suben la versión, pero no esto.
+   */
+  terminosAceptarDesde: "1.4",
+  avisoAceptarDesde: "1.0",
   /** Días naturales, desde la entrega, para reportar un gafete con defecto. */
-  plazoDefectosDias: 10,
+  plazoDefectosDias: 30,
 } as const;
 
 /** Convierte una ruta ("/precios") en URL absoluta canónica. */

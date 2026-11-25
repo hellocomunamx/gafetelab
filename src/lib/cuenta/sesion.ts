@@ -2,6 +2,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { COLUMNAS_QR } from "@/lib/cuenta/qr";
+import { legal } from "@/lib/site";
 import { crearClienteServidor } from "@/lib/supabase/server";
 
 export const COOKIE_EMPRESA = "lg_empresa";
@@ -18,9 +19,22 @@ export const usuarioDeSesion = cache(async () => {
   return { supabase, usuario: data.user };
 });
 
+/** "1.10" va después de "1.9": compara las versiones número por número. */
+function versionAnterior(version: string | null | undefined, minima: string): boolean {
+  const a = (version ?? "0").split(".").map(Number);
+  const b = minima.split(".").map(Number);
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    const x = a[i] || 0;
+    const y = b[i] || 0;
+    if (x !== y) return x < y;
+  }
+  return false;
+}
+
 /**
  * La aceptación más reciente de los términos y del aviso de privacidad.
- * `pendiente` es true solo cuando sabemos que la persona no ha aceptado: si la
+ * `pendiente` es true solo cuando sabemos que la persona no ha aceptado o que
+ * aceptó una versión anterior a un cambio importante (`actualizar`): si la
  * consulta falla no se le cierra la puerta a nadie.
  */
 export const miAceptacion = cache(async () => {
@@ -30,7 +44,13 @@ export const miAceptacion = cache(async () => {
     .select("terminos_version, aviso_version, aceptado_en")
     .order("aceptado_en", { ascending: false })
     .limit(1);
-  return { aceptacion: data?.[0] ?? null, pendiente: !error && !data?.length };
+  const aceptacion = data?.[0] ?? null;
+  const actualizar = Boolean(
+    aceptacion &&
+      (versionAnterior(aceptacion.terminos_version, legal.terminosAceptarDesde) ||
+        versionAnterior(aceptacion.aviso_version, legal.avisoAceptarDesde)),
+  );
+  return { aceptacion, actualizar, pendiente: !error && (!aceptacion || actualizar) };
 });
 
 /**

@@ -9,7 +9,7 @@ import { miAceptacion, requerirEmpresa } from "@/lib/cuenta/sesion";
 import { type MaterialId, materiales } from "@/lib/materiales";
 import { revisarAviso } from "@/lib/pedidos/abierto";
 import { esRazon, motivoDe } from "@/lib/pedidos/predeterminados";
-import { FUENTE_LISTOS, llevaVuelta, prepararPedido } from "@/lib/pedidos/preparar";
+import { FUENTE_LISTOS, cuantosConVuelta, prepararPedido } from "@/lib/pedidos/preparar";
 import {
   type AprobacionPedido,
   type DireccionCopiada,
@@ -110,11 +110,12 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
     }
   }
 
-  const dosCaras = impreso && llevaVuelta(fuente, ids);
+  // La vuelta solo se cobra a los gafetes que la llevan.
+  const conVuelta = impreso ? cuantosConVuelta(fuente, ids) : 0;
   // Primero se usa el saldo prepagado de la empresa; solo se cobra lo que falte.
   // El cordón solo se ofrece en eventos y va con el gafete impreso.
   const cordon = empresa.tipo === "evento" && impreso && entrada.cordon === true;
-  const c = cotizarPedido(ids.length, { modalidad, dosCaras, material: material.id as MaterialId, cordon }, await saldoDe(servicio, empresa.id));
+  const c = cotizarPedido(ids.length, { modalidad, conVuelta, material: material.id as MaterialId, cordon }, await saldoDe(servicio, empresa.id));
   const cordones = cordon
     ? cordonesDe(
         copias.map((x) => x.gafete!.copia.valores?.categoria),
@@ -169,7 +170,7 @@ export async function crearPedido(entrada: EntradaPedido): Promise<{ url?: strin
       creado_por: usuario.id,
       modalidad,
       material: impreso ? material.id : null,
-      dos_caras: dosCaras,
+      dos_caras: c.conVuelta > 0,
       piezas: c.piezas,
       fuente: fuente.tipo === "reglas" ? "diseno" : fuente.tipo,
       diseno_id: fuente.fila?.id ?? null,

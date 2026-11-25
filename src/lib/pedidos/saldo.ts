@@ -6,7 +6,7 @@
  */
 
 import { type MaterialId, materialPara } from "@/lib/materiales";
-import { cotizar, tasaIva } from "@/lib/precios";
+import { cotizar, envio, tasaIva } from "@/lib/precios";
 
 export type SaldoDisponible = {
   id: string;
@@ -18,10 +18,20 @@ export type SaldoDisponible = {
   venceEn: string;
 };
 
-export type ConceptoCobro = { nombre: string; cantidad: number; precio: number };
+export type ConceptoCobro = {
+  nombre: string;
+  cantidad: number;
+  precio: number;
+  /** En los gafetes impresos: si llevan vuelta. */
+  dosCaras?: boolean;
+};
 
 export type PedidoConSaldo = {
   piezas: number;
+  /** Gafetes impresos que llevan vuelta: solo a ellos se les cobra. */
+  conVuelta: number;
+  /** Importe de los gafetes a precio de lista, sin saldo: con él se decide el envío gratis. */
+  lista: number;
   /** Gafetes que salen del saldo. */
   deSaldo: number;
   /** ¿El envío sale del saldo? */
@@ -29,7 +39,7 @@ export type PedidoConSaldo = {
   /** Qué se aparta de cada saldo. */
   plan: { saldo: string; cantidad: number }[];
   conceptos: ConceptoCobro[];
-  /** Precio normal por pieza de este pedido, para los gafetes que no cubre el saldo. */
+  /** Precio normal por pieza; si unos llevan vuelta y otros no, el promedio. */
   porPieza: number;
   subtotal: number;
   envio: number;
@@ -42,62 +52,94 @@ export type PedidoConSaldo = {
 const redondear = (n: number) => Math.round(n * 100) / 100;
 
 /**
- * Cuánto cuesta un pedido usando el saldo. Solo se usan los gafetes del saldo
- * idénticos a los del pedido (mismas caras y mismo material), primero los que
- * vencen antes. Lo distinto no se toma del saldo: se cobra completo, a precio
- * normal, y el saldo queda intacto.
+ * Cuánto cuesta un pedido usando el saldo. La vuelta solo se cobra a los
+ * gafetes que la llevan (`conVuelta`); el precio por pieza sale del total de
+ * piezas del pedido. Solo se usan los gafetes del saldo idénticos a los del
+ * pedido (mismas caras y mismo material), primero los que vencen antes: el
+ * saldo de una cara no cubre un gafete con vuelta. Lo distinto se cobra
+ * completo, a precio normal, y el saldo queda intacto.
  */
 export function cotizarConSaldo(
   piezas: number,
-  opciones: { dosCaras: boolean; material: MaterialId },
+  opciones: { conVuelta: number; material: MaterialId },
   saldos: SaldoDisponible[],
 ): PedidoConSaldo {
-  const c = cotizar(piezas, { modalidad: "impreso", dosCaras: opciones.dosCaras, material: opciones.material });
-  const gafetes = saldos
-    .filter(
-      (s) =>
-        s.concepto === "gafetes" &&
-        s.disponible > 0 &&
-        s.dosCaras === opciones.dosCaras &&
-        (s.material ?? "estandar") === opciones.material,
-    )
-    .sort((a, b) => a.venceEn.localeCompare(b.venceEn));
+  const unaCara = cotizar(piezas, { modalidad: "impreso", dosCaras: false, material: opciones.material });
+  const total = unaCara.piezas;
+  const conVuelta = Math.min(total, Math.max(0, Math.floor(opciones.conVuelta) || 0));
+  const dosCaras = conVuelta ? cotizar(total, { modalidad: "impreso", dosCaras: true, material: opciones.material }) : null;
+  const grupos = [
+    { dosCaras: false, piezas: total - conVuelta, porPieza: unaCara.porPieza },
+    { dosCaras: true, piezas: conVuelta, porPieza: dosCaras?.porPieza ?? 0 },
+  ].filter((g) => g.piezas > 0);
+  const mixto = grupos.length > 1;
+  const caras = (dos: boolean) => (dos ? "frente y vuelta" : "una cara");
 
   const plan: PedidoConSaldo["plan"] = [];
-  let faltan = c.piezas;
-  for (const s of gafetes) {
-    if (!faltan) break;
-    const cantidad = Math.min(faltan, s.disponible);
-    plan.push({ saldo: s.id, cantidad });
-    faltan -= cantidad;
+  const conceptos: ConceptoCobro[] = [];
+  let deSaldo = 0;
+  for (const g of grupos) {
+    const iguales = saldos
+      .filter(
+        (s) =>
+          s.concepto === "gafetes" &&
+          s.disponible > 0 &&
+          s.dosCaras === g.dosCaras &&
+          (s.material ?? "estandar") === opciones.material,
+      )
+      .sort((a, b) => a.venceEn.localeCompare(b.venceEn));
+    let faltan = g.piezas;
+    for (const s of iguales) {
+      if (!faltan) break;
+      const cantidad = Math.min(faltan, s.disponible);
+      plan.push({ saldo: s.id, cantidad });
+      faltan -= cantidad;
+    }
+    const usados = g.piezas - faltan;
+    deSaldo += usados;
+    if (usados)
+      conceptos.push({
+        nombre: `Gafetes de tu saldo prepagado${mixto ? `, ${caras(g.dosCaras)}` : ""}`,
+        cantidad: usados,
+        precio: 0,
+        dosCaras: g.dosCaras,
+      });
+    if (faltan)
+      conceptos.push({
+        nombre: `Gafetes impresos en ${materialPara(opciones.material).nombre}, ${caras(g.dosCaras)}`,
+        cantidad: faltan,
+        precio: g.porPieza,
+        dosCaras: g.dosCaras,
+      });
   }
-  const deSaldo = c.piezas - faltan;
 
+  // El envío gratis se calcula con el precio de lista de todo el pedido, como en el cotizador.
+  const lista = redondear(grupos.reduce((s, g) => s + g.piezas * g.porPieza, 0));
+  const envioGratis = lista >= envio.gratisDesde;
+  const costoEnvio = envioGratis ? 0 : envio.tarifa;
   const envioSaldo = saldos.filter((s) => s.concepto === "envios" && s.disponible > 0).sort((a, b) => a.venceEn.localeCompare(b.venceEn))[0];
   // Los envíos del paquete van con sus gafetes: solo se usan si el pedido lleva gafetes del saldo.
-  const envioDeSaldo = Boolean(deSaldo && c.llevaEnvio && envioSaldo && c.envio > 0);
+  const envioDeSaldo = Boolean(deSaldo && envioSaldo && costoEnvio > 0);
   if (envioDeSaldo && envioSaldo) plan.push({ saldo: envioSaldo.id, cantidad: 1 });
 
-  const conceptos: ConceptoCobro[] = [];
-  if (deSaldo) conceptos.push({ nombre: "Gafetes de tu saldo prepagado", cantidad: deSaldo, precio: 0 });
-  if (faltan) conceptos.push({ nombre: `Gafetes impresos en ${materialPara(opciones.material).nombre}, ${opciones.dosCaras ? "frente y vuelta" : "una cara"}`, cantidad: faltan, precio: c.porPieza });
-
-  const subtotal = conceptos.reduce((s, x) => s + x.cantidad * x.precio, 0);
-  const envio = envioDeSaldo ? 0 : c.envio;
-  const iva = redondear((subtotal + envio) * tasaIva);
+  const subtotal = redondear(conceptos.reduce((s, x) => s + x.cantidad * x.precio, 0));
+  const envioCobrado = envioDeSaldo ? 0 : costoEnvio;
+  const iva = redondear((subtotal + envioCobrado) * tasaIva);
   return {
-    piezas: c.piezas,
+    piezas: total,
+    conVuelta,
+    lista,
     deSaldo,
     envioDeSaldo,
     plan,
     conceptos,
-    porPieza: c.porPieza,
+    porPieza: mixto ? redondear(lista / total) : grupos[0].porPieza,
     subtotal,
-    envio,
-    envioGratis: c.envioGratis,
-    faltaParaEnvioGratis: envioDeSaldo ? 0 : c.faltaParaEnvioGratis,
+    envio: envioCobrado,
+    envioGratis,
+    faltaParaEnvioGratis: envioDeSaldo || envioGratis ? 0 : redondear(envio.gratisDesde - lista),
     iva,
-    total: redondear(subtotal + envio + iva),
+    total: redondear(subtotal + envioCobrado + iva),
   };
 }
 
@@ -107,3 +149,9 @@ export const resumenSaldo = (saldos: SaldoDisponible[]) => ({
   envios: saldos.filter((s) => s.concepto === "envios").reduce((t, s) => t + s.disponible, 0),
   digitales: saldos.filter((s) => s.concepto === "digitales").reduce((t, s) => t + s.disponible, 0),
 });
+
+/** Cómo van impresos los gafetes de un pedido, para mostrarlo: una cara, frente y vuelta o los dos. */
+export function carasDelPedido(dosCaras: boolean, conceptos: ConceptoCobro[] | null): string {
+  const mixto = conceptos?.some((x) => x.dosCaras === true) && conceptos.some((x) => x.dosCaras === false);
+  return mixto ? "Unos a una cara y otros por frente y vuelta" : dosCaras ? "Frente y vuelta" : "Una cara";
+}

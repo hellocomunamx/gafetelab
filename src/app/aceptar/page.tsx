@@ -16,18 +16,28 @@ export const metadata: Metadata = {
 export default async function Aceptar({ searchParams }: { searchParams: Promise<{ siguiente?: string }> }) {
   const siguiente = destinoSeguro((await searchParams).siguiente);
   const { usuario } = await usuarioDeSesion();
-  if (!(await miAceptacion()).pendiente) redirect(siguiente ?? "/cuenta");
+  const { pendiente, actualizar } = await miAceptacion();
+  if (!pendiente) redirect(siguiente ?? "/cuenta");
 
   return (
     <Contenedor className="py-14 sm:py-20">
       <div className="mx-auto max-w-md">
-        <p className="font-mano text-2xl text-rojo">Ya casi</p>
-        <h1 className="mt-1 text-4xl font-extrabold">Antes de empezar</h1>
-        <p className="mt-3 text-lg text-gris">
-          Para usar tu cuenta de {site.nombre} con{" "}
-          <strong className="break-all text-tinta">{usuario.email}</strong>, necesitamos que aceptes
-          nuestras reglas. Son cortas y están en español claro.
-        </p>
+        <p className="font-mano text-2xl text-rojo">{actualizar ? "Hola de nuevo" : "Ya casi"}</p>
+        <h1 className="mt-1 text-4xl font-extrabold">{actualizar ? "Actualizamos nuestras reglas" : "Antes de empezar"}</h1>
+        {actualizar ? (
+          <p className="mt-3 text-lg text-gris">
+            Hicimos un cambio importante en los términos y condiciones o en el aviso de privacidad.
+            Para seguir usando tu cuenta de {site.nombre} con{" "}
+            <strong className="break-all text-tinta">{usuario.email}</strong>, revísalos y acéptalos
+            de nuevo.
+          </p>
+        ) : (
+          <p className="mt-3 text-lg text-gris">
+            Para usar tu cuenta de {site.nombre} con{" "}
+            <strong className="break-all text-tinta">{usuario.email}</strong>, necesitamos que aceptes
+            nuestras reglas. Son cortas y están en español claro.
+          </p>
+        )}
         <div className="mt-8 rounded-tarjeta border border-linea p-6 sm:p-7">
           <Formulario accion={aceptarTerminos} boton="Aceptar y continuar">
             {siguiente ? <input type="hidden" name="siguiente" value={siguiente} /> : null}
@@ -45,6 +55,7 @@ export default async function Aceptar({ searchParams }: { searchParams: Promise<
                 .
               </span>
             </label>
+            {actualizar ? null : (
             <label className="mt-4 flex cursor-pointer items-start gap-3 border-t border-linea pt-4">
               <input type="checkbox" name="publicidad" className="mt-1 size-5 shrink-0 accent-tinta" />
               <span>
@@ -53,6 +64,7 @@ export default async function Aceptar({ searchParams }: { searchParams: Promise<
                 <span className="text-gris">Es opcional y lo puedes cambiar cuando quieras.</span>
               </span>
             </label>
+            )}
           </Formulario>
         </div>
         <form action="/salir" method="post" className="mt-4 text-sm text-gris">

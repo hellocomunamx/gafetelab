@@ -167,7 +167,7 @@ export const faqsGenerales: Faq[] = [
   {
     pregunta: "¿Puedo tener un diseño distinto por puesto o departamento?",
     respuesta:
-      "Sí. En tu plataforma asignas un diseño según el puesto, el departamento, la sucursal o el tipo de contrato, y cada persona recibe el gafete que le corresponde. También eliges qué campos lleva y si van al frente o a la vuelta, y descargas la plantilla de Excel con esas columnas.",
+      "Sí. En tu plataforma asignas un diseño según el puesto, el departamento, la sucursal o el tipo de contrato, y cada persona recibe el gafete que le corresponde. También eliges qué campos lleva y si van al frente o a la vuelta, y descargas la plantilla de Excel con esas columnas. Si unos diseños llevan vuelta y otros no, la vuelta solo se cobra a los gafetes que la llevan.",
   },
   {
     pregunta: "¿Imprimen por un lado o por los dos?",

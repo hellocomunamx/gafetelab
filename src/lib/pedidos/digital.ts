@@ -9,7 +9,7 @@
  */
 
 import type { MaterialId } from "@/lib/materiales";
-import { cotizar, type Modalidad, precioCordon, precioDigital, tasaIva } from "@/lib/precios";
+import { envio as tarifas, type Modalidad, precioCordon, precioDigital, tasaIva } from "@/lib/precios";
 import { type ConceptoCobro, cotizarConSaldo, type PedidoConSaldo, type SaldoDisponible } from "./saldo";
 
 export type PedidoCotizado = PedidoConSaldo & {
@@ -61,7 +61,7 @@ function parteDigital(piezas: number, saldos: SaldoDisponible[]) {
  */
 export function cotizarPedido(
   piezas: number,
-  opciones: { modalidad: Modalidad; dosCaras: boolean; material: MaterialId; cordon?: boolean },
+  opciones: { modalidad: Modalidad; conVuelta: number; material: MaterialId; cordon?: boolean },
   saldos: SaldoDisponible[],
 ): PedidoCotizado {
   const base = cotizarSinCordon(piezas, opciones, saldos);
@@ -81,7 +81,7 @@ function sumarCordon(c: PedidoCotizado): PedidoCotizado {
 
 function cotizarSinCordon(
   piezas: number,
-  opciones: { modalidad: Modalidad; dosCaras: boolean; material: MaterialId },
+  opciones: { modalidad: Modalidad; conVuelta: number; material: MaterialId },
   saldos: SaldoDisponible[],
 ): PedidoCotizado {
   const { modalidad } = opciones;
@@ -101,6 +101,8 @@ function cotizarSinCordon(
     return {
       modalidad,
       piezas: n,
+      conVuelta: 0,
+      lista: 0,
       deSaldo: 0,
       digitalesDeSaldo: digital.deSaldo,
       envioDeSaldo: false,
@@ -119,12 +121,9 @@ function cotizarSinCordon(
   // Impreso + digital: lo impreso tal cual y lo digital sumado. El envío gratis
   // se calcula como en el cotizador público, contando también lo digital.
   const impreso = cotizarConSaldo(piezas, opciones, saldos);
-  const lista = cotizar(impreso.piezas, {
-    modalidad: "ambos",
-    dosCaras: opciones.dosCaras,
-    material: opciones.material,
-  });
-  const envio = impreso.envioDeSaldo ? 0 : lista.envio;
+  const lista = redondear(impreso.lista + precioDigital * impreso.piezas);
+  const envioGratis = lista >= tarifas.gratisDesde;
+  const envio = impreso.envioDeSaldo || envioGratis ? 0 : tarifas.tarifa;
   const conceptos = [...impreso.conceptos, ...digital.conceptos];
   const subtotal = conceptos.reduce((s, x) => s + x.cantidad * x.precio, 0);
   const iva = redondear((subtotal + envio) * tasaIva);
@@ -137,8 +136,8 @@ function cotizarSinCordon(
     porPieza: impreso.porPieza + precioDigital,
     subtotal,
     envio,
-    envioGratis: lista.envioGratis,
-    faltaParaEnvioGratis: impreso.envioDeSaldo ? 0 : lista.faltaParaEnvioGratis,
+    envioGratis,
+    faltaParaEnvioGratis: impreso.envioDeSaldo || envioGratis ? 0 : redondear(tarifas.gratisDesde - lista),
     iva,
     total: redondear(subtotal + envio + iva),
   };

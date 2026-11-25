@@ -131,9 +131,16 @@ export function NuevoPedido({
   }, [enOpcion, busqueda]);
 
   const piezas = elegidas.size;
-  const dosCaras = impreso && (fuente.tipo === "diseno" ? fuente.dosCaras : [...elegidas].some((id) => fuente.gafetes[id]?.vuelta));
+  // La vuelta solo se cobra a los gafetes que la llevan.
+  const conVuelta = !impreso
+    ? 0
+    : fuente.tipo === "diseno"
+      ? fuente.dosCaras
+        ? piezas
+        : 0
+      : [...elegidas].filter((id) => fuente.gafetes[id]?.vuelta).length;
   const conCordon = Boolean(evento) && impreso && cordon;
-  const c = cotizarPedido(Math.max(1, piezas), { modalidad, dosCaras, material, cordon: conCordon }, saldos);
+  const c = cotizarPedido(Math.max(1, piezas), { modalidad, conVuelta, material, cordon: conCordon }, saldos);
   const cordones = evento && conCordon ? cordonesDe([...elegidas].map((id) => evento.categoriaDe[id]), evento.categorias) : [];
   const enSaldo = resumenSaldo(saldos);
   const porTransferencia = soloTransferencia(piezas, c.total);
@@ -221,8 +228,10 @@ export function NuevoPedido({
             <p className="mt-3 text-sm text-gris">
               Cada persona lleva el diseño que le toca según tus{" "}
               <Link href="/cuenta/disenos/reglas" className="underline underline-offset-4">reglas</Link>.
-              {dosCaras && [...elegidas].some((id) => !fuente.gafetes[id]?.vuelta)
-                ? " Como al menos uno de los diseños lleva vuelta, el pedido se cotiza por frente y vuelta."
+              {conVuelta && conVuelta < piezas
+                ? conVuelta === 1
+                  ? " La vuelta solo se cobra al gafete que la lleva."
+                  : ` La vuelta solo se cobra a los ${conVuelta.toLocaleString("es-MX")} gafetes que la llevan.`
                 : ""}
             </p>
           ) : null}

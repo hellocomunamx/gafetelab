@@ -332,8 +332,10 @@ export default function Terminos() {
           <Apartado numero={16} titulo="Cambios a estos términos">
             <p>
               Podemos actualizar estos términos. Publicaremos la nueva versión en esta página, con su
-              fecha, y si el cambio es importante te lo avisaremos por correo o al entrar a tu cuenta.
-              A cada pedido le aplican los términos vigentes el día en que se hizo.
+              fecha. Si el cambio es importante, por ejemplo en precios, garantía, cancelaciones o
+              en el manejo de datos, te pediremos que los aceptes de nuevo la próxima vez que entres
+              a tu cuenta. Las correcciones menores no requieren una nueva aceptación. A cada pedido
+              le aplican los términos vigentes el día en que se hizo.
             </p>
           </Apartado>
 
