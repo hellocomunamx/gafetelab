@@ -42,6 +42,7 @@ const PESO_MAXIMO = 8 * 1024 * 1024;
 const VIAS: Record<string, string> = {
   numero: "Por número de empleado",
   nombre: "Por nombre",
+  parcial: "Por parte del nombre (revísala)",
   manual: "Elegida a mano",
 };
 
