@@ -312,7 +312,7 @@ export function SubirFotos({ empresaId, personas }: { empresaId: string; persona
                 return (
                   <li
                     key={f.clave}
-                    className={`flex gap-3 rounded-tarjeta-chica border p-3 ${doble ? "border-rojo" : f.empleadoId ? "border-linea" : "border-dashed border-tinta bg-papel"}`}
+                    className={`flex min-w-0 gap-3 rounded-tarjeta-chica border p-3 ${doble ? "border-rojo" : f.empleadoId ? "border-linea" : "border-dashed border-tinta bg-papel"}`}
                   >
                     <button
                       type="button"
