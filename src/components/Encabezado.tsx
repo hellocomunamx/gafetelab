@@ -34,7 +34,7 @@ export function Encabezado() {
         <Link href="/" aria-label="LaGafetería, inicio" className="shrink-0">
           <Logo className="h-auto max-[399px]:w-[7.5rem] max-[339px]:w-[6.5rem]" />
         </Link>
-        <nav aria-label="Principal" className="hidden items-center gap-6 whitespace-nowrap lg:flex lg:gap-5 xl:gap-7">
+        <nav aria-label="Principal" className="hidden items-center gap-6 whitespace-nowrap lg:flex lg:gap-4 xl:gap-7">
           {navegacion.map((n) => (
             <Link key={n.href} href={n.href} title={n.textoLargo} className="font-medium hover:text-rojo">
               {n.texto}
@@ -42,7 +42,7 @@ export function Encabezado() {
           ))}
         </nav>
         <div className="flex items-center gap-2 max-[399px]:gap-1">
-          <EnlaceCuenta className="hidden px-2 font-medium whitespace-nowrap hover:text-rojo sm:block" />
+          <EnlaceCuenta className="hidden items-center gap-1.5 rounded-full border border-linea bg-papel px-3.5 py-2 text-sm font-semibold whitespace-nowrap transition-colors hover:border-rojo hover:text-rojo sm:inline-flex" />
           <IconoCarrito />
           <Boton href="/cotizar" className="px-5 py-2 text-sm whitespace-nowrap max-[399px]:px-4 max-[339px]:px-3">
             Cotizar<span className="hidden sm:inline lg:hidden xl:inline">&nbsp;en línea</span>
@@ -65,7 +65,7 @@ export function Encabezado() {
                   {n.textoLargo ?? n.texto}
                 </Link>
               ))}
-              <EnlaceCuenta className="rounded-tarjeta-chica px-3 py-2 font-medium hover:bg-papel sm:hidden" />
+              <EnlaceCuenta className="mt-1 flex items-center gap-2 border-t border-linea px-3 pt-3 pb-2 font-semibold hover:bg-papel sm:hidden" />
             </nav>
           </details>
         </div>
