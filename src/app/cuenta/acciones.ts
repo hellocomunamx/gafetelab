@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { estadosMexico, regimenesFiscales, usosCfdi } from "@/lib/cuenta/catalogos";
 import { constanciaDe, ventanaDeEmision } from "@/lib/cuenta/constancia";
+import { ordenDelArchivo } from "@/lib/cuenta/excel";
 import { CLAVES_DE_CORREO, correoValido } from "@/lib/cuenta/ligas";
 import { datosVerificables, modosQr } from "@/lib/cuenta/qr";
 import { recordarEmpresa, requerirEmpresa, requerirUsuario } from "@/lib/cuenta/sesion";
@@ -460,55 +461,114 @@ export async function quitarFoto(d: FormData) {
 
 // --- Campos ----------------------------------------------------------------
 
-export async function agregarCampo(_: Resultado, d: FormData): Promise<Resultado> {
-  const { supabase, empresa } = await requerirEmpresa();
-  const etiqueta = texto(d, "etiqueta", 60);
-  if (!etiqueta) return { error: "Escribe el nombre del campo." };
-  const { data: actuales } = await supabase
-    .from("campos")
-    .select("clave, etiqueta, orden")
-    .eq("empresa_id", empresa.id);
-  if ((actuales?.length ?? 0) >= 30) return { error: "Llegaste al máximo de 30 campos." };
-  if ((actuales ?? []).some((c) => normalizar(c.etiqueta) === normalizar(etiqueta))) {
-    return { error: "Ya tienes un campo con ese nombre." };
+type CampoActual = { clave: string; etiqueta: string; orden: number };
+
+/**
+ * Agrega un dato a la empresa. Si se llama como un dato de entrada que la
+ * empresa quitó, lo recupera con lo ya capturado. Suma el dato a `actuales`.
+ */
+async function insertarCampo(
+  supabase: Awaited<ReturnType<typeof requerirEmpresa>>["supabase"],
+  empresaId: string,
+  actuales: CampoActual[],
+  etiqueta: string,
+  tipo: "texto" | "fecha",
+): Promise<{ error: string } | { clave: string; recuperado: boolean }> {
+  if (actuales.length >= 30) return { error: "Llegaste al máximo de 30 campos." };
+  if (actuales.some((c) => normalizar(c.etiqueta) === normalizar(etiqueta))) {
+    return { error: `Ya tienes un campo llamado «${etiqueta}».` };
   }
-  // Si escribe el nombre de un dato de entrada que quitó, lo recupera con lo ya capturado.
+  const orden = Math.max(0, ...actuales.map((c) => c.orden)) + 1;
   const deEntrada = DATOS_DE_ENTRADA.find(
-    (x) => normalizar(x.etiqueta) === normalizar(etiqueta) && !(actuales ?? []).some((c) => c.clave === x.clave),
+    (x) => normalizar(x.etiqueta) === normalizar(etiqueta) && !actuales.some((c) => c.clave === x.clave),
   );
   if (deEntrada) {
     const { error } = await supabase.from("campos").insert({
-      empresa_id: empresa.id,
+      empresa_id: empresaId,
       clave: deEntrada.clave,
       etiqueta,
       tipo: deEntrada.tipo,
       cara: deEntrada.cara,
       en_gafete: false,
       de_sistema: true,
-      orden: Math.max(0, ...(actuales ?? []).map((c) => c.orden)) + 1,
+      orden,
     });
     if (error) return { error: ERROR_GENERAL };
-    refrescar();
-    return { ok: "Campo agregado, con lo que ya tenías capturado." };
+    actuales.push({ clave: deEntrada.clave, etiqueta, orden });
+    return { clave: deEntrada.clave, recuperado: true };
   }
   // Las claves de los datos de entrada quedan reservadas aunque se hayan quitado.
-  const usadas = new Set([...(actuales ?? []).map((c) => c.clave), ...DATOS_DE_ENTRADA.map((x) => x.clave), "nombre"]);
+  const usadas = new Set([...actuales.map((c) => c.clave), ...DATOS_DE_ENTRADA.map((x) => x.clave), "nombre"]);
   const base = claveDe(etiqueta);
   let clave = base;
   for (let i = 2; usadas.has(clave) || clave === "foto_archivo"; i++) clave = `${base.slice(0, 36)}_${i}`;
   const { error } = await supabase.from("campos").insert({
-    empresa_id: empresa.id,
+    empresa_id: empresaId,
     clave,
     etiqueta,
-    tipo: texto(d, "tipo") === "fecha" ? "fecha" : "texto",
+    tipo,
     // De entrada, un dato nuevo se propone impreso en la vuelta; cada diseño decide.
     cara: "vuelta",
     en_gafete: true,
-    orden: Math.max(0, ...(actuales ?? []).map((c) => c.orden)) + 1,
+    orden,
   });
   if (error) return { error: ERROR_GENERAL };
+  actuales.push({ clave, etiqueta, orden });
+  return { clave, recuperado: false };
+}
+
+export async function agregarCampo(_: Resultado, d: FormData): Promise<Resultado> {
+  const { supabase, empresa } = await requerirEmpresa();
+  const etiqueta = texto(d, "etiqueta", 60);
+  if (!etiqueta) return { error: "Escribe el nombre del campo." };
+  const { data } = await supabase.from("campos").select("clave, etiqueta, orden").eq("empresa_id", empresa.id);
+  const r = await insertarCampo(supabase, empresa.id, data ?? [], etiqueta, texto(d, "tipo") === "fecha" ? "fecha" : "texto");
+  if ("error" in r) return { error: r.error };
   refrescar();
-  return { ok: "Campo agregado." };
+  return { ok: r.recuperado ? "Campo agregado, con lo que ya tenías capturado." : "Campo agregado." };
+}
+
+/**
+ * Antes de importar un Excel: agrega a «Tus datos» las columnas nuevas que la
+ * empresa confirmó y, si lo pidió, acomoda sus datos en el orden del archivo.
+ * Devuelve los datos ya actualizados para leer el archivo con ellos.
+ */
+export async function camposDesdeExcel(
+  nuevos: { etiqueta: string; tipo: string }[],
+  encabezados: string[] | null,
+): Promise<{ error?: string; campos?: { clave: string; etiqueta: string; tipo: string }[] }> {
+  const { supabase, empresa } = await requerirEmpresa();
+  if (!Array.isArray(nuevos) || nuevos.length > 30) return { error: ERROR_GENERAL };
+  const { data } = await supabase.from("campos").select("clave, etiqueta, orden").eq("empresa_id", empresa.id);
+  const actuales: CampoActual[] = data ?? [];
+  for (const n of nuevos) {
+    const etiqueta = typeof n?.etiqueta === "string" ? n.etiqueta.trim().slice(0, 60) : "";
+    if (!etiqueta || actuales.some((c) => normalizar(c.etiqueta) === normalizar(etiqueta))) continue;
+    const r = await insertarCampo(supabase, empresa.id, actuales, etiqueta, n.tipo === "fecha" ? "fecha" : "texto");
+    if ("error" in r) {
+      refrescar();
+      return { error: r.error };
+    }
+  }
+
+  const leer = async () =>
+    (await supabase.from("campos").select("id, clave, etiqueta, tipo").eq("empresa_id", empresa.id).order("orden").order("creado_en")).data ?? [];
+  let campos = await leer();
+  if (Array.isArray(encabezados) && encabezados.length) {
+    const delArchivo = ordenDelArchivo(encabezados.map((e) => String(e ?? "").slice(0, 200)).slice(0, 200), campos);
+    const resto = campos.filter((c) => !delArchivo.includes(c.clave));
+    const enOrden = [...delArchivo.map((clave) => campos.find((c) => c.clave === clave)!), ...resto];
+    const fallas = await Promise.all(
+      enOrden.map((c, i) => supabase.from("campos").update({ orden: i + 1 }).eq("id", c.id).then((r) => r.error)),
+    );
+    if (fallas.some(Boolean)) {
+      refrescar();
+      return { error: ERROR_GENERAL };
+    }
+    campos = await leer();
+  }
+  refrescar();
+  return { campos: campos.map(({ clave, etiqueta, tipo }) => ({ clave, etiqueta, tipo })) };
 }
 
 /**
