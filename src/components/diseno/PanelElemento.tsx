@@ -57,10 +57,43 @@ const NOMBRES: Record<Elemento["tipo"], string> = {
   forma: "Forma",
 };
 
+/** Solo el dato («Ventas») o con su etiqueta («Puesto: Ventas»). */
+function ConEtiqueta({
+  activa,
+  etiqueta,
+  valor,
+  alCambiar,
+}: {
+  activa: boolean;
+  etiqueta: string;
+  valor: string;
+  alCambiar: (activa: boolean) => void;
+}) {
+  const ejemplo = valor && valor !== etiqueta ? valor : "…";
+  return (
+    <span role="radiogroup" aria-label="Cómo se imprime" className="mt-1 flex overflow-hidden rounded-tarjeta-chica border border-linea text-xs font-semibold">
+      {([false, true] as const).map((v) => (
+        <button
+          key={String(v)}
+          type="button"
+          role="radio"
+          aria-checked={activa === v}
+          onClick={() => alCambiar(v)}
+          className={`min-w-0 flex-1 truncate px-3 py-2 text-left ${activa === v ? "bg-tinta text-white" : "bg-white"}`}
+        >
+          <span className="block text-[11px] font-normal opacity-80">{v ? "Con etiqueta" : "Solo el dato"}</span>
+          {v ? `${etiqueta}: ${ejemplo}` : ejemplo}
+        </button>
+      ))}
+    </span>
+  );
+}
+
 /** Propiedades del elemento seleccionado en el editor. */
 export function PanelElemento({
   elemento: e,
   campos,
+  datos,
   ancho,
   alCambiar,
   alOrdenar,
@@ -69,6 +102,8 @@ export function PanelElemento({
 }: {
   elemento: Elemento;
   campos: { clave: string; etiqueta: string }[];
+  /** Datos de la persona que se ve en el editor, para el ejemplo de la etiqueta. */
+  datos: Record<string, string>;
   /** Ancho del gafete, para centrar. */
   ancho: number;
   alCambiar: (parche: Partial<Elemento>) => void;
@@ -94,10 +129,15 @@ export function PanelElemento({
                   ))}
                 </select>
               </Fila>
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={Boolean(e.conEtiqueta)} onChange={(ev) => alCambiar({ conEtiqueta: ev.target.checked })} className="size-4 accent-tinta" />
-                Anteponer el nombre del campo
-              </label>
+              <div className="text-sm">
+                <span className="font-semibold">Cómo se imprime</span>
+                <ConEtiqueta
+                  activa={Boolean(e.conEtiqueta)}
+                  etiqueta={campos.find((c) => c.clave === e.campo)?.etiqueta ?? e.campo}
+                  valor={datos[e.campo] ?? ""}
+                  alCambiar={(conEtiqueta) => alCambiar({ conEtiqueta })}
+                />
+              </div>
             </>
           ) : (
             <Fila etiqueta="Texto">

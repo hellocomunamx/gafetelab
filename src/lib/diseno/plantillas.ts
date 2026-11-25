@@ -35,6 +35,16 @@ export function conImpresos<T extends CampoPlantilla>(campos: T[], elegidos: Rec
   });
 }
 
+/**
+ * Si un dato se imprime con su etiqueta («Puesto: Ventas») o solo el valor
+ * («Ventas»). De entrada, la vuelta lleva etiqueta y el frente no.
+ */
+export const etiquetaDe = (cara: Impreso | string, elegidas?: Record<string, boolean>, clave?: string): boolean =>
+  clave !== undefined && elegidas && clave in elegidas ? elegidas[clave] : cara === "vuelta";
+
+/** Datos que se imprimen como texto y por eso pueden llevar etiqueta. */
+export const llevaEtiqueta = (c: { tipo: string }) => c.tipo === "texto" || c.tipo === "fecha";
+
 /** Lo que una empresa tiene elegido de entrada para cada dato. */
 export const impresoDe = (c: CampoPlantilla): Impreso => (c.en_gafete ? (c.cara === "vuelta" ? "vuelta" : "frente") : "no");
 
@@ -102,6 +112,8 @@ export function crearDesdePlantilla(
   campos: CampoPlantilla[],
   color: string,
   empresa: string,
+  /** Por dato: true para imprimir «Puesto: Ventas», false para solo «Ventas». */
+  etiquetas: Record<string, boolean> = {},
 ): { frente: Cara; vuelta: Cara | null } {
   if (plantilla === "blanco") return { frente: { fondo: "#ffffff", elementos: [] }, vuelta: null };
 
@@ -124,7 +136,14 @@ export function crearDesdePlantilla(
   /** Renglones de datos debajo del nombre. */
   const renglones = (x: number, y: number, w: number, alinear: Alineacion, paso = 5) =>
     secundarios.forEach((c, i) =>
-      e.push(campo(c.clave, x, y + i * paso, w, 4.2, { tam: i === 0 ? 3.4 : 3.1, color: i === 0 ? TINTA : GRIS, alinear })),
+      e.push(
+        campo(c.clave, x, y + i * paso, w, 4.2, {
+          tam: i === 0 ? 3.4 : 3.1,
+          color: i === 0 ? TINTA : GRIS,
+          alinear,
+          conEtiqueta: etiquetaDe("frente", etiquetas, c.clave),
+        }),
+      ),
     );
 
   if (plantilla === "clasica") {
@@ -133,7 +152,7 @@ export function crearDesdePlantilla(
       e.push(fijo(empresa, 4, 5, W - 8, 9.5, { tam: 4, negrita: true, color: tinta, alinear: "centro", fuente: "bricolage" }));
       if (conFoto) e.push(foto((W - 26) / 2, 20, 26, 34.7));
       const y = conFoto ? 57.5 : 26;
-      e.push(campo("nombre", 4, y, W - 8, 10.6, { tam: 4.4, negrita: true, alinear: "centro", fuente: "bricolage" }));
+      e.push(campo("nombre", 4, y, W - 8, 10.6, { conEtiqueta: etiquetaDe("frente", etiquetas, "nombre"), tam: 4.4, negrita: true, alinear: "centro", fuente: "bricolage" }));
       renglones(4, y + 11.5, W - 8, "centro", 4.6);
       if (qrFrente) e.push(qr((W - 9) / 2, H - 3.5 - 9, 9));
     } else {
@@ -143,7 +162,7 @@ export function crearDesdePlantilla(
       if (conFoto) e.push(foto(5, 16.5, 22, 29.3));
       const x = conFoto ? 31 : 5;
       const ancho = W - x - 5;
-      e.push(campo("nombre", x, 17.5, ancho, 11, { tam: 4.6, negrita: true, fuente: "bricolage" }));
+      e.push(campo("nombre", x, 17.5, ancho, 11, { conEtiqueta: etiquetaDe("frente", etiquetas, "nombre"), tam: 4.6, negrita: true, fuente: "bricolage" }));
       renglones(x, 30.5, ancho - (qrFrente ? 14 : 0), "izquierda");
       if (qrFrente) e.push(qr(W - 5 - 12, H - 5.5 - 12, 12));
     }
@@ -153,7 +172,7 @@ export function crearDesdePlantilla(
       e.push(fijo(empresa, 4, 4.5, W - 8, 8.5, { tam: 3.6, negrita: true, color: tinta, alinear: "centro", fuente: "bricolage" }));
       if (conFoto) e.push(foto((W - 30) / 2, 15, 30, 30, 15));
       const y = conFoto ? 49 : 42;
-      e.push(campo("nombre", 4, y, W - 8, 10.6, { tam: 4.4, negrita: true, alinear: "centro", fuente: "bricolage" }));
+      e.push(campo("nombre", 4, y, W - 8, 10.6, { conEtiqueta: etiquetaDe("frente", etiquetas, "nombre"), tam: 4.4, negrita: true, alinear: "centro", fuente: "bricolage" }));
       e.push(forma((W - 10) / 2, y + 11.6, 10, 0.9, color, 0.45));
       renglones(4, y + 14.5, W - 8, "centro", 4.6);
       if (qrFrente) e.push(qr((W - 9) / 2, H - 3.5 - 9, 9));
@@ -162,7 +181,7 @@ export function crearDesdePlantilla(
       if (conFoto) e.push(foto(4, 7, 22, 29.3));
       e.push(fijo(empresa, 3.5, conFoto ? 39 : 8, 23, 11, { tam: 3, negrita: true, color: tinta, alinear: "centro", fuente: "bricolage" }));
       const ancho = W - 34 - 5;
-      e.push(campo("nombre", 34, 9, ancho, 12.5, { tam: 5.2, negrita: true, fuente: "bricolage" }));
+      e.push(campo("nombre", 34, 9, ancho, 12.5, { conEtiqueta: etiquetaDe("frente", etiquetas, "nombre"), tam: 5.2, negrita: true, fuente: "bricolage" }));
       e.push(forma(34, 23.5, 12, 0.9, color, 0.45));
       renglones(34, 27.5, ancho - (qrFrente ? 14 : 0), "izquierda");
       if (qrFrente) e.push(qr(W - 5 - 12, H - 5 - 12, 12));
@@ -173,14 +192,14 @@ export function crearDesdePlantilla(
       e.push(fijo(empresa, 4, 5, W - 8, 4.4, { tam: 3.2, negrita: true, color, alinear: "centro", fuente: "bricolage" }));
       if (conFoto) e.push(foto((W - 30) / 2, 12.5, 30, 40, 3));
       const y = conFoto ? 55.5 : 22;
-      e.push(campo("nombre", 4, y, W - 8, 10.6, { tam: 4.4, negrita: true, alinear: "centro", fuente: "bricolage" }));
+      e.push(campo("nombre", 4, y, W - 8, 10.6, { conEtiqueta: etiquetaDe("frente", etiquetas, "nombre"), tam: 4.4, negrita: true, alinear: "centro", fuente: "bricolage" }));
       renglones(4, y + 11.5, W - 8, "centro", 4.6);
       if (qrFrente) e.push(qr((W - 9) / 2, H - 3.5 - 9, 9));
     } else {
       e.push(fijo(empresa, 5, 5, W - 10, 4.4, { tam: 3.2, negrita: true, color, fuente: "bricolage" }));
       if (conFoto) e.push(foto(W - 5 - 22, 13, 22, 29.3, 3));
       const ancho = W - 10 - (conFoto ? 25 : 0);
-      e.push(campo("nombre", 5, 14, ancho, 12, { tam: 5, negrita: true, fuente: "bricolage" }));
+      e.push(campo("nombre", 5, 14, ancho, 12, { conEtiqueta: etiquetaDe("frente", etiquetas, "nombre"), tam: 5, negrita: true, fuente: "bricolage" }));
       renglones(5, 28.5, ancho, "izquierda");
       if (qrFrente) e.push(qr(5, H - 4 - 8, 8));
     }
@@ -202,7 +221,7 @@ export function crearDesdePlantilla(
   const ladoQr = vertical ? 18 : 16;
   const anchoTexto = W - 10 - (qrVuelta && !vertical ? ladoQr + 3 : 0);
   atras.slice(0, vertical ? 8 : 5).forEach((c, i) =>
-    v.push(campo(c.clave, 5, 12.5 + i * 5, anchoTexto, 4.2, { tam: 3, conEtiqueta: true })),
+    v.push(campo(c.clave, 5, 12.5 + i * 5, anchoTexto, 4.2, { tam: 3, conEtiqueta: etiquetaDe("vuelta", etiquetas, c.clave) })),
   );
   if (qrVuelta) v.push(vertical ? qr((W - ladoQr) / 2, H - 16 - ladoQr, ladoQr) : qr(W - 5 - ladoQr, 12.5, ladoQr));
   v.push(
