@@ -104,7 +104,8 @@ export function ListaCampos({ campos }: { campos: Fila[] }) {
 
   return (
     <>
-      <div className="overflow-x-auto">
+      {/* `relative`: los textos solo para lector de pantalla no deben ensanchar la página. */}
+      <div className="relative overflow-x-auto">
         <table className="w-full min-w-[28rem] text-left text-sm">
           <thead>
             <tr className="border-b border-linea">

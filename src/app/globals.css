@@ -267,6 +267,11 @@ select:disabled {
   ::picker(select) {
     appearance: base-select;
   }
+  /* Aquí el texto no admite puntos suspensivos: se recorta antes de la flecha. */
+  select {
+    overflow: clip;
+    overflow-clip-margin: content-box;
+  }
   select::picker-icon {
     display: none;
   }
