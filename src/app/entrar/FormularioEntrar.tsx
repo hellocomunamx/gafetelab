@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { ConversionAlMostrar } from "@/components/EtiquetaAnuncios";
 import { Turnstile } from "@/components/Turnstile";
 import { LARGO_MINIMO_CONTRASENA } from "@/lib/cuenta/roles";
 import {
@@ -102,6 +103,7 @@ export function FormularioEntrar({
     const destino = siguiente ?? (enviado.motivo === "olvido" ? "/cuenta/acceso" : undefined);
     return (
       <div>
+        {creado.paso === "codigo" ? <ConversionAlMostrar tipo="registro" /> : null}
         <p className="rounded-tarjeta-chica bg-papel px-4 py-3">
           Te enviamos un correo a <strong>{enviado.correo}</strong> con una liga y un código.{" "}
           {AVISO_CODIGO[enviado.motivo ?? "liga"]}
