@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { agregarCampo, borrarCampo, guardarCampos } from "@/app/cuenta/acciones";
+import { agregarCampo, guardarCampos, recuperarCampo } from "@/app/cuenta/acciones";
 import { AjusteQrForm } from "@/components/cuenta/AjusteQrForm";
 import { BotonPlantilla } from "@/components/cuenta/BotonPlantilla";
 import { Bloque, Entrada, Seleccion } from "@/components/cuenta/Entrada";
 import { Formulario } from "@/components/cuenta/Formulario";
+import { ListaCampos } from "@/components/cuenta/ListaCampos";
 import { claseBoton } from "@/components/cuenta/clases";
 import { camposDe } from "@/lib/cuenta/consultas";
 import { datosVerificables, modosQr, resumenQr, rutaVerificacion } from "@/lib/cuenta/qr";
 import { requerirEmpresa } from "@/lib/cuenta/sesion";
 import { claveDe } from "@/lib/cuenta/texto";
+import { DATOS_DE_ENTRADA } from "@/lib/cuenta/tipos";
 
 export const metadata: Metadata = { title: "Datos del equipo" };
 
-const TIPOS: Record<string, string> = { texto: "Texto", fecha: "Fecha", foto: "Fotografía", qr: "Código QR" };
-const entradaChica = "w-full rounded-tarjeta-chica border border-linea bg-white px-2.5 py-1.5";
 
 export default async function Campos() {
   const { supabase, empresa, administra, esEvento } = await requerirEmpresa();
@@ -22,6 +22,7 @@ export default async function Campos() {
     camposDe(supabase, empresa.id),
     supabase.from("empleados").select("nombre, codigo").eq("empresa_id", empresa.id).eq("estatus", "activo").neq("nombre", "").order("nombre").limit(1).maybeSingle(),
   ]);
+  const quitados = DATOS_DE_ENTRADA.filter((x) => !campos.some((c) => c.clave === x.clave));
   const opciones = (tipos: string[]) =>
     campos.filter((c) => tipos.includes(c.tipo)).map(({ clave, etiqueta }) => ({ clave, etiqueta }));
 
@@ -84,34 +85,10 @@ export default async function Campos() {
       <div className="grid gap-5 lg:grid-cols-[1fr_18rem]">
         <Bloque titulo="Tus datos" className="min-w-0">
           <Formulario accion={guardarCampos} boton="Guardar cambios">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[26rem] text-left text-sm">
-                <thead>
-                  <tr className="border-b border-linea">
-                    <th scope="col" className="py-2 pr-3 font-semibold">Nombre del dato</th>
-                    <th scope="col" className="py-2 pr-3 font-semibold">Tipo</th>
-                    <th scope="col" className="py-2 font-semibold">Orden en el Excel</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-linea">
-                  {campos.map((c) => (
-                    <tr key={c.id}>
-                      <td className="py-2 pr-3">
-                        <input name={`etiqueta_${c.id}`} defaultValue={c.etiqueta} required maxLength={60} autoComplete="off" aria-label={`Nombre del dato ${c.etiqueta}`} className={entradaChica} />
-                      </td>
-                      <td className="py-2 pr-3 text-gris">{TIPOS[c.tipo] ?? c.tipo}</td>
-                      <td className="py-2">
-                        <input type="number" name={`orden_${c.id}`} defaultValue={c.orden} min={0} max={99} aria-label={`Orden de ${c.etiqueta} en el Excel`} className={`${entradaChica} w-16`} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p className="mt-3 text-xs text-gris">
-              Puedes cambiar el nombre de cualquier dato, por ejemplo «Puesto» por «Área». Ninguno es obligatorio: sin
-              nombre, la persona queda como gafete genérico.
-            </p>
+            <ListaCampos
+              key={campos.map((c) => `${c.id}:${c.orden}:${c.etiqueta}`).join("|")}
+              campos={campos.map(({ id, clave, etiqueta, tipo, de_sistema }) => ({ id, clave, etiqueta, tipo, de_sistema }))}
+            />
           </Formulario>
         </Bloque>
 
@@ -129,20 +106,20 @@ export default async function Campos() {
             </Formulario>
           </Bloque>
 
-          {campos.some((c) => !c.de_sistema) ? (
-            <Bloque titulo="Quitar un dato">
+          {quitados.length ? (
+            <Bloque titulo="Datos que quitaste">
               <ul className="space-y-2 text-sm">
-                {campos.filter((c) => !c.de_sistema).map((c) => (
-                  <li key={c.id} className="flex items-center justify-between gap-3">
-                    {c.etiqueta}
-                    <form action={borrarCampo}>
-                      <input type="hidden" name="id" value={c.id} />
-                      <button type="submit" className="font-semibold text-rojo-oscuro underline underline-offset-4">Quitar</button>
+                {quitados.map((x) => (
+                  <li key={x.clave} className="flex items-center justify-between gap-3">
+                    {x.etiqueta}
+                    <form action={recuperarCampo}>
+                      <input type="hidden" name="clave" value={x.clave} />
+                      <button type="submit" className="font-semibold underline underline-offset-4">Volver a agregar</button>
                     </form>
                   </li>
                 ))}
               </ul>
-              <p className="mt-3 text-xs text-gris">Lo capturado en ese dato deja de mostrarse.</p>
+              <p className="mt-3 text-xs text-gris">Regresa con lo que ya tenías capturado.</p>
             </Bloque>
           ) : null}
         </div>

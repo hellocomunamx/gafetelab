@@ -132,7 +132,7 @@ async function aprobar(id: string): Promise<string | null> {
   const { supabase, empresa } = await requerirEmpresa();
   const [{ data: propuesta }, { data: campos }] = await Promise.all([
     supabase.from("propuestas").select("*").eq("empleado_id", id).eq("empresa_id", empresa.id).eq("estado", "pendiente").maybeSingle(),
-    supabase.from("campos").select("clave, etiqueta, tipo").eq("empresa_id", empresa.id),
+    supabase.from("campos").select("clave, etiqueta, tipo").eq("empresa_id", empresa.id).order("orden"),
   ]);
   if (!propuesta) return "Esa propuesta ya se resolvió.";
   const { data: persona } = await supabase.from("empleados").select("datos").eq("id", id).eq("empresa_id", empresa.id).maybeSingle();

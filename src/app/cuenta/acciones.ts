@@ -9,7 +9,7 @@ import { CLAVES_DE_CORREO, correoValido } from "@/lib/cuenta/ligas";
 import { datosVerificables, modosQr } from "@/lib/cuenta/qr";
 import { recordarEmpresa, requerirEmpresa, requerirUsuario } from "@/lib/cuenta/sesion";
 import { claveDe, normalizar } from "@/lib/cuenta/texto";
-import type { FilaImportada, Resultado } from "@/lib/cuenta/tipos";
+import { DATOS_DE_ENTRADA, type FilaImportada, type Resultado } from "@/lib/cuenta/tipos";
 import { revisarAviso } from "@/lib/pedidos/abierto";
 import { revisarDespues } from "@/lib/seguridad/revisar";
 import { carta, site } from "@/lib/site";
@@ -352,16 +352,14 @@ export async function importarEmpleados(
     const t = typeof v === "string" || typeof v === "number" ? String(v).trim().slice(0, max) : "";
     return t || null;
   };
-  const { data: campos } = await supabase
-    .from("campos")
-    .select("clave")
-    .eq("empresa_id", empresa.id)
-    .eq("de_sistema", false);
-  const claves = new Set((campos ?? []).map((c) => c.clave));
+  const { data: campos } = await supabase.from("campos").select("clave, de_sistema").eq("empresa_id", empresa.id);
+  const claves = new Set((campos ?? []).filter((c) => !c.de_sistema).map((c) => c.clave));
+  // Un dato de entrada que la empresa quitó no viene en su Excel: se conserva lo que ya tenía.
+  const enLista = new Set((campos ?? []).map((c) => c.clave));
 
   const { data: existentes } = await supabase
     .from("empleados")
-    .select("id, nombre, numero_empleado, correo, datos")
+    .select("id, nombre, numero_empleado, puesto, departamento, tipo_contrato, correo, datos")
     .eq("empresa_id", empresa.id);
   type Previa = NonNullable<typeof existentes>[number];
   const porNumero = new Map<string, Previa>();
@@ -393,9 +391,9 @@ export async function importarEmpleados(
       empresa_id: empresa.id,
       nombre,
       numero_empleado: numero ?? previa?.numero_empleado ?? null,
-      puesto: corto(f.puesto, 120),
-      departamento: corto(f.departamento, 120),
-      tipo_contrato: corto(f.tipo_contrato, 60),
+      puesto: enLista.has("puesto") ? corto(f.puesto, 120) : (previa?.puesto ?? null),
+      departamento: enLista.has("departamento") ? corto(f.departamento, 120) : (previa?.departamento ?? null),
+      tipo_contrato: enLista.has("tipo_contrato") ? corto(f.tipo_contrato, 60) : (previa?.tipo_contrato ?? null),
       // El correo llega en su columna o, si la empresa lo tiene como campo propio, de ahí.
       correo:
         correoValido(f.correo) ??
@@ -474,7 +472,27 @@ export async function agregarCampo(_: Resultado, d: FormData): Promise<Resultado
   if ((actuales ?? []).some((c) => normalizar(c.etiqueta) === normalizar(etiqueta))) {
     return { error: "Ya tienes un campo con ese nombre." };
   }
-  const usadas = new Set((actuales ?? []).map((c) => c.clave));
+  // Si escribe el nombre de un dato de entrada que quitó, lo recupera con lo ya capturado.
+  const deEntrada = DATOS_DE_ENTRADA.find(
+    (x) => normalizar(x.etiqueta) === normalizar(etiqueta) && !(actuales ?? []).some((c) => c.clave === x.clave),
+  );
+  if (deEntrada) {
+    const { error } = await supabase.from("campos").insert({
+      empresa_id: empresa.id,
+      clave: deEntrada.clave,
+      etiqueta,
+      tipo: deEntrada.tipo,
+      cara: deEntrada.cara,
+      en_gafete: false,
+      de_sistema: true,
+      orden: Math.max(0, ...(actuales ?? []).map((c) => c.orden)) + 1,
+    });
+    if (error) return { error: ERROR_GENERAL };
+    refrescar();
+    return { ok: "Campo agregado, con lo que ya tenías capturado." };
+  }
+  // Las claves de los datos de entrada quedan reservadas aunque se hayan quitado.
+  const usadas = new Set([...(actuales ?? []).map((c) => c.clave), ...DATOS_DE_ENTRADA.map((x) => x.clave), "nombre"]);
   const base = claveDe(etiqueta);
   let clave = base;
   for (let i = 2; usadas.has(clave) || clave === "foto_archivo"; i++) clave = `${base.slice(0, 36)}_${i}`;
@@ -493,28 +511,85 @@ export async function agregarCampo(_: Resultado, d: FormData): Promise<Resultado
   return { ok: "Campo agregado." };
 }
 
-/** Guarda el nombre y el orden (en el Excel) de los datos. Qué va impreso lo decide cada diseño. */
+/**
+ * Guarda el nombre y el orden (en el Excel) de los datos, y quita los que la
+ * persona marcó con la ×. Qué va impreso lo decide cada diseño. El orden se
+ * vuelve a numerar del 1 en adelante, sin repetirse.
+ */
 export async function guardarCampos(_: Resultado, d: FormData): Promise<Resultado> {
   const { supabase, empresa } = await requerirEmpresa();
   const { data: campos } = await supabase
     .from("campos")
-    .select("id, clave, de_sistema")
-    .eq("empresa_id", empresa.id);
+    .select("id, clave, etiqueta, orden")
+    .eq("empresa_id", empresa.id)
+    .order("orden")
+    .order("creado_en");
+  const pedidos = new Set(d.getAll("quitar").map(String));
+  const quitar = (campos ?? []).filter((c) => pedidos.has(c.id) && c.clave !== "nombre");
+  const quedan = (campos ?? [])
+    .filter((c) => !quitar.includes(c))
+    .map((c, i) => {
+      const lugar = Number(texto(d, `orden_${c.id}`));
+      return { ...c, etiqueta: texto(d, `etiqueta_${c.id}`, 60) || c.etiqueta, lugar: lugar > 0 ? lugar : 1000 + i };
+    })
+    .sort((a, b) => a.lugar - b.lugar);
+
+  const vistos = new Map<string, string>();
+  for (const c of quedan) {
+    const n = normalizar(c.etiqueta);
+    if (vistos.has(n)) {
+      return { error: `Tienes dos datos llamados «${c.etiqueta}». Cambia el nombre de uno para que tu Excel no tenga columnas repetidas.` };
+    }
+    vistos.set(n, c.id);
+  }
+
+  if (quitar.length) {
+    const { data: borrados, error } = await supabase
+      .from("campos")
+      .delete()
+      .in("id", quitar.map((c) => c.id))
+      .eq("empresa_id", empresa.id)
+      .select("id");
+    if (error) return { error: ERROR_GENERAL };
+    if ((borrados?.length ?? 0) < quitar.length) {
+      refrescar();
+      return { error: "Uno de los datos no se pudo quitar todavía. Intenta de nuevo en un rato." };
+    }
+  }
+
   const fallas = await Promise.all(
-    (campos ?? []).map((c) => {
-      const etiqueta = texto(d, `etiqueta_${c.id}`, 60);
-      return supabase
+    quedan.map((c, i) =>
+      supabase
         .from("campos")
-        .update({
-          orden: Math.min(99, Math.max(0, Number(texto(d, `orden_${c.id}`)) || 0)),
-          ...(etiqueta ? { etiqueta } : {}),
-        })
+        .update({ orden: i + 1, etiqueta: c.etiqueta })
         .eq("id", c.id)
-        .then((r) => r.error);
-    }),
+        .then((r) => r.error),
+    ),
   );
   refrescar();
-  return fallas.some(Boolean) ? { error: ERROR_GENERAL } : { ok: "Campos guardados." };
+  if (fallas.some(Boolean)) return { error: ERROR_GENERAL };
+  return { ok: quitar.length ? "Campos guardados. Quitamos lo que marcaste." : "Campos guardados." };
+}
+
+/** Vuelve a poner en la lista un dato de entrada que la empresa quitó. */
+export async function recuperarCampo(d: FormData) {
+  const { supabase, empresa } = await requerirEmpresa();
+  const dato = DATOS_DE_ENTRADA.find((x) => x.clave === d.get("clave"));
+  if (!dato) return;
+  const { data: actuales } = await supabase.from("campos").select("clave, etiqueta, orden").eq("empresa_id", empresa.id);
+  if ((actuales ?? []).some((c) => c.clave === dato.clave)) return;
+  const ocupado = (actuales ?? []).some((c) => normalizar(c.etiqueta) === normalizar(dato.etiqueta));
+  await supabase.from("campos").insert({
+    empresa_id: empresa.id,
+    clave: dato.clave,
+    etiqueta: ocupado ? `${dato.etiqueta} 2` : dato.etiqueta,
+    tipo: dato.tipo,
+    cara: dato.cara,
+    en_gafete: false,
+    de_sistema: true,
+    orden: Math.max(0, ...(actuales ?? []).map((c) => c.orden)) + 1,
+  });
+  refrescar();
 }
 
 /** Guarda a dónde lleva el código QR de los gafetes de la empresa. */
@@ -566,9 +641,3 @@ export async function guardarQr(_: Resultado, d: FormData): Promise<Resultado> {
   return { ok: "Guardado. Tus gafetes ya usan este código QR." };
 }
 
-export async function borrarCampo(d: FormData) {
-  const { supabase } = await requerirEmpresa();
-  const fila = id(d);
-  if (fila) await supabase.from("campos").delete().eq("id", fila).eq("de_sistema", false);
-  refrescar();
-}
