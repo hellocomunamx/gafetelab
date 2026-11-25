@@ -48,7 +48,7 @@ export const notaIva = "más IVA";
 
 export const envio = {
   /** Tarifa única a cualquier parte de México para pedidos con gafetes impresos. */
-  tarifa: 149,
+  tarifa: 199,
   /** Subtotal (antes de IVA) a partir del cual el envío es gratis. Con 0, siempre es gratis. */
   gratisDesde: 1500,
 };
@@ -76,13 +76,16 @@ export const precioMaximo = Math.max(...tramos.map((t) => t.precio));
 export type Paquete = { piezas: number; porPieza: number; envios: number };
 
 export const paquetes: Paquete[] = [
-  { piezas: 10, porPieza: 55, envios: 2 },
+  { piezas: 10, porPieza: 55, envios: 1 },
   { piezas: 25, porPieza: 52, envios: 3 },
   { piezas: 50, porPieza: 36, envios: 4 },
   { piezas: 100, porPieza: 20, envios: 4 },
 ];
 
 export const paqueteVigenciaMeses = 12;
+
+/** «1 envío» o «3 envíos». */
+export const textoEnvios = (n: number) => `${n} ${n === 1 ? "envío" : "envíos"}`;
 
 /**
  * Qué incluye un paquete de lista y qué no. Lo leen todas las vistas donde

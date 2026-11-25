@@ -23,6 +23,7 @@ import {
   precioPaquete,
   precioMinimo,
   tramos,
+  textoEnvios,
 } from "@/lib/precios";
 import { migas, paginaFaq, producto, productoDigital } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
@@ -67,7 +68,7 @@ const faqsPrecios: FaqItem[] = [
   },
   {
     pregunta: "¿Qué son los paquetes prepagados?",
-    respuesta: `Son gafetes impresos que compras en línea por adelantado, desde el carrito, y vas pidiendo conforme los necesitas, sin pagar envío cada vez. Hay paquetes de ${paquetes.map((p) => p.piezas).join(", ")} gafetes; el de ${paquetes[0].piezas} cuesta ${pesos(precioPaquete(paquetes[0]))} e incluye ${paquetes[0].envios} envíos. Los paquetes de lista son de PVC estándar impresos a una cara y no incluyen gafete digital. También puedes armar un paquete a la medida, combinando cantidades, caras y materiales. Quedan a tu favor durante ${paqueteVigenciaMeses} meses y se usan solos en tus siguientes pedidos.`,
+    respuesta: `Son gafetes impresos que compras en línea por adelantado, desde el carrito, y vas pidiendo conforme los necesitas, sin pagar envío cada vez. Hay paquetes de ${paquetes.map((p) => p.piezas).join(", ")} gafetes; el de ${paquetes[0].piezas} cuesta ${pesos(precioPaquete(paquetes[0]))} e incluye ${textoEnvios(paquetes[0].envios)}. Los paquetes de lista son de PVC estándar impresos a una cara y no incluyen gafete digital. También puedes armar un paquete a la medida, combinando cantidades, caras y materiales. Quedan a tu favor durante ${paqueteVigenciaMeses} meses y se usan solos en tus siguientes pedidos.`,
   },
   {
     pregunta: "¿Puedo usar mi paquete para frente y vuelta, otro material o gafete digital?",

@@ -19,6 +19,7 @@ import {
   pesos,
   precioPaquete,
   tasaIva,
+  textoEnvios,
 } from "./precios";
 
 export type ArticuloCarrito =
@@ -133,7 +134,7 @@ export function cotizarArticulo(a: ArticuloCarrito): ArticuloCotizado | null {
     if (!p) return null;
     return {
       nombre: `Paquete de ${p.piezas} gafetes prepagados`,
-      detalle: [`Una cara, PVC estándar: ${pesos(p.porPieza)} por pieza`, `Incluye ${p.envios} envíos`, "Sin gafete digital"],
+      detalle: [`Una cara, PVC estándar: ${pesos(p.porPieza)} por pieza`, `Incluye ${textoEnvios(p.envios)}`, "Sin gafete digital"],
       piezas: p.piezas,
       envios: p.envios,
       subtotal: precioPaquete(p),
@@ -152,7 +153,7 @@ export function cotizarArticulo(a: ArticuloCarrito): ArticuloCotizado | null {
       ...c.renglones.map(
         (r) => `${r.piezas.toLocaleString("es-MX")} · ${caras(r.dosCaras)}, ${r.material.nombre}: ${pesos(r.porPieza)} por pieza`,
       ),
-      `Incluye ${c.envios} envíos`,
+      `Incluye ${textoEnvios(c.envios)}`,
     ],
     piezas: c.piezas,
     envios: c.envios,

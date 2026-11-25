@@ -16,6 +16,7 @@ import {
   pesos,
   precioPaquete,
   tramos,
+  textoEnvios,
 } from "@/lib/precios";
 import { entregaTexto } from "@/lib/site";
 import { ArmaPaquete } from "./ArmaPaquete";
@@ -201,7 +202,7 @@ export function Cotizador() {
           </div>
           <p className="mt-2 text-sm text-gris">
             {c.paquete
-              ? `Pagas hoy los ${c.paquete.piezas} gafetes y los pides cuando quieras, en uno o varios pedidos, con ${c.paquete.envios} envíos incluidos. El precio por pieza no cambia aunque pidas de uno en uno. Los paquetes de lista son de PVC estándar a una cara; para frente y vuelta u otro material, arma uno a la medida.`
+              ? `Pagas hoy los ${c.paquete.piezas} gafetes y los pides cuando quieras, en uno o varios pedidos, con ${textoEnvios(c.paquete.envios)} incluidos. El precio por pieza no cambia aunque pidas de uno en uno. Los paquetes de lista son de PVC estándar a una cara; para frente y vuelta u otro material, arma uno a la medida.`
               : "Arma tu paquete con varios tipos de gafete: cada uno con su cantidad, su impresión y su material. Cada gafete prepagado cubre solo un gafete igual al que elegiste."}
           </p>
         </fieldset>
@@ -409,7 +410,7 @@ export function Cotizador() {
           {paquete ? (
             <p className="mt-3 rounded-tarjeta-chica border border-linea px-4 py-3 text-sm">
               <strong>¿Pides de a poquitos?</strong> El paquete de {paquete.piezas} gafetes cuesta{" "}
-              {pesos(precioPaquete(paquete))} e incluye {paquete.envios} envíos: usas{" "}
+              {pesos(precioPaquete(paquete))} e incluye {textoEnvios(paquete.envios)}: usas{" "}
               {c.piezas === 1 ? "uno" : c.piezas} hoy y el resto queda a tu favor.{" "}
               <button type="button" onClick={() => verPaquetes(paquete.piezas)} className="font-semibold underline">
                 Ver paquetes
