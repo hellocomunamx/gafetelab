@@ -6,6 +6,7 @@ import { cancelarPedido, pagarPedido } from "@/app/cuenta/pedidos/acciones";
 import { Confirmar } from "@/components/cuenta/Confirmar";
 import { Bloque } from "@/components/cuenta/Entrada";
 import { EstadoPedido } from "@/components/cuenta/EstadoPedido";
+import { ConversionAlMostrar } from "@/components/EtiquetaAnuncios";
 import { FacturaDelPedido } from "@/components/cuenta/FacturaDelPedido";
 import { claseBoton, claseBotonSecundario } from "@/components/cuenta/clases";
 import { fechaLarga } from "@/lib/cuenta/constancia";
@@ -115,6 +116,10 @@ export default async function Pedido({
         </h1>
         <EstadoPedido valor={estado} />
       </div>
+
+      {(regreso === "listo" || regreso === "saldo") && (estado === "pagado" || estado === "autorizado") ? (
+        <ConversionAlMostrar tipo="compra" valor={Number(pedido.subtotal)} id={pedido.id} />
+      ) : null}
 
       {regreso === "saldo" && estado === "pagado" ? (
         <p role="status" className="rounded-tarjeta bg-resaltador/30 p-4 text-sm">

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
+import { registrarConversion } from "@/lib/anuncios";
 import { carritoMaximoPiezas } from "@/lib/carrito";
 import { condiciones, nombreArchivo, nuevoFolio, renglones, totales } from "@/lib/cotizacion";
 import { grosorTexto, type MaterialId, materiales } from "@/lib/materiales";
@@ -99,6 +100,7 @@ export function Cotizador() {
       enlace.download = nombreArchivo(datos);
       enlace.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
+      registrarConversion("cotizacion");
     } finally {
       setGenerando(false);
     }
@@ -114,6 +116,7 @@ export function Cotizador() {
         body: JSON.stringify({ correo, cantidad: c.piezas, ...opciones, empresa, sitioWeb }),
       });
       const datos = await respuesta.json().catch(() => ({}));
+      if (respuesta.ok) registrarConversion("cotizacion");
       setEstado(
         respuesta.ok
           ? { tipo: "listo", mensaje: `Listo. Enviamos tu cotización a ${correo}.` }

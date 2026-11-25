@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Asistente } from "@/components/Asistente";
 import { Encabezado } from "@/components/Encabezado";
+import { EtiquetaAnuncios } from "@/components/EtiquetaAnuncios";
 import { JsonLd } from "@/components/JsonLd";
 import { Pie } from "@/components/Pie";
 import { Visita } from "@/components/Visita";
@@ -106,6 +107,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           Saltar al contenido
         </a>
         <Visita />
+        <EtiquetaAnuncios />
         <Encabezado />
         <main id="contenido" className="flex-1">
           {children}

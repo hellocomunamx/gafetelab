@@ -1,6 +1,7 @@
 import { JsonLd } from "@/components/JsonLd";
 import { Apartado, fechaLegal } from "@/components/Legal";
 import { Contenedor, Portada } from "@/components/ui";
+import { googleAds } from "@/lib/anuncios";
 import { migas } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
 import { afiliados, figalo, legal, site } from "@/lib/site";
@@ -190,11 +191,28 @@ export default function AvisoDePrivacidad() {
           </Apartado>
 
           <Apartado numero={7} titulo="Cookies">
-            <p>
-              Este sitio no usa cookies de publicidad ni herramientas de rastreo publicitario. Al
-              iniciar sesión en tu cuenta se usan cookies estrictamente necesarias para mantener tu
-              sesión.
-            </p>
+            {googleAds.id ? (
+              <p>
+                Al iniciar sesión en tu cuenta se usan cookies estrictamente necesarias para mantener
+                tu sesión. Además, usamos la etiqueta de Google Ads, que coloca cookies de Google,
+                para saber si una visita que llegó por uno de nuestros anuncios terminó en una
+                cotización, una cuenta nueva o un pedido, y así pagar solo por los anuncios que
+                funcionan. No le enviamos a Google tu nombre, tu correo ni los datos de tu equipo.
+                Puedes bloquear estas cookies desde tu navegador o pedirle que no te rastree (Do Not
+                Track o Global Privacy Control); en ese caso la etiqueta no se carga. Más información
+                en{" "}
+                <a href="https://policies.google.com/technologies/ads?hl=es-419" className="underline">
+                  cómo usa Google las cookies en publicidad
+                </a>
+                .
+              </p>
+            ) : (
+              <p>
+                Este sitio no usa cookies de publicidad ni herramientas de rastreo publicitario. Al
+                iniciar sesión en tu cuenta se usan cookies estrictamente necesarias para mantener tu
+                sesión.
+              </p>
+            )}
             <p>
               Para saber cuántas visitas recibe el sitio llevamos un conteo propio y anónimo de
               páginas vistas. No usa cookies, no guarda tu dirección IP y no permite identificarte:
