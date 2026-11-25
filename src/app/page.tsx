@@ -265,7 +265,7 @@ export default function Inicio() {
       <Seccion titulo="Impreso, digital o los dos">
         <ul className="grid gap-5 md:grid-cols-3">
           {modalidadesDetalle.map((m, i) => (
-            <li key={m.titulo} className="rounded-tarjeta border border-linea p-6">
+            <li key={m.titulo} className="min-w-0 rounded-tarjeta border border-linea p-6">
               <div aria-hidden className="mb-5 flex h-44 items-center justify-center overflow-hidden rounded-tarjeta-chica bg-papel">
                 {i !== 1 ? <GafeteHorizontal className={`shrink-0 -rotate-3 ${i ? "-mr-24 scale-[0.55]" : "scale-[0.62]"}`} /> : null}
                 {i !== 0 ? <Celular className={`shrink-0 scale-[0.46] ${i === 2 ? "-ml-20" : ""}`} /> : null}
