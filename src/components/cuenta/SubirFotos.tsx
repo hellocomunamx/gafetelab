@@ -9,6 +9,7 @@ import { AjustarFoto, type FotoAjustada } from "@/components/AjustarFoto";
 import { prepararFoto, rutaFoto } from "@/lib/cuenta/imagen";
 import { extraerImagenes, type ImagenSuelta } from "@/lib/cuenta/zip";
 import { crearClienteNavegador } from "@/lib/supabase/client";
+import { ElegirPersona } from "./ElegirPersona";
 import { claseBoton, claseBotonSecundario } from "./Formulario";
 
 type Persona = PersonaFoto & { tieneFoto: boolean };
@@ -30,6 +31,7 @@ const VIAS: Record<string, string> = {
   archivo: "Por el archivo del Excel",
   numero: "Por número de empleado",
   nombre: "Por nombre",
+  parcial: "Por parte del nombre (revísala)",
   manual: "Elegida a mano",
 };
 
@@ -44,6 +46,9 @@ export function SubirFotos({ empresaId, personas }: { empresaId: string; persona
   const [resultado, setResultado] = useState<{ subidas: number; fallas: string[] }>();
   /** Foto abierta en el editor de encuadre. */
   const [ajustando, setAjustando] = useState<string>();
+  /** Asignar a mano, foto por foto, las que no se reconocieron. */
+  const [unaPorUna, setUnaPorUna] = useState(false);
+  const [saltadas, setSaltadas] = useState<Set<string>>(new Set());
   const urls = useRef<string[]>([]);
   const actuales = useRef<Foto[]>([]);
   useEffect(() => {
@@ -104,6 +109,15 @@ export function SubirFotos({ empresaId, personas }: { empresaId: string; persona
   );
   const porPersona = new Map(personas.map((p) => [p.id, p]));
   const editando = fotos.find((f) => f.clave === ajustando);
+  const ocupadas = new Set(asignadas.map((f) => f.empleadoId));
+  const sinAsignar = fotos.filter((f) => !f.empleadoId);
+  const actual = unaPorUna ? (sinAsignar.find((f) => !saltadas.has(f.clave)) ?? sinAsignar[0]) : undefined;
+
+  function asignar(clave: string, id: string) {
+    setFotos((previas) =>
+      previas.map((p) => (p.clave === clave ? { ...p, empleadoId: id, via: id ? "manual" : null, choque: undefined } : p)),
+    );
+  }
   const subiendo = Boolean(avance);
 
   async function subir() {
@@ -194,9 +208,9 @@ export function SubirFotos({ empresaId, personas }: { empresaId: string; persona
               <p className="font-titulos text-lg font-extrabold">
                 {asignadas.length} de {fotos.length} fotos con persona asignada
               </p>
-              {fotos.length > asignadas.length ? (
+              {sinAsignar.length ? (
                 <p className="text-sm text-gris">
-                  Las que dicen &quot;Sin asignar&quot; no se suben: elige a quién corresponden o quítalas.
+                  Las que no tienen persona no se suben: búscala por su nombre o número, o quítala.
                 </p>
               ) : null}
               {repetidas.size ? (
@@ -216,6 +230,78 @@ export function SubirFotos({ empresaId, personas }: { empresaId: string; persona
               </button>
             </div>
           </div>
+
+          {sinAsignar.length && !unaPorUna ? (
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-tarjeta-chica border border-dashed border-tinta bg-papel p-4 text-sm">
+              <p>
+                <span className="font-semibold">
+                  {sinAsignar.length === 1 ? "1 foto no se reconoció." : `${sinAsignar.length} fotos no se reconocieron.`}
+                </span>{" "}
+                Pasa por ellas una por una: ves la foto en grande y escribes de quién es.
+              </p>
+              <button
+                type="button"
+                disabled={subiendo}
+                onClick={() => {
+                  setSaltadas(new Set());
+                  setUnaPorUna(true);
+                }}
+                className={claseBotonSecundario}
+              >
+                Asignar una por una
+              </button>
+            </div>
+          ) : null}
+
+          {actual ? (
+            <section aria-label="Asignar una por una" className="mt-4 rounded-tarjeta-chica border-2 border-tinta p-4">
+              <div className="flex items-center justify-between gap-3 text-sm">
+                <p className="font-semibold">
+                  Faltan {sinAsignar.length} · <span className="font-normal text-gris">{actual.archivo}</span>
+                </p>
+                <button type="button" onClick={() => setUnaPorUna(false)} className="underline">
+                  Terminar
+                </button>
+              </div>
+              <div className="mt-3 grid gap-4 sm:grid-cols-[12rem_1fr]">
+                <div>
+                  {/* eslint-disable-next-line @next/next/no-img-element -- vista previa local */}
+                  <img src={actual.url} alt={`Foto ${actual.archivo}`} className="aspect-[3/4] w-full max-w-48 rounded-tarjeta-chica object-cover" />
+                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                    <button type="button" onClick={() => setAjustando(actual.clave)} className="underline">Acomodar</button>
+                    <button
+                      type="button"
+                      onClick={() => setSaltadas((s) => new Set(s).add(actual.clave))}
+                      disabled={sinAsignar.length < 2}
+                      className="underline disabled:opacity-40"
+                    >
+                      Saltar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFotos((previas) => previas.filter((p) => p.clave !== actual.clave))}
+                      className="underline"
+                    >
+                      Quitar foto
+                    </button>
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">¿Quién es?</p>
+                  <ElegirPersona
+                    key={actual.clave}
+                    personas={personas}
+                    valor=""
+                    ocupadas={ocupadas}
+                    abierta
+                    enfocar
+                    etiqueta={`Persona de la foto ${actual.archivo}`}
+                    alElegir={(id) => asignar(actual.clave, id)}
+                  />
+                </div>
+              </div>
+            </section>
+          ) : null}
 
           <ul className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {[...fotos]
@@ -243,28 +329,14 @@ export function SubirFotos({ empresaId, personas }: { empresaId: string; persona
                     </button>
                     <div className="min-w-0 flex-1 text-sm">
                       <p className="truncate font-medium" title={f.archivo}>{f.archivo}</p>
-                      <select
-                        value={f.empleadoId}
+                      <ElegirPersona
+                        personas={personas}
+                        valor={f.empleadoId}
+                        ocupadas={ocupadas}
                         disabled={subiendo}
-                        aria-label={`Persona de la foto ${f.archivo}`}
-                        onChange={(e) =>
-                          setFotos((previas) =>
-                            previas.map((p) =>
-                              p.clave === f.clave
-                                ? { ...p, empleadoId: e.target.value, via: e.target.value ? "manual" : null, choque: undefined }
-                                : p,
-                            ),
-                          )
-                        }
-                        className="mt-1.5 w-full rounded-tarjeta-chica border border-linea bg-white px-2 py-1.5"
-                      >
-                        <option value="">Sin asignar</option>
-                        {personas.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.nombre || "Sin nombre"}{p.numero_empleado ? ` (${p.numero_empleado})` : ""}
-                          </option>
-                        ))}
-                      </select>
+                        etiqueta={`Persona de la foto ${f.archivo}`}
+                        alElegir={(id) => asignar(f.clave, id)}
+                      />
                       <p className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gris">
                         {f.via ? (
                           <span>{VIAS[f.via]}</span>
