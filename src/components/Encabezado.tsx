@@ -6,10 +6,11 @@ import { EnlaceCuenta } from "./cuenta/EnlaceCuenta";
 import { Logo } from "./Logo";
 import { Boton, Contenedor } from "./ui";
 
-export const navegacion = [
+export const navegacion: { href: string; texto: string; textoLargo?: string }[] = [
   { href: "/como-funciona", texto: "Cómo funciona" },
   { href: "/plataforma", texto: "Plataforma" },
   { href: "/precios", texto: "Precios" },
+  { href: "/medidas-de-gafetes", texto: "Medidas", textoLargo: "Medidas y glosario" },
   { href: "/gafetes-para", texto: "Por giro" },
   { href: "/preguntas-frecuentes", texto: "Preguntas" },
 ];
@@ -33,9 +34,9 @@ export function Encabezado() {
         <Link href="/" aria-label="LaGafetería, inicio" className="shrink-0">
           <Logo className="h-auto max-[399px]:w-[7.5rem] max-[339px]:w-[6.5rem]" />
         </Link>
-        <nav aria-label="Principal" className="hidden items-center gap-6 whitespace-nowrap lg:flex xl:gap-7">
+        <nav aria-label="Principal" className="hidden items-center gap-6 whitespace-nowrap lg:flex lg:gap-5 xl:gap-7">
           {navegacion.map((n) => (
-            <Link key={n.href} href={n.href} className="font-medium hover:text-rojo">
+            <Link key={n.href} href={n.href} title={n.textoLargo} className="font-medium hover:text-rojo">
               {n.texto}
             </Link>
           ))}
@@ -43,8 +44,8 @@ export function Encabezado() {
         <div className="flex items-center gap-2 max-[399px]:gap-1">
           <EnlaceCuenta className="hidden px-2 font-medium whitespace-nowrap hover:text-rojo sm:block" />
           <IconoCarrito />
-          <Boton href="/cotizar" className="px-5 py-2 text-sm max-[399px]:px-4 max-[339px]:px-3">
-            Cotizar<span className="hidden sm:inline">&nbsp;en línea</span>
+          <Boton href="/cotizar" className="px-5 py-2 text-sm whitespace-nowrap max-[399px]:px-4 max-[339px]:px-3">
+            Cotizar<span className="hidden sm:inline lg:hidden xl:inline">&nbsp;en línea</span>
           </Boton>
           <details className="relative lg:hidden">
             <summary
@@ -61,7 +62,7 @@ export function Encabezado() {
             >
               {navegacion.map((n) => (
                 <Link key={n.href} href={n.href} className="rounded-tarjeta-chica px-3 py-2 font-medium hover:bg-papel">
-                  {n.texto}
+                  {n.textoLargo ?? n.texto}
                 </Link>
               ))}
               <EnlaceCuenta className="rounded-tarjeta-chica px-3 py-2 font-medium hover:bg-papel sm:hidden" />
