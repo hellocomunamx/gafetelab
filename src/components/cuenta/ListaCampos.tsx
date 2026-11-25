@@ -5,7 +5,7 @@ import { normalizar } from "@/lib/cuenta/texto";
 
 type Fila = { id: string; clave: string; etiqueta: string; tipo: string; de_sistema: boolean };
 
-const TIPOS: Record<string, string> = { texto: "Texto", fecha: "Fecha", foto: "Fotografía", qr: "Código QR" };
+const TIPOS: Record<string, string> = { texto: "Texto", fecha: "Fecha o texto", foto: "Fotografía", qr: "Código QR" };
 const entradaChica = "w-full rounded-tarjeta-chica border bg-white px-2.5 py-1.5";
 
 /** «Nombre» siempre se queda: es lo que identifica a cada persona. */

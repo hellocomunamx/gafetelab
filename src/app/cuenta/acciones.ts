@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { estadosMexico, regimenesFiscales, usosCfdi } from "@/lib/cuenta/catalogos";
 import { constanciaDe, ventanaDeEmision } from "@/lib/cuenta/constancia";
-import { ordenDelArchivo } from "@/lib/cuenta/excel";
+import { fechaIso, ordenDelArchivo } from "@/lib/cuenta/excel";
 import { CLAVES_DE_CORREO, correoValido } from "@/lib/cuenta/ligas";
 import { datosVerificables, modosQr } from "@/lib/cuenta/qr";
 import { recordarEmpresa, requerirEmpresa, requerirUsuario } from "@/lib/cuenta/sesion";
@@ -260,7 +260,9 @@ export async function guardarEmpleado(_: Resultado, d: FormData): Promise<Result
     ...((anterior?.datos as Record<string, string> | null) ?? {}),
   };
   for (const c of campos ?? []) {
-    const valor = texto(d, `dato_${c.clave}`, 200);
+    const crudo = texto(d, `dato_${c.clave}`, 200);
+    // Un dato de fecha también acepta texto, como «Indefinido».
+    const valor = c.tipo === "fecha" ? (fechaIso(crudo) ?? crudo) : crudo;
     if (valor) datos[c.clave] = valor;
     else delete datos[c.clave];
   }

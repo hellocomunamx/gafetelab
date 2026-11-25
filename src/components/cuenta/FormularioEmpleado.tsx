@@ -3,6 +3,7 @@ import { estatusEmpleado } from "@/lib/cuenta/catalogos";
 import type { Campo, Empleado } from "@/lib/cuenta/tipos";
 import { CampoSugerencias } from "./CampoSugerencias";
 import { Entrada, Seleccion } from "./Entrada";
+import { EntradaFecha } from "./EntradaFecha";
 import { Formulario } from "./Formulario";
 
 /** Alta o edición de una persona, con los campos propios de la empresa. */
@@ -64,16 +65,13 @@ export function FormularioEmpleado({
           />
         ) : oculto("tipo_contrato")}
         <Entrada etiqueta="Correo" name="correo" type="email" maxLength={200} defaultValue={empleado?.correo ?? ""} ayuda="Para mandarle su liga. No se imprime en el gafete." />
-        {propios.map((c) => (
-          <Entrada
-            key={c.id}
-            etiqueta={c.etiqueta}
-            name={`dato_${c.clave}`}
-            type={c.tipo === "fecha" ? "date" : "text"}
-            maxLength={200}
-            defaultValue={datos[c.clave] ?? ""}
-          />
-        ))}
+        {propios.map((c) =>
+          c.tipo === "fecha" ? (
+            <EntradaFecha key={c.id} etiqueta={c.etiqueta} name={`dato_${c.clave}`} maxLength={200} defaultValue={datos[c.clave] ?? ""} />
+          ) : (
+            <Entrada key={c.id} etiqueta={c.etiqueta} name={`dato_${c.clave}`} maxLength={200} defaultValue={datos[c.clave] ?? ""} />
+          ),
+        )}
         {empleado ? null : (
           <Seleccion etiqueta="Estatus" name="estatus" defaultValue="activo">
             {estatusEmpleado.map((e) => (
