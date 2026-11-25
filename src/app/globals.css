@@ -233,6 +233,18 @@ details > summary::-webkit-details-marker {
 }
 
 /*
+ * Las tablas anchas se deslizan dentro de un contenedor `overflow-x-auto`. Los
+ * textos solo para lector de pantalla (`sr-only`) van en posición absoluta y,
+ * si el contenedor no es su referencia, se escapan y ensanchan toda la página
+ * en el celular. Va en la capa base para que una utilidad de posición gane.
+ */
+@layer base {
+  .overflow-x-auto {
+    position: relative;
+  }
+}
+
+/*
  * Menús desplegables (select) con el estilo de la marca en todo el sitio.
  * Va fuera de capas a propósito: así gana sobre el padding de Tailwind y la
  * flecha nunca se encima con el texto.

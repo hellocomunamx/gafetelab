@@ -125,7 +125,9 @@ export default async function Fotos({ searchParams }: { searchParams: Promise<{ 
                   </li>
                 </ol>
                 <p className="mt-4 text-sm text-gris">
-                  ¿Alguna no se reconoce? No pasa nada: antes de guardar ves todas y eliges a mano de quién es.
+                  ¿No tienen número ni nombre, como las que salen del celular? También se puede: antes de guardar las
+                  ves todas, y las que no se reconozcan las asignas una por una escribiendo el nombre de la persona. Si
+                  el archivo trae solo parte del nombre (por ejemplo, nombre y primer apellido), también se reconoce.
                 </p>
               </div>
               <SubirFotos empresaId={empresa.id} personas={personas} />

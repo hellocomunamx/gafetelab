@@ -8,8 +8,10 @@ import {
   type CampoPlantilla,
   conImpresos,
   crearDesdePlantilla,
+  etiquetaDe,
   type Impreso,
   impresoDe,
+  llevaEtiqueta,
   type PlantillaId,
   plantillas,
 } from "@/lib/diseno/plantillas";
@@ -46,15 +48,29 @@ export function NuevoDiseno({
   const [impresos, setImpresos] = useState<Record<string, Impreso>>(() =>
     Object.fromEntries(campos.map((c) => [c.clave, impresoDe(c)])),
   );
+  /** Solo lo que se tocó a mano; lo demás sigue la cara (la vuelta lleva etiqueta). */
+  const [conEtiqueta, setConEtiqueta] = useState<Record<string, boolean>>({});
   const elegidos = useMemo(() => conImpresos(campos, impresos), [campos, impresos]);
   const etiquetas = useMemo(() => Object.fromEntries(campos.map((c) => [c.clave, c.etiqueta])), [campos]);
+  /** Valor de muestra; los datos propios no tienen uno real. */
+  const ejemplo = (c: CampoPlantilla) => (datos[c.clave] && datos[c.clave] !== c.etiqueta ? datos[c.clave] : "…");
+  const etiquetaPara = (clave: string) => etiquetaDe(clave === "nombre" ? "frente" : impresos[clave], conEtiqueta, clave);
+  const etiquetasElegidas = useMemo(
+    () =>
+      Object.fromEntries(
+        campos
+          .filter(llevaEtiqueta)
+          .map((c) => [c.clave, etiquetaDe(c.clave === "nombre" ? "frente" : impresos[c.clave], conEtiqueta, c.clave)]),
+      ),
+    [campos, impresos, conEtiqueta],
+  );
   const muestras = useMemo(
     () =>
       plantillas.map((p) => ({
         ...p,
-        frente: estable(crearDesdePlantilla(p.id, orientacion, elegidos, color, empresa).frente),
+        frente: estable(crearDesdePlantilla(p.id, orientacion, elegidos, color, empresa, etiquetasElegidas).frente),
       })),
-    [orientacion, elegidos, color, empresa],
+    [orientacion, elegidos, color, empresa, etiquetasElegidas],
   );
 
   return (
@@ -79,6 +95,9 @@ export function NuevoDiseno({
         <p className="max-w-2xl text-sm text-gris">
           Tu Excel guarda todos los datos de tu equipo; aquí eliges cuáles se imprimen en <strong>este</strong> diseño y
           en qué cara. Otro diseño puede llevar otros. Lo que no imprimas se queda guardado igual.
+        </p>
+        <p className="mt-1 max-w-2xl text-sm text-gris">
+          En cada dato eliges también si lleva su etiqueta, como «Puesto: Ventas», o solo el dato, como «Ventas».
         </p>
         <ul className="mt-3 divide-y divide-linea rounded-tarjeta border border-linea bg-white">
           {campos.map((c) => (
@@ -112,6 +131,32 @@ export function NuevoDiseno({
                   </label>
                 ))}
               </span>
+              {llevaEtiqueta(c) && impresos[c.clave] !== "no" ? (
+                <span className="flex w-full flex-wrap items-center justify-end gap-2">
+                  <input type="hidden" name={`et_${c.clave}`} value={etiquetaPara(c.clave) ? "si" : "no"} />
+                  <span
+                    role="radiogroup"
+                    aria-label={`Cómo se imprime ${c.etiqueta}`}
+                    className="flex shrink-0 overflow-hidden rounded-full border border-linea text-xs font-semibold"
+                  >
+                    {([false, true] as const).map((v) => (
+                      <label
+                        key={String(v)}
+                        className="cursor-pointer px-3 py-1.5 has-[:checked]:bg-tinta has-[:checked]:text-white has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-tinta"
+                      >
+                        <input
+                          type="radio"
+                          name={`etq_${c.clave}`}
+                          checked={etiquetaPara(c.clave) === v}
+                          onChange={() => setConEtiqueta((a) => ({ ...a, [c.clave]: v }))}
+                          className="sr-only"
+                        />
+                        {v ? `${c.etiqueta}: ${ejemplo(c)}` : ejemplo(c) === "…" ? "Solo el dato" : ejemplo(c)}
+                      </label>
+                    ))}
+                  </span>
+                </span>
+              ) : null}
             </li>
           ))}
         </ul>
