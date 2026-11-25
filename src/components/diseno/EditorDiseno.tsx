@@ -646,6 +646,7 @@ export function EditorDiseno({
             <PanelElemento
               elemento={elegido}
               campos={camposTexto}
+              datos={datos}
               ancho={W}
               alCambiar={(parche) => cambiarElemento(elegido.id, parche)}
               alOrdenar={(hacia) => ordenar(elegido.id, hacia)}

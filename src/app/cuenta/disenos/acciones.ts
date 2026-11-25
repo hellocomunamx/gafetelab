@@ -65,6 +65,12 @@ export async function crearDiseno(_: Resultado, d: FormData): Promise<Resultado>
     if (v === "frente" || v === "vuelta" || v === "no") elegidos[c.clave] = v;
   }
   const campos = conImpresos(todos, elegidos);
+  // Si cada dato va con etiqueta («Puesto: Ventas») o solo el valor.
+  const etiquetas: Record<string, boolean> = {};
+  for (const c of todos) {
+    const v = d.get(`et_${c.clave}`);
+    if (v === "si" || v === "no") etiquetas[c.clave] = v === "si";
+  }
   await Promise.all(
     campos
       .filter((c, i) => c.en_gafete !== todos[i].en_gafete || c.cara !== todos[i].cara)
@@ -76,6 +82,7 @@ export async function crearDiseno(_: Resultado, d: FormData): Promise<Resultado>
     campos,
     COLOR.test(color) ? color.toLowerCase() : "#e63b2e",
     empresa.nombre,
+    etiquetas,
   );
   const nombre = String(d.get("nombre") ?? "").trim().slice(0, 80) || `Diseño ${(count ?? 0) + 1}`;
   const { data, error } = await supabase
