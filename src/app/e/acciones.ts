@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { avisarSolicitud } from "@/lib/avisos/enviar";
 import { registrarCambioFoto, retirarCambioFoto } from "@/lib/cuenta/cambio-foto-servidor";
+import { fechaIso } from "@/lib/cuenta/excel";
 import { camposPedibles, correoValido } from "@/lib/cuenta/ligas";
 import { reposicionDe } from "@/lib/cuenta/reposicion";
 import { esColumnaSistema, type Resultado } from "@/lib/cuenta/tipos";
@@ -314,7 +315,9 @@ export async function corregirDatos(_: Resultado, d: FormData): Promise<Resultad
   for (const clave of permitidos) {
     const valor = d.get(`campo_${clave}`);
     if (typeof valor !== "string") continue;
-    const limpio = valor.trim().replace(/\s+/g, " ").slice(0, 160);
+    const escrito = valor.trim().replace(/\s+/g, " ").slice(0, 160);
+    // Un dato de fecha también acepta texto, como «Indefinido».
+    const limpio = (campos ?? []).some((c) => c.clave === clave && c.tipo === "fecha") ? (fechaIso(escrito) ?? escrito) : escrito;
     const antes = esColumnaSistema(clave) ? (persona[clave] ?? "") : typeof datosActuales[clave] === "string" ? (datosActuales[clave] as string) : "";
     if (limpio !== antes) cambios[clave] = limpio;
   }

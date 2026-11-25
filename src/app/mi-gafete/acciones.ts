@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { avisarAlMomento } from "@/lib/avisos/enviar";
 import { ligaBloqueada } from "@/lib/cuenta/candado";
+import { fechaIso } from "@/lib/cuenta/excel";
 import { personaDeLiga } from "@/lib/cuenta/liga-publica";
 import { PESO_MAXIMO_FOTO, RUTA_LIGA, rutaFotoPendiente } from "@/lib/cuenta/ligas";
 import type { Resultado } from "@/lib/cuenta/tipos";
@@ -34,9 +35,10 @@ export async function enviarMisDatos(datos: FormData): Promise<Resultado> {
 
   const valores: Record<string, string> = {};
   for (const campo of campos) {
-    const valor = String(datos.get(`dato_${campo.clave}`) ?? "").trim().slice(0, campo.clave === "nombre" ? 160 : 120);
+    const crudo = String(datos.get(`dato_${campo.clave}`) ?? "").trim().slice(0, campo.clave === "nombre" ? 160 : 120);
+    // Un dato de fecha también acepta texto, como «Indefinido».
+    const valor = campo.tipo === "fecha" ? (fechaIso(crudo) ?? crudo) : crudo;
     if (!valor && (campo.obligatorio || campo.clave === "nombre")) return { error: `Falta llenar: ${campo.etiqueta}.` };
-    if (campo.tipo === "fecha" && valor && !/^\d{4}-\d{2}-\d{2}$/.test(valor)) return { error: `Revisa la fecha de: ${campo.etiqueta}.` };
     valores[campo.clave] = valor;
   }
 

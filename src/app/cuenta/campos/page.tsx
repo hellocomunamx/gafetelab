@@ -99,7 +99,7 @@ export default async function Campos() {
                 <Entrada etiqueta="Nombre del dato" name="etiqueta" required maxLength={60} autoComplete="off" placeholder="Tipo de sangre, NSS, Vigencia" />
                 <Seleccion etiqueta="Tipo" name="tipo" defaultValue="texto">
                   <option value="texto">Texto</option>
-                  <option value="fecha">Fecha</option>
+                  <option value="fecha">Fecha o texto</option>
                 </Seleccion>
                 <p className="text-xs text-gris">Aparece como columna nueva en tu Excel. Para imprimirlo, elígelo en tu diseño.</p>
               </div>

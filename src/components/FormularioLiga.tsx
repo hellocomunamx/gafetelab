@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { type ChangeEvent, type FormEvent, useEffect, useState } from "react";
 import { enviarMisDatos } from "@/app/mi-gafete/acciones";
+import { EntradaFecha } from "@/components/cuenta/EntradaFecha";
 import { claseBoton, claseEntrada } from "@/components/cuenta/Formulario";
 import type { Encuadre } from "@/lib/cuenta/imagen";
 import { AjustarFoto, type FotoAjustada } from "./AjustarFoto";
@@ -77,12 +78,23 @@ export function FormularioLiga({
 
   return (
     <form onSubmit={enviar} className="space-y-5">
-      {campos.map((c) => (
+      {campos.map((c) =>
+        c.tipo === "fecha" ? (
+          <EntradaFecha
+            key={c.clave}
+            etiqueta={c.etiqueta}
+            name={`dato_${c.clave}`}
+            defaultValue={c.valor}
+            required={c.obligatorio}
+            maxLength={120}
+            autoComplete="off"
+          />
+        ) : (
         <label key={c.clave} className="block">
           <span className="text-sm font-semibold">{c.etiqueta}</span>
           <input
             name={`dato_${c.clave}`}
-            type={c.tipo === "fecha" ? "date" : "text"}
+            type="text"
             defaultValue={c.valor}
             required={c.obligatorio}
             maxLength={c.clave === "nombre" ? 160 : 120}
@@ -90,7 +102,8 @@ export function FormularioLiga({
             className={claseEntrada}
           />
         </label>
-      ))}
+        ),
+      )}
 
       {conFoto ? (
         <div>

@@ -249,7 +249,7 @@ export function ImportarExcel({ campos, empresa }: { campos: CampoExcel[]; empre
                         className={`${claseEntrada} w-auto`}
                       >
                         <option value="texto">Texto</option>
-                        <option value="fecha">Fecha</option>
+                        <option value="fecha">Fecha o texto</option>
                         <option value="no">No agregar</option>
                       </select>
                     </label>

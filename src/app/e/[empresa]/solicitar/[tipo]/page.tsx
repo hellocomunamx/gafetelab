@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CambiarFotoDigital } from "@/components/CambiarFotoDigital";
 import { Entrada } from "@/components/cuenta/Entrada";
+import { EntradaFecha } from "@/components/cuenta/EntradaFecha";
 import { Formulario } from "@/components/cuenta/Formulario";
 import { claseEntrada } from "@/components/cuenta/clases";
 import { BarraPortal } from "@/components/portal/InicioPortal";
@@ -57,18 +58,21 @@ export default async function NuevaSolicitud({ params }: { params: Promise<{ emp
         <Formulario accion={corregirDatos} boton={`Enviar a ${empresa.nombre}`} className="mt-4">
           <input type="hidden" name="empresa" value={handle} />
           <div className="space-y-4">
-            {lista.map((c) => (
-              <Entrada
-                key={c.clave}
-                etiqueta={c.etiqueta}
-                name={`campo_${c.clave}`}
-                type={c.tipo === "fecha" ? "date" : "text"}
-                defaultValue={valorDe(persona, c.clave)}
-                maxLength={160}
-                required={c.clave === "nombre"}
-                autoComplete="off"
-              />
-            ))}
+            {lista.map((c) =>
+              c.tipo === "fecha" ? (
+                <EntradaFecha key={c.clave} etiqueta={c.etiqueta} name={`campo_${c.clave}`} defaultValue={valorDe(persona, c.clave)} maxLength={160} autoComplete="off" />
+              ) : (
+                <Entrada
+                  key={c.clave}
+                  etiqueta={c.etiqueta}
+                  name={`campo_${c.clave}`}
+                  defaultValue={valorDe(persona, c.clave)}
+                  maxLength={160}
+                  required={c.clave === "nombre"}
+                  autoComplete="off"
+                />
+              ),
+            )}
             <label className="block">
               <span className="text-sm font-semibold">¿Por qué el cambio? (opcional)</span>
               <textarea name="nota" maxLength={500} rows={2} className={claseEntrada} placeholder="Por ejemplo: me cambiaron de área en octubre." />

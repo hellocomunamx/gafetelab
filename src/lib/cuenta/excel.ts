@@ -84,7 +84,9 @@ export function columnasNuevas(hoja: unknown[][], campos: CampoExcel[]): Columna
     const valores = resto.map((fila) => textoDeCelda(fila?.[i])).filter(Boolean);
     const fechas = valores.filter((v) => fechaIso(v)).length;
     const pista = PISTAS_FECHA.some((p) => n.includes(p));
-    const esFecha = valores.length ? fechas / valores.length >= 0.8 || (pista && fechas / valores.length >= 0.5) : pista;
+    // Basta el título (como «Vigencia») o que la mitad sean fechas: el tipo fecha
+    // también acepta texto, como «Indefinido».
+    const esFecha = pista || (valores.length > 0 && fechas / valores.length >= 0.5);
     nuevas.push({ etiqueta: encabezado.trim().slice(0, 60), tipo: esFecha ? "fecha" : "texto", ejemplos: [...new Set(valores)].slice(0, 3) });
   });
   return nuevas;
