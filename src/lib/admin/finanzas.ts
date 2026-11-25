@@ -5,6 +5,11 @@ import { type MetodoPago, esMetodoPago, metodosPago } from "@/lib/pedidos/reglas
  * Números del panel financiero. Todo sale de los pedidos: lo cobrado es lo que
  * pagó cada cliente (con IVA y envío), sin descontar la comisión de Stripe.
  * Los meses y los periodos se cortan con la hora de Sonora (UTC-7 todo el año).
+ *
+ * El saldo prepagado se cuenta una sola vez: el dinero y los gafetes entran
+ * cuando se paga la compra del carrito. El pedido que después usa ese saldo
+ * solo suma lo que se cobró aparte; si el saldo lo cubrió completo (forma de
+ * pago "saldo"), no es un cobro y se muestra aparte como "usado del saldo".
  */
 
 const DESFASE_MS = 7 * 60 * 60 * 1000;
@@ -63,6 +68,10 @@ export type PedidoFinanzas = {
   estado: string;
   metodo: string | null;
   piezas: number;
+  /** Gafetes impresos que salieron del saldo prepagado. */
+  gafetes_de_saldo: number;
+  /** Lo cobrado renglón por renglón; los del saldo van con precio 0. */
+  conceptos: Json;
   subtotal: number;
   envio: number;
   iva: number;
@@ -101,6 +110,24 @@ export function canceladosEnGracia(eventos: EventoFinanzas[]): Set<string> {
   return ids;
 }
 
+/**
+ * Gafetes del pedido que ya se habían pagado en una compra de saldo. Lo
+ * impreso se guarda en `gafetes_de_saldo`; lo digital solo queda en los
+ * renglones con precio 0. Un gafete impreso y digital cuenta una vez.
+ */
+export function gafetesDeSaldo(p: Pick<PedidoFinanzas, "piezas" | "gafetes_de_saldo" | "conceptos">): number {
+  let digitales = 0;
+  if (Array.isArray(p.conceptos))
+    for (const c of p.conceptos) {
+      const o = objeto(c);
+      if (Number(o.precio) === 0 && /digital/i.test(String(o.nombre ?? ""))) digitales += Number(o.cantidad) || 0;
+    }
+  return Math.min(p.piezas, Math.max(p.gafetes_de_saldo || 0, digitales));
+}
+
+/** Pedido cubierto completo con saldo: no hubo cobro. */
+export const pagadoConSaldo = (p: Pick<PedidoFinanzas, "metodo">) => p.metodo === "saldo";
+
 type Cuenta = { pedidos: number; total: number };
 const cuenta = (): Cuenta => ({ pedidos: 0, total: 0 });
 const sumar = (c: Cuenta, monto: number) => {
@@ -117,6 +144,8 @@ export function resumir(pedidos: PedidoFinanzas[], eventos: EventoFinanzas[], ra
   const enGracia = canceladosEnGracia(eventos);
 
   const cobrado = { ...cuenta(), antesDeIva: 0, iva: 0, envio: 0, piezas: 0 };
+  // Gafetes que se usaron del saldo en el periodo: ya se contaron al comprarlo.
+  const delSaldo = { pedidos: 0, piezas: 0 };
   const devueltoEnPeriodo = cuenta();
   const cancelados = { ...cuenta(), enGracia: 0 };
   const porMetodo = new Map<FilaMetodo["id"], Cuenta>();
@@ -136,18 +165,24 @@ export function resumir(pedidos: PedidoFinanzas[], eventos: EventoFinanzas[], ra
 
   for (const p of pedidos) {
     if (p.pagado_en) {
+      const usados = gafetesDeSaldo(p);
+      const cobro = !pagadoConSaldo(p);
       const mes = meses.get(claveDeMes(new Date(p.pagado_en).getTime()));
-      if (mes) {
+      if (mes && cobro) {
         mes.pedidos += 1;
-        mes.piezas += p.piezas;
+        mes.piezas += p.piezas - usados;
         mes.cobrado += p.total;
       }
-      if (dentro(p.pagado_en, rango)) {
+      if (dentro(p.pagado_en, rango) && usados > 0) {
+        delSaldo.pedidos += 1;
+        delSaldo.piezas += usados;
+      }
+      if (dentro(p.pagado_en, rango) && cobro) {
         sumar(cobrado, p.total);
         cobrado.antesDeIva += p.subtotal + p.envio;
         cobrado.iva += p.iva;
         cobrado.envio += p.envio;
-        cobrado.piezas += p.piezas;
+        cobrado.piezas += p.piezas - usados;
         const metodo = esMetodoPago(p.metodo) ? p.metodo : "otro";
         sumar(porMetodo.get(metodo) ?? porMetodo.set(metodo, cuenta()).get(metodo)!, p.total);
         sumar(porEmpresa.get(p.empresa_id) ?? porEmpresa.set(p.empresa_id, cuenta()).get(p.empresa_id)!, p.total);
@@ -206,6 +241,7 @@ export function resumir(pedidos: PedidoFinanzas[], eventos: EventoFinanzas[], ra
       envio: centavos(cobrado.envio),
       piezas: cobrado.piezas,
     },
+    delSaldo,
     devuelto: { pedidos: devueltoEnPeriodo.pedidos, total: centavos(devueltoEnPeriodo.total) },
     neto: centavos(cobrado.total - devueltoEnPeriodo.total),
     ticket: cobrado.pedidos ? centavos(cobrado.total / cobrado.pedidos) : 0,
@@ -223,7 +259,7 @@ export type Resumen = ReturnType<typeof resumir>;
 
 /** Columnas de `pedidos` que usa el panel financiero. */
 export const COLUMNAS_FINANZAS =
-  "id, folio, empresa_id, estado, metodo, piezas, subtotal, envio, iva, total, disputa, creado_en, pagado_en, cancelado_en";
+  "id, folio, empresa_id, estado, metodo, piezas, gafetes_de_saldo, conceptos, subtotal, envio, iva, total, disputa, creado_en, pagado_en, cancelado_en";
 
 /** Los importes llegan de la base como texto o número; aquí quedan como número. */
 export const aPedidoFinanzas = (p: {
@@ -233,6 +269,8 @@ export const aPedidoFinanzas = (p: {
   estado: string;
   metodo: string | null;
   piezas: number;
+  gafetes_de_saldo: number | null;
+  conceptos: Json;
   subtotal: number | string;
   envio: number | string;
   iva: number | string;
@@ -243,6 +281,7 @@ export const aPedidoFinanzas = (p: {
   cancelado_en: string | null;
 }): PedidoFinanzas => ({
   ...p,
+  gafetes_de_saldo: Number(p.gafetes_de_saldo) || 0,
   subtotal: Number(p.subtotal),
   envio: Number(p.envio),
   iva: Number(p.iva),

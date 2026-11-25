@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/tipos";
+import { gafetesDeSaldo } from "./finanzas";
 import { todas } from "./paginas";
 
 type Servicio = SupabaseClient<Database>;
@@ -65,7 +66,7 @@ export async function cargarClientes(servicio: Servicio, sesion: Servicio): Prom
     todas((desde, hasta) =>
       servicio
         .from("pedidos")
-        .select("empresa_id, piezas, total, pagado_en, creado_en")
+        .select("empresa_id, piezas, gafetes_de_saldo, conceptos, total, pagado_en, creado_en")
         .order("creado_en", { ascending: false })
         .order("id")
         .range(desde, hasta),
@@ -95,7 +96,8 @@ export async function cargarClientes(servicio: Servicio, sesion: Servicio): Prom
     c.ultimo ??= p.creado_en;
     if (cobrado(p)) {
       c.pagados += 1;
-      c.gafetes += p.piezas;
+      // Lo que salió del saldo ya se contó en la compra del saldo.
+      c.gafetes += p.piezas - gafetesDeSaldo(p);
       c.total += Number(p.total);
     }
     compras.set(p.empresa_id, c);

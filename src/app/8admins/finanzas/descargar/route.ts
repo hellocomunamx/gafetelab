@@ -1,4 +1,4 @@
-import { COLUMNAS_FINANZAS, aPedidoFinanzas, esPeriodo, periodos, rangoDe, resumir } from "@/lib/admin/finanzas";
+import { COLUMNAS_FINANZAS, aPedidoFinanzas, gafetesDeSaldo, esPeriodo, periodos, rangoDe, resumir } from "@/lib/admin/finanzas";
 import { todas } from "@/lib/admin/paginas";
 import { requerirAdmin } from "@/lib/admin/sesion";
 import { descargaXlsx, hoyEnSonora } from "@/lib/admin/xlsx";
@@ -65,6 +65,7 @@ export async function GET(solicitud: Request) {
         "Estado",
         "Forma de pago",
         "Gafetes",
+        "Del saldo",
         "Por pieza",
         "Subtotal",
         "Envío",
@@ -76,7 +77,7 @@ export async function GET(solicitud: Request) {
         "Paquetería",
         "Guía",
       ],
-      anchos: [12, 30, 16, 34, 18, 18, 18, 22, 10, 12, 14, 12, 12, 14, 12, 12, 18, 16, 22],
+      anchos: [12, 30, 16, 34, 18, 18, 18, 22, 10, 10, 12, 14, 12, 12, 14, 12, 12, 18, 16, 22],
       filas: delPeriodo.map((p) => {
         const fiscal = p.facturacion as FacturacionCopiada | null;
         return [
@@ -89,6 +90,7 @@ export async function GET(solicitud: Request) {
           esEstadoPedido(p.estado) ? estadosPedido[p.estado].nombre : p.estado,
           esMetodoPago(p.metodo) ? metodosPago[p.metodo] : "",
           p.piezas,
+          gafetesDeSaldo(aPedidoFinanzas(p)),
           { dinero: Number(p.por_pieza) },
           { dinero: Number(p.subtotal) },
           { dinero: Number(p.envio) },
@@ -104,7 +106,7 @@ export async function GET(solicitud: Request) {
     },
     {
       nombre: "Mes por mes",
-      encabezados: ["Mes", "Cobrado", "Pedidos pagados", "Gafetes", "Devuelto", "Pedidos cancelados"],
+      encabezados: ["Mes", "Cobrado", "Pedidos cobrados", "Gafetes cobrados", "Devuelto", "Pedidos cancelados"],
       anchos: [20, 16, 16, 12, 14, 20],
       filas: r.meses.map((m) => [m.nombre, { dinero: m.cobrado }, m.pedidos, m.piezas, { dinero: m.devuelto }, m.cancelados]),
     },

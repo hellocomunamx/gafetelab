@@ -106,7 +106,16 @@ export default async function Finanzas({ searchParams }: { searchParams: Promise
             grande
             nombre="Cobrado"
             valor={pesos(r.cobrado.total)}
-            nota={`${pedidosEnFrase(r.cobrado.pedidos)} · ${numero(r.cobrado.piezas)} gafetes · con IVA y envío`}
+            nota={
+              <>
+                {`${pedidosEnFrase(r.cobrado.pedidos)} · ${numero(r.cobrado.piezas)} gafetes · con IVA y envío`}
+                {r.delSaldo.piezas ? (
+                  <span className="block">
+                    {`Además salieron ${numero(r.delSaldo.piezas)} ${r.delSaldo.piezas === 1 ? "gafete" : "gafetes"} del saldo en ${pedidosEnFrase(r.delSaldo.pedidos)}; ya se contaron cuando se pagó la compra.`}
+                  </span>
+                ) : null}
+              </>
+            }
           />
         </div>
         <Cifra nombre="Antes de IVA" valor={pesos(r.cobrado.antesDeIva)} nota={`IVA: ${pesos(r.cobrado.iva)}`} />
