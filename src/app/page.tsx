@@ -14,7 +14,7 @@ import { faqsGenerales } from "@/lib/faqs";
 import { giros } from "@/lib/giros";
 import { formasDeEmpezar, pasos } from "@/lib/pasos";
 import { funcionesPlataforma, modalidadesDetalle, portalEmpleados, verificaciones } from "@/lib/plataforma";
-import { envio, notaIva, paqueteDistinto, paqueteVigenciaMeses, paquetes, pesos, precioMinimo, precioPaquete, textoEnvios } from "@/lib/precios";
+import { envio, notaIva, paqueteDistinto, paqueteVigenciaMeses, paquetes, pesos, precioMinimo, precioPaquete, textoEnviosIncluidos } from "@/lib/precios";
 import { paginaFaq, producto, video, videoEventos, videoPitch } from "@/lib/schema";
 import { metadatos } from "@/lib/seo";
 import { entregaTexto, site } from "@/lib/site";
@@ -312,7 +312,7 @@ export default function Inicio() {
             <li key={p.piezas} className="rounded-tarjeta border border-linea bg-white p-5">
               <p className="font-titulos text-2xl font-extrabold">{p.piezas} gafetes</p>
               <p className="mt-1 text-gris">{pesos(p.porPieza)} por pieza</p>
-              <p className="text-gris">{textoEnvios(p.envios)} incluidos</p>
+              <p className="text-gris">{textoEnviosIncluidos(p.envios)}</p>
               <p className="mt-2 text-sm text-gris">PVC estándar · una cara</p>
               <p className="mt-3 font-titulos text-xl font-extrabold">{pesos(precioPaquete(p))}</p>
               <BotonAgregar articulo={{ tipo: "paquete", piezas: p.piezas }} texto="Lo quiero" irAlCarrito className="mt-4" />

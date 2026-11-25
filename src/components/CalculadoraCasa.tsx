@@ -14,7 +14,7 @@ import {
   paqueteSugerido,
   type Rango,
 } from "@/lib/hecho-en-casa";
-import { pesos, textoEnvios } from "@/lib/precios";
+import { pesos, textoEnviosIncluidos } from "@/lib/precios";
 import { site } from "@/lib/site";
 import { CTA_TEXTO } from "@/components/ui";
 
@@ -236,7 +236,7 @@ export function CalculadoraCasa() {
           <p className="mt-4 rounded-tarjeta-chica bg-white/10 p-3 text-sm text-white/90">
             <strong className="text-resaltador">¿Pides pocos?</strong> Con un paquete prepagado de{" "}
             {paquete.paquete.piezas} gafetes cada uno sale en {pesos(paquete.paquete.porPieza)}, con{" "}
-            {textoEnvios(paquete.paquete.envios)} incluidos, y te alcanza para{" "}
+            {textoEnviosIncluidos(paquete.paquete.envios)}, y te alcanza para{" "}
             {paquete.meses === 1 ? "un mes" : `${paquete.meses} meses`}.{" "}
             <Link href="/precios#paquete-a-la-medida" className="font-semibold text-white underline underline-offset-4">
               Ver paquetes
