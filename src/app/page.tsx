@@ -280,6 +280,10 @@ export default function Inicio() {
           empleado, área, vigencia o código QR. Se paga una sola vez por gafete, sin suscripción.{" "}
           <Link href="/materiales" className="font-semibold text-rojo underline underline-offset-4">
             Ver materiales y medidas
+          </Link>{" "}
+          ·{" "}
+          <Link href="/medidas-de-gafetes" className="font-semibold text-rojo underline underline-offset-4">
+            ¿Cuánto mide un gafete?
           </Link>
         </p>
       </Seccion>

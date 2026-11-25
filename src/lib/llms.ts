@@ -28,6 +28,7 @@ import {
   tramos,
 } from "./precios";
 import { grosorTexto, materiales, medidas, zonas } from "./materiales";
+import { faqsMedidas, guiaMedidasTexto, medidaCorta, rutaGuiaMedidas } from "./guia-medidas";
 import { accionesPlataforma, ajustesPlataforma, formasDeCargar, funcionesPlataforma, verificaciones } from "./plataforma";
 import { rutasCiudades, rutasGiros, rutasPrincipales } from "./rutas";
 import { adicionalesPendientes } from "./contacto";
@@ -53,6 +54,7 @@ const datosClave = () =>
     `- Precio digital: ${pesos(precioDigital)} MXN por pieza, ${notaIva}, en cualquier cantidad, solo o sumado a un gafete impreso. Es un pago único por gafete, no un cobro recurrente, y sigue activo mientras la cuenta de la empresa esté activa y no lo desactive.`,
     `- Materiales: ${materiales.filter((m) => m.disponible).map((m) => `${m.nombre} de ${grosorTexto(m)}${m.extra ? `, ${pesos(m.extra)} más por pieza` : ""}`).join("; ")}.`,
     `- Paquetes prepagados: ${paquetes.map((p) => `${p.piezas} gafetes por ${pesos(p.piezas * p.porPieza)} MXN con ${p.envios} envíos incluidos`).join("; ")}. Vigencia de ${paqueteVigenciaMeses} meses. Son de PVC estándar impresos a una cara y no incluyen ${paqueteNoIncluye}. ${paqueteSaldoIguales} ${paqueteDistinto}`,
+    `- Medida de un gafete: tamaño estándar CR80 (ISO/IEC 7810 ID-1), ${medidaCorta}, igual que una tarjeta bancaria; grosor de 0.76 mm. Guía de tamaños y glosario: ${urlAbsoluta(rutaGuiaMedidas)}`,
     `- Archivo de diseño: gafete de ${medidas.ancho} × ${medidas.alto} mm; archivo con margen de corte (sangrado) de ${zonas[0].medida} a ${medidas.resolucionDpi} dpi; textos a ${medidas.margenSeguro} mm o más del corte.`,
     `- Forma de pago: pago único por gafete. No hay suscripción, mensualidad ni costo por usar la plataforma.`,
     `- Medios de pago: tarjeta de crédito o débito, efectivo en OXXO o transferencia (SPEI), en línea desde la plataforma. Los pedidos de ${pago.soloTransferenciaDesdePiezas} gafetes o más, o de ${pesos(pago.soloTransferenciaDesdeTotal)} MXN o más, se pagan solo por transferencia.`,
@@ -156,6 +158,12 @@ ${pasos.map((p, i) => `${i + 1}. **${p.titulo}.** ${p.texto}`).join("\n")}
 ## Preguntas frecuentes
 
 ${preguntas(faqsGenerales)}
+
+## Medidas de gafetes y glosario
+
+${guiaMedidasTexto(urlAbsoluta(rutaGuiaMedidas))}
+
+${preguntas(faqsMedidas)}
 
 ## Por giro
 

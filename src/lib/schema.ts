@@ -305,3 +305,52 @@ export function paginaContacto() {
     mainEntity: { "@id": ORG_ID },
   };
 }
+
+/** Glosario como DefinedTermSet: cada término con su ancla en la página. */
+export function glosarioSchema(opts: {
+  nombre: string;
+  ruta: string;
+  terminos: { id: string; termino: string; alias?: string[]; definicion: string }[];
+}) {
+  const url = urlAbsoluta(opts.ruta);
+  return {
+    "@context": "https://schema.org",
+    "@type": "DefinedTermSet",
+    "@id": `${url}#glosario`,
+    name: opts.nombre,
+    url: `${url}#glosario`,
+    inLanguage: site.idioma,
+    publisher: { "@id": ORG_ID },
+    hasDefinedTerm: opts.terminos.map((t) => ({
+      "@type": "DefinedTerm",
+      "@id": `${url}#${t.id}`,
+      name: t.termino,
+      ...(t.alias?.length ? { alternateName: t.alias } : {}),
+      description: t.definicion,
+      url: `${url}#${t.id}`,
+      inDefinedTermSet: `${url}#glosario`,
+    })),
+  };
+}
+
+/** Página de guía o artículo de referencia. */
+export function articulo(opts: { titulo: string; descripcion: string; ruta: string; publicado: string; actualizado: string }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: opts.titulo,
+    description: opts.descripcion,
+    url: urlAbsoluta(opts.ruta),
+    mainEntityOfPage: urlAbsoluta(opts.ruta),
+    image: urlAbsoluta("/marca/og-image.png"),
+    datePublished: opts.publicado,
+    dateModified: opts.actualizado,
+    inLanguage: site.idioma,
+    author: { "@id": ORG_ID },
+    publisher: { "@id": ORG_ID },
+    about: [
+      { "@type": "Thing", name: "Tamaño de gafetes y credenciales" },
+      { "@type": "Thing", name: "CR80", sameAs: "https://en.wikipedia.org/wiki/ISO/IEC_7810" },
+    ],
+  };
+}

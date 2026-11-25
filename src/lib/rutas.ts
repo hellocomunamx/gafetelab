@@ -6,6 +6,7 @@ export const rutasPrincipales = [
   { ruta: "/", titulo: "Inicio", prioridad: 1, resumen: "Qué es LaGafetería y cómo pedir gafetes y credenciales para empleados o para asistentes a eventos." },
   { ruta: "/precios", titulo: "Precios", prioridad: 0.9, resumen: "Tabla de precios por cantidad, gafete digital, paquetes prepagados, envío y entrega." },
   { ruta: "/materiales", titulo: "Materiales y medidas", prioridad: 0.8, resumen: "Materiales y grosores disponibles, y medidas del archivo: margen de corte, línea de corte y zona segura." },
+  { ruta: "/medidas-de-gafetes", titulo: "Medida de un gafete: tamaños, grosores y glosario", prioridad: 0.8, resumen: "Medida estándar de un gafete (CR80, 8.56 × 5.4 cm), otros tamaños a escala, vertical u horizontal, grosores, tamaño del diseño en píxeles y glosario de gafetes y credenciales." },
   { ruta: "/plataforma", titulo: "Plataforma", prioridad: 0.9, resumen: "Qué incluye la plataforma para administrar los gafetes del equipo (altas, bajas, carga de datos, editor de diseño, vista previa) y por qué no tiene costo extra." },
   { ruta: "/como-funciona", titulo: "Cómo funciona", prioridad: 0.8, resumen: "Los cinco pasos para pedir: diseño, campos variables, carga del equipo (Excel, una por una o fotos juntas), vista previa y pago." },
   { ruta: "/preguntas-frecuentes", titulo: "Preguntas frecuentes", prioridad: 0.8, resumen: "Respuestas sobre precios, pedido mínimo, entrega, envíos, materiales, factura y datos." },
