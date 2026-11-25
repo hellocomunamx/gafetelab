@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { DiagramaGafete } from "@/components/DiagramaGafete";
 import { Faq } from "@/components/Faq";
 import { JsonLd } from "@/components/JsonLd";
@@ -59,7 +60,12 @@ export default function Materiales() {
             {medidas.ancho} × {medidas.alto} mm
           </strong>
           , el tamaño de una tarjeta bancaria. Lo que cambia es el material y el grosor: el más común
-          es el {materiales[0].nombre} de {grosorTexto(materiales[0])}.
+          es el {materiales[0].nombre} de {grosorTexto(materiales[0])}. ¿Buscas otros tamaños o qué
+          significa cada término?{" "}
+          <Link href="/medidas-de-gafetes" className="font-semibold text-rojo underline underline-offset-4">
+            Ve la guía de medidas y el glosario
+          </Link>
+          .
         </p>
       </Portada>
 

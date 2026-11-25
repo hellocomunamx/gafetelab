@@ -36,6 +36,7 @@ export function Pie() {
             <li><Link href="/como-funciona" className="hover:text-rojo-claro">Cómo funciona</Link></li>
             <li><Link href="/precios" className="hover:text-rojo-claro">Precios</Link></li>
             <li><Link href="/materiales" className="hover:text-rojo-claro">Materiales y medidas</Link></li>
+            <li><Link href="/medidas-de-gafetes" className="hover:text-rojo-claro">Medida de un gafete y glosario</Link></li>
             <li><Link href="/cotizar" className="hover:text-rojo-claro">Cotizador en línea</Link></li>
             <li><Link href="/calculadora" className="hover:text-rojo-claro">Calculadora: ¿hacerlos tú o pedirlos?</Link></li>
             <li><Link href="/gafetes-en" className="hover:text-rojo-claro">Envíos a todo México</Link></li>

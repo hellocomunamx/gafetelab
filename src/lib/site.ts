@@ -35,7 +35,7 @@ export const site = {
   /** Antigüedad máxima, en meses, de la Constancia de Situación Fiscal que se pide a cada empresa. */
   constanciaMeses: 3,
   /** Fecha de la última revisión de contenido (se muestra y va al sitemap). */
-  actualizado: "2026-11-24",
+  actualizado: "2026-11-25",
   /** Pon NEXT_PUBLIC_NOINDEX=true para que ningún buscador indexe (por ejemplo, en pruebas). */
   indexable: process.env.NEXT_PUBLIC_NOINDEX !== "true",
 } as const;
