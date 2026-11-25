@@ -12,6 +12,7 @@ import {
   paqueteVigenciaMeses,
   pesos,
   tasaIva,
+  textoEnvios,
 } from "./precios";
 import { entregaTexto, site } from "./site";
 
@@ -60,7 +61,7 @@ export function renglones(c: Cotizacion) {
 export function totales(c: Cotizacion) {
   const filas = [{ etiqueta: "Subtotal", valor: pesos(c.subtotal), fuerte: false }];
   if (c.paquete) {
-    filas.push({ etiqueta: `${c.paquete.envios} envíos a todo México`, valor: "Incluidos", fuerte: false });
+    filas.push({ etiqueta: `${textoEnvios(c.paquete.envios)} a todo México`, valor: "Incluidos", fuerte: false });
   } else if (c.llevaEnvio) {
     filas.push({
       etiqueta: "Envío a todo México",
@@ -82,7 +83,7 @@ export function condiciones(d: DatosCotizacion): string[] {
   if (c.material) lista.push(`Material: ${c.material.nombre}, ${grosorTexto(c.material)}, tamaño CR80.`);
   if (c.paquete) {
     lista.push(
-      `Paquete prepagado: pagas hoy los ${c.paquete.piezas} gafetes y los pides cuando quieras, en uno o varios pedidos, durante ${paqueteVigenciaMeses} meses. Incluye ${c.paquete.envios} envíos a todo México.`,
+      `Paquete prepagado: pagas hoy los ${c.paquete.piezas} gafetes y los pides cuando quieras, en uno o varios pedidos, durante ${paqueteVigenciaMeses} meses. Incluye ${textoEnvios(c.paquete.envios)} a todo México.`,
     );
     lista.push(`Cada pedido se entrega en ${entregaTexto} a partir de que apruebas la vista previa de tus gafetes.`);
     lista.push(`Gafetes de PVC estándar impresos a una cara. No incluye ${paqueteNoIncluye}.`);
