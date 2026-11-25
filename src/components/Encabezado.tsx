@@ -28,9 +28,10 @@ export function Encabezado() {
           Entrega en {entregaTexto}
         </span>
       </p>
-      <Contenedor className="flex h-16 items-center justify-between gap-4">
+      {/* En celulares angostos (menos de 400 px) todo se aprieta un poco para caber sin desbordar. */}
+      <Contenedor className="flex h-16 items-center justify-between gap-4 max-[399px]:gap-2">
         <Link href="/" aria-label="LaGafetería, inicio" className="shrink-0">
-          <Logo />
+          <Logo className="h-auto max-[399px]:w-[7.5rem] max-[339px]:w-[6.5rem]" />
         </Link>
         <nav aria-label="Principal" className="hidden items-center gap-6 whitespace-nowrap lg:flex xl:gap-7">
           {navegacion.map((n) => (
@@ -39,10 +40,10 @@ export function Encabezado() {
             </Link>
           ))}
         </nav>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 max-[399px]:gap-1">
           <EnlaceCuenta className="hidden px-2 font-medium whitespace-nowrap hover:text-rojo sm:block" />
           <IconoCarrito />
-          <Boton href="/cotizar" className="px-5 py-2 text-sm">
+          <Boton href="/cotizar" className="px-5 py-2 text-sm max-[399px]:px-4 max-[339px]:px-3">
             Cotizar<span className="hidden sm:inline">&nbsp;en línea</span>
           </Boton>
           <details className="relative lg:hidden">
