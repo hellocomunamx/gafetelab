@@ -5,6 +5,7 @@ import { Bloque } from "@/components/cuenta/Entrada";
 import { claseEntrada } from "@/components/cuenta/Formulario";
 import { EstadoPedido } from "@/components/cuenta/EstadoPedido";
 import { cobrado, cuentas, fechaCorta, nombreConstancia } from "@/lib/admin/clientes";
+import { gafetesDeSaldo } from "@/lib/admin/finanzas";
 import { RUTA_ADMIN } from "@/lib/admin/ruta";
 import { nombreMetodo } from "@/lib/cuenta/constancia";
 import { requerirAdmin } from "@/lib/admin/sesion";
@@ -46,7 +47,7 @@ export default async function Cliente({ params }: { params: Promise<{ id: string
     servicio.from("gafetes_listos").select("id", { count: "exact", head: true }).eq("empresa_id", id),
     servicio
       .from("pedidos")
-      .select("id, folio, estado, piezas, total, metodo, creado_en, pagado_en")
+      .select("id, folio, estado, piezas, gafetes_de_saldo, conceptos, total, metodo, creado_en, pagado_en")
       .eq("empresa_id", id)
       .order("creado_en", { ascending: false })
       .limit(500),
@@ -61,7 +62,8 @@ export default async function Cliente({ params }: { params: Promise<{ id: string
   const lista = pedidos.data ?? [];
   const pagados = lista.filter(cobrado);
   const total = pagados.reduce((s, p) => s + Number(p.total), 0);
-  const gafetes = pagados.reduce((s, p) => s + p.piezas, 0);
+  // Lo que salió del saldo ya se contó en la compra del saldo.
+  const gafetes = pagados.reduce((s, p) => s + p.piezas - gafetesDeSaldo(p), 0);
   const paraImprimir = (disenos.count ?? 0) + (listos.count ?? 0) > 0;
   const verificacion = constancia.data;
   // Pedidos ya pagados que todavía no salen: si se quitó la verificación, se revisan a mano.
