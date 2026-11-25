@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import type { ReactNode } from "react";
+import { MenuPerfil } from "@/components/cuenta/MenuPerfil";
 import { NavCuenta } from "@/components/cuenta/NavCuenta";
 import { SelectorEmpresa } from "@/components/cuenta/SelectorEmpresa";
 import { Contenedor } from "@/components/ui";
@@ -17,8 +17,9 @@ export const metadata: Metadata = {
 
 export default async function CuentaLayout({ children }: { children: ReactNode }) {
   const { supabase, usuario } = await requerirUsuario();
-  const [{ data: empresas }, invitaciones, esAdmin] = await Promise.all([
+  const [{ data: empresas }, { data: perfil }, invitaciones, esAdmin] = await Promise.all([
     supabase.from("empresas").select("id, nombre, tipo, padre_id, datos_borrados_en").order("creado_en"),
+    supabase.from("perfiles").select("nombre").eq("id", usuario.id).maybeSingle(),
     misInvitaciones(),
     esAdminPlataforma(),
   ]);
@@ -36,20 +37,12 @@ export default async function CuentaLayout({ children }: { children: ReactNode }
             ) : (
               <p className="font-titulos text-lg font-extrabold">{actual?.nombre ?? "Mi cuenta"}</p>
             )}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-              {esAdmin ? (
-                <Link href={RUTA_ADMIN} className="font-semibold underline">Administración</Link>
-              ) : null}
-              <Link href="/cuenta/acceso" title="Mi acceso: nombre y contraseña" className="max-w-full truncate text-gris underline decoration-linea underline-offset-4 hover:text-tinta">
-                {usuario.email}
-              </Link>
-              {actual ? (
-                <Link href="/cuenta/empresa/nueva" className="underline">Otra empresa</Link>
-              ) : null}
-              <form action="/salir" method="post">
-                <button type="submit" className="font-semibold underline">Salir</button>
-              </form>
-            </div>
+            <MenuPerfil
+              correo={usuario.email ?? ""}
+              nombre={perfil?.nombre}
+              otraEmpresa={Boolean(actual)}
+              rutaAdmin={esAdmin ? RUTA_ADMIN : null}
+            />
           </div>
           {actual ? <NavCuenta evento={actual.tipo === "evento"} /> : null}
         </Contenedor>
