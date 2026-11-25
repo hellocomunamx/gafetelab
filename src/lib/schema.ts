@@ -14,11 +14,66 @@ import {
 } from "./precios";
 import { funcionesEvento } from "./eventos-publico";
 import { funcionesPlataforma } from "./plataforma";
-import { figalo, site, urlAbsoluta } from "./site";
+import { figalo, legal, site, urlAbsoluta } from "./site";
 
 const ORG_ID = `${site.url}/#organizacion`;
 const WEB_ID = `${site.url}/#sitio`;
 const PRODUCTO_ID = `${site.url}/#producto`;
+
+/** Los días de la entrega prometida en todo el sitio ("14 días"), en número. */
+const ENTREGA_DIAS = Number.parseInt(site.entrega, 10);
+/** De esos días, lo más que se lleva la paquetería; el resto es producción. */
+const TRANSITO_DIAS = 5;
+
+const dias = (minimo: number, maximo: number) => ({
+  "@type": "QuantitativeValue",
+  minValue: minimo,
+  maxValue: maximo,
+  unitCode: "DAY",
+});
+
+/**
+ * Devoluciones, como las piden las fichas de comerciante de Google. Dice lo
+ * mismo que los apartados 8 y 9 de los términos: al ser piezas hechas para
+ * cada empresa no hay devolución, y lo defectuoso se repone.
+ */
+function politicaDevoluciones() {
+  return {
+    "@type": "MerchantReturnPolicy",
+    applicableCountry: site.pais,
+    returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+    merchantReturnLink: urlAbsoluta("/terminos"),
+    description: `Los gafetes y credenciales se hacen con el diseño de cada empresa y los datos de su personal: una vez que el pedido entra a producción no se puede cancelar ni devolver. Si una pieza llega con un defecto de impresión o de material, o con un error nuestro, se repone sin costo, con envío incluido, al reportarla dentro de los ${legal.plazoDefectosDias} días naturales siguientes a la entrega.`,
+  };
+}
+
+/** Envío de lo impreso: tarifa única a todo México y la entrega prometida. */
+function envioImpreso() {
+  return {
+    "@type": "OfferShippingDetails",
+    shippingRate: { "@type": "MonetaryAmount", value: envio.tarifa, currency: site.moneda },
+    shippingDestination: { "@type": "DefinedRegion", addressCountry: site.pais },
+    deliveryTime: {
+      "@type": "ShippingDeliveryTime",
+      handlingTime: dias(1, ENTREGA_DIAS - TRANSITO_DIAS),
+      transitTime: dias(1, TRANSITO_DIAS),
+    },
+  };
+}
+
+/** Lo digital no viaja: se activa en la plataforma, sin costo de envío. */
+function envioDigital() {
+  return {
+    "@type": "OfferShippingDetails",
+    shippingRate: { "@type": "MonetaryAmount", value: 0, currency: site.moneda },
+    shippingDestination: { "@type": "DefinedRegion", addressCountry: site.pais },
+    deliveryTime: {
+      "@type": "ShippingDeliveryTime",
+      handlingTime: dias(0, 1),
+      transitTime: dias(0, 0),
+    },
+  };
+}
 
 export function organizacion() {
   return {
@@ -38,6 +93,7 @@ export function organizacion() {
       addressCountry: site.pais,
     },
     areaServed: { "@type": "Country", name: "México" },
+    hasMerchantReturnPolicy: politicaDevoluciones(),
     parentOrganization: { "@type": "Organization", name: figalo.nombre, url: figalo.url },
     knowsAbout: [
       "gafetes para empleados",
@@ -95,11 +151,8 @@ export function producto() {
       availability: "https://schema.org/InStock",
       seller: { "@id": ORG_ID },
       areaServed: { "@type": "Country", name: "México" },
-      shippingDetails: {
-        "@type": "OfferShippingDetails",
-        shippingRate: { "@type": "MonetaryAmount", value: envio.tarifa, currency: site.moneda },
-        shippingDestination: { "@type": "DefinedRegion", addressCountry: site.pais },
-      },
+      shippingDetails: envioImpreso(),
+      hasMerchantReturnPolicy: politicaDevoluciones(),
     },
   };
 }
@@ -123,6 +176,8 @@ export function productoDigital() {
       availability: "https://schema.org/InStock",
       seller: { "@id": ORG_ID },
       areaServed: { "@type": "Country", name: "México" },
+      shippingDetails: envioDigital(),
+      hasMerchantReturnPolicy: politicaDevoluciones(),
     },
   };
 }
