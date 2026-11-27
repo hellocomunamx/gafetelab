@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { type FormEvent, useState } from "react";
 import { registrarConversion } from "@/lib/anuncios";
+import { leerOrigen } from "@/lib/origen";
 import { carritoMaximoPiezas } from "@/lib/carrito";
 import { condiciones, nombreArchivo, nuevoFolio, renglones, totales } from "@/lib/cotizacion";
 import { grosorTexto, type MaterialId, materiales } from "@/lib/materiales";
@@ -101,6 +102,13 @@ export function Cotizador() {
       enlace.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       registrarConversion("cotizacion");
+      // Para el panel: qué se cotizó y de qué anuncio llegó. Sin datos de la persona.
+      fetch("/api/cotizacion/registro", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ folio: datos.folio, cantidad: c.piezas, ...opciones, empresa, origen: leerOrigen() }),
+        keepalive: true,
+      }).catch(() => {});
     } finally {
       setGenerando(false);
     }
@@ -113,7 +121,7 @@ export function Cotizador() {
       const respuesta = await fetch("/api/cotizacion", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ correo, cantidad: c.piezas, ...opciones, empresa, sitioWeb }),
+        body: JSON.stringify({ correo, cantidad: c.piezas, ...opciones, empresa, sitioWeb, origen: leerOrigen() }),
       });
       const datos = await respuesta.json().catch(() => ({}));
       if (respuesta.ok) registrarConversion("cotizacion");

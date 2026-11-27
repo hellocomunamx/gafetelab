@@ -753,6 +753,20 @@ isOneToOne: true
                   Relationships: [
                     
                   ]
+                },"cotizaciones": {
+                  Row: {
+                    "canal": string,"contenido": string | null,"correo": string | null,"campana": string | null,"dispositivo": string | null,"dos_caras": boolean,"empresa": string | null,"en": string,"entrada": string | null,"folio": string,"id": number,"material": string | null,"medio": string | null,"modalidad": string,"origen": string | null,"paquete": number | null,"piezas": number,"subtotal": number,"termino": string | null,"total": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "canal": string,"contenido"?: string | null,"correo"?: string | null,"campana"?: string | null,"dispositivo"?: string | null,"dos_caras"?: boolean,"empresa"?: string | null,"en"?: string,"entrada"?: string | null,"folio": string,"id"?: never,"material"?: string | null,"medio"?: string | null,"modalidad": string,"origen"?: string | null,"paquete"?: number | null,"piezas": number,"subtotal": number,"termino"?: string | null,"total": number
+                  }
+                  Update: {
+                    "canal"?: string,"contenido"?: string | null,"correo"?: string | null,"campana"?: string | null,"dispositivo"?: string | null,"dos_caras"?: boolean,"empresa"?: string | null,"en"?: string,"entrada"?: string | null,"folio"?: string,"id"?: never,"material"?: string | null,"medio"?: string | null,"modalidad"?: string,"origen"?: string | null,"paquete"?: number | null,"piezas"?: number,"subtotal"?: number,"termino"?: string | null,"total"?: number
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"visitas": {
                   Row: {
                     "dispositivo": string,"en": string,"entrada": boolean,"id": number,"origen": string | null,"pais": string | null,"region": string | null,"ruta": string

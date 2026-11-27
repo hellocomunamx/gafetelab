@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { type Conversion, googleAds, pideNoRastreo, registrarConversion, rutaConEtiqueta } from "@/lib/anuncios";
+import { anotarOrigen } from "@/lib/origen";
 
 type ConCapa = Window & { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void };
 
@@ -16,6 +17,7 @@ export function EtiquetaAnuncios() {
   const ruta = usePathname();
 
   useEffect(() => {
+    anotarOrigen(ruta);
     const w = window as ConCapa;
     if (w.gtag || !googleAds.id || !rutaConEtiqueta(ruta) || pideNoRastreo()) return;
     w.dataLayer = w.dataLayer ?? [];

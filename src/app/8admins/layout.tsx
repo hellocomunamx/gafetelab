@@ -35,6 +35,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
               <Link href={`${RUTA_ADMIN}/archivos`} className="rounded-full px-4 py-2 text-sm font-semibold hover:bg-white">
                 Archivos
               </Link>
+              <Link href={`${RUTA_ADMIN}/cotizaciones`} className="rounded-full px-4 py-2 text-sm font-semibold hover:bg-white">
+                Cotizaciones
+              </Link>
               <Link href={`${RUTA_ADMIN}/visitas`} className="rounded-full px-4 py-2 text-sm font-semibold hover:bg-white">
                 Visitas
               </Link>

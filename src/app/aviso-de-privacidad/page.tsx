@@ -52,7 +52,10 @@ export default function AvisoDePrivacidad() {
               <li>
                 <strong>De quien cotiza:</strong> correo electrónico y, si lo indicas, el nombre de
                 tu empresa, cuando pides que te enviemos tu cotización. Usar el cotizador o
-                descargar el PDF no requiere ningún dato.
+                descargar el PDF no requiere ningún dato. De cada cotización guardamos su folio, lo
+                cotizado (piezas, modalidad e importe), el tipo de dispositivo y, si llegaste por
+                un anuncio o una liga de campaña, de cuál vino, para darle seguimiento y saber qué
+                anuncios funcionan.
               </li>
               <li>
                 <strong>De quien nos escribe desde el formulario de contacto:</strong> nombre,
@@ -198,6 +201,8 @@ export default function AvisoDePrivacidad() {
                 para saber si una visita que llegó por uno de nuestros anuncios terminó en una
                 cotización, una cuenta nueva o un pedido, y así pagar solo por los anuncios que
                 funcionan. No le enviamos a Google tu nombre, tu correo ni los datos de tu equipo.
+                Mientras dure tu visita, el navegador recuerda de qué anuncio llegaste
+                (almacenamiento de sesión, que se borra al cerrar la pestaña).
                 Puedes bloquear estas cookies desde tu navegador o pedirle que no te rastree (Do Not
                 Track o Global Privacy Control); en ese caso la etiqueta no se carga. Más información
                 en{" "}

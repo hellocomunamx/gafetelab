@@ -1,7 +1,6 @@
 import { correoActivo, enviarCorreo } from "@/lib/correo";
 import { condiciones, fechaLarga, nuevoFolio, renglones, totales } from "@/lib/cotizacion";
-import { materialPara } from "@/lib/materiales";
-import { cotizar, type Modalidad, modalidades } from "@/lib/precios";
+import { cotizacionDe, guardarCotizacion } from "@/lib/cotizaciones";
 import { dentroDelLimite, ipDe, MENSAJE_LIMITE } from "@/lib/seguridad/limites";
 import { site, urlAbsoluta } from "@/lib/site";
 import { CORREO_VALIDO, error, esBot, escapar, leerCuerpo, mismoOrigen } from "@/lib/solicitudes";
@@ -30,16 +29,8 @@ export async function POST(solicitud: Request) {
     return error(MENSAJE_LIMITE, 429);
   }
 
-  const modalidad = modalidades.some((m) => m.id === cuerpo.modalidad)
-    ? (cuerpo.modalidad as Modalidad)
-    : "impreso";
   const empresa = String(cuerpo.empresa ?? "").trim().slice(0, 80);
-  const cotizacion = cotizar(Number(cuerpo.cantidad), {
-    modalidad,
-    dosCaras: cuerpo.dosCaras === true,
-    material: materialPara(cuerpo.material).id,
-    paquete: Number(cuerpo.paquete) || undefined,
-  });
+  const cotizacion = cotizacionDe(cuerpo);
 
   if (!correoActivo()) {
     return error(
@@ -109,5 +100,14 @@ ${notas.map((n) => `<li>${escapar(n)}</li>`).join("")}
     console.error("No se pudo enviar la cotización:", resultado.error);
     return error("No pudimos enviar el correo. Intenta de nuevo o descarga el PDF.", 502);
   }
+  await guardarCotizacion({
+    folio: datos.folio,
+    canal: "correo",
+    cotizacion,
+    correo,
+    empresa,
+    origen: cuerpo.origen,
+    navegador: solicitud.headers.get("user-agent") ?? "",
+  });
   return Response.json({ ok: true, folio: datos.folio });
 }
