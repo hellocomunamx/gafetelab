@@ -142,8 +142,8 @@ export const legal = {
   domicilio: "Cajeme, Sonora, México",
   correo: "hola@figalo.mx",
   horario: "lunes a viernes de 09:00 a 15:00 horas (hora del centro de México)",
-  avisoVersion: "1.8",
-  avisoFecha: "2026-11-25",
+  avisoVersion: "1.9",
+  avisoFecha: "2026-11-27",
   terminosVersion: "1.4",
   terminosFecha: "2026-11-25",
   /**
